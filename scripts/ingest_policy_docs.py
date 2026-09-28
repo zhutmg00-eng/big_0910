@@ -7,16 +7,17 @@
 """
 import sys
 from pathlib import Path
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # 确保src在路径中
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from src.rag.parser import process_document
 from src.rag.vector_store import PolicyVectorStore
 
 POLICY_DOCS_DIR = Path(__file__).parent.parent / "data" / "policy_docs"
 
-def ingest_all():
+def ingest_all(force: bool = False):
     """将所有政策文档导入知识库"""
     vs = PolicyVectorStore()
     
@@ -24,13 +25,13 @@ def ingest_all():
     stats = vs.get_stats()
     print(f"当前知识库: {stats['total_chunks']} 个文档块")
     
-    # 清空重新导入（首次运行时）
-    if stats['total_chunks'] == 0:
-        print("首次运行，开始导入政策文档...")
+    # 如果指定 force 或文档块数量不等于 268，清空并重新导入全量 37 份文档
+    if force or stats['total_chunks'] != 268:
+        print("知识库未收录全量文档或指定 force，清空并导入全量政策文档...")
+        vs.clear()
     else:
-        print("已有数据，跳过导入。如需重新导入，请先清空知识库。")
+        print("已有全量 268 个文档块，跳过重复导入。")
         return
-    
     md_files = sorted(POLICY_DOCS_DIR.glob("*.md"))
     total_chunks = 0
     

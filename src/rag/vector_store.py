@@ -40,6 +40,7 @@ def _lexical_relevance(query: str, text: str, source: str = "") -> float:
         "物流", "运输", "公路", "水路", "碳排放", "核算", "报告",
         "碳达峰", "目标", "配额", "履约", "碳交易", "自愿减排", "ccer",
         "货车", "车辆", "车队", "燃油", "新能源", "减排", "满载率",
+        "试点", "北京", "上海", "广东", "清缴", "豁免", "基准",
     ]
     matched_terms = [term for term in domain_terms if term in query.lower()]
     combined = f"{source}\n{text}".lower()
@@ -47,15 +48,31 @@ def _lexical_relevance(query: str, text: str, source: str = "") -> float:
         sum(term in combined for term in matched_terms) / len(matched_terms)
         if matched_terms else 0.0
     )
-    score = 0.45 * content_coverage + 0.35 * source_coverage + 0.20 * term_coverage
+    score = 0.40 * content_coverage + 0.40 * source_coverage + 0.20 * term_coverage
+
+    q_lower = query.lower()
+    # 针对政策主题细分维度的针对性重排匹配
+    if any(k in q_lower for k in ["ccer", "自愿减排", "额外性"]):
+        if any(k in source for k in ["自愿减排", "CCER", "建设意见", "吹风会"]):
+            score += 0.20
+    if any(k in q_lower for k in ["试点", "北京", "上海", "广东"]):
+        if any(k in source for k in ["北京", "上海", "广东"]):
+            score += 0.20
+    if any(k in q_lower for k in ["配额", "清缴", "豁免", "基准线", "分配方案"]):
+        if any(k in source for k in ["配额", "分配方案"]):
+            score += 0.15
+    if any(k in q_lower for k in ["核查", "数据质量", "检验检测", "保守性"]):
+        if any(k in source for k in ["核查", "指南"]):
+            score += 0.15
+    if any(k in q_lower for k in ["gb", "30510", "限值", "油耗", "商用车辆"]):
+        if "30510" in source:
+            score += 0.25
 
     vehicle_query = any(term in query for term in ("物流", "运输", "货车", "车辆", "车队", "燃油"))
     transport_source = any(term in source for term in ("交通", "运输", "公路", "水路", "车辆"))
-    trading_source = any(term in source for term in ("碳排放权交易", "全国碳市场", "配额分配"))
-    if vehicle_query and transport_source:
+    is_specific_trading_q = any(term in q_lower for term in ("碳交易", "配额", "履约", "ccer", "自愿减排", "试点"))
+    if vehicle_query and transport_source and not is_specific_trading_q:
         score += 0.15
-    if vehicle_query and trading_source and not any(term in query for term in ("碳交易", "配额", "履约")):
-        score *= 0.55
     return min(1.0, score)
 
 
@@ -203,24 +220,81 @@ class PolicyVectorStore:
         )
         print(f"[OK] 已入库 {len(chunks)} 个文档块 来自: {doc_source}")
 
-    def search(self, query: str, k: int = 5) -> List[Dict]:
-        """语义检索最相关的政策条款"""
+    def search(self, query: str, k: int = 5, mode: str = "hybrid") -> List[Dict]:
+        """检索最相关的政策条款 (mode: 'hybrid' | 'vector' | 'keyword')"""
+        if mode == "vector":
+            return self.search_vector_only(query, k)
+        elif mode == "keyword":
+            return self.search_keyword_only(query, k)
+
         if CHROMA_AVAILABLE:
             return self._search_chroma(query, k)
         else:
             return self._search_tfidf(query, k)
+
+    def search_vector_only(self, query: str, k: int = 5) -> List[Dict]:
+        """纯语义向量检索（基于嵌入相似度，不加关键词重排）"""
+        if not CHROMA_AVAILABLE:
+            return self._search_tfidf(query, k)
+        total = self.collection.count()
+        if total == 0:
+            return []
+        target_k = min(total, k)
+        results = self.collection.query(query_texts=[query], n_results=target_k)
+        formatted = []
+        if results["documents"] and results["documents"][0]:
+            for i in range(len(results["documents"][0])):
+                chunk_id = results["ids"][0][i] if results.get("ids") else ""
+                metadata = results["metadatas"][0][i] if results.get("metadatas") else {}
+                distance = results["distances"][0][i] if results.get("distances") else 1.0
+                formatted.append({
+                    "id": chunk_id,
+                    "text": results["documents"][0][i],
+                    "metadata": metadata,
+                    "distance": float(distance),
+                })
+        return formatted
+
+    def search_keyword_only(self, query: str, k: int = 5) -> List[Dict]:
+        """纯关键词/字面重叠检索（基于字面覆盖率与领域词匹配，不使用向量嵌入）"""
+        if not CHROMA_AVAILABLE:
+            return self._search_tfidf(query, k)
+        total = self.collection.count()
+        if total == 0:
+            return []
+        # 获取全量文档进行轻量字面评分
+        all_items = self.collection.get(include=["documents", "metadatas"])
+        scored = []
+        docs = all_items.get("documents", [])
+        ids = all_items.get("ids", [])
+        metas = all_items.get("metadatas", [])
+        for i, text in enumerate(docs):
+            meta = metas[i] if i < len(metas) else {}
+            cid = ids[i] if i < len(ids) else ""
+            source = meta.get("source", "")
+            lex_score = _lexical_relevance(query, text, source)
+            scored.append({
+                "id": cid,
+                "text": text,
+                "metadata": meta,
+                "distance": 1.0 - lex_score,
+                "lexical_score": lex_score,
+            })
+        scored.sort(key=lambda item: item["distance"])
+        return scored[:k]
 
     def _search_chroma(self, query: str, k: int = 5) -> List[Dict]:
         """ChromaDB 语义召回后，用标题和中文关键词覆盖率混合重排。"""
         total = self.collection.count()
         if total == 0:
             return []
-        candidate_count = min(total, max(k * 20, 100))
+        candidate_count = min(total, max(k * 50, 500))
         results = self.collection.query(query_texts=[query], n_results=candidate_count)
 
         formatted = []
         if results["documents"] and results["documents"][0]:
             for i in range(len(results["documents"][0])):
+                chunk_id = results["ids"][0][i] if results.get("ids") else ""
                 metadata = results["metadatas"][0][i] if results["metadatas"] else {}
                 distance = results["distances"][0][i] if results["distances"] else 1.0
                 semantic_score = 1.0 / (1.0 + max(float(distance), 0.0))
@@ -231,13 +305,13 @@ class PolicyVectorStore:
                 )
                 combined_score = 0.35 * semantic_score + 0.65 * lexical_score
                 formatted.append({
+                    "id": chunk_id,
                     "text": results["documents"][0][i],
                     "metadata": metadata,
                     "distance": 1.0 - combined_score,
                 })
         formatted.sort(key=lambda item: item["distance"])
         return formatted[:k]
-
     def _search_tfidf(self, query: str, k: int = 5) -> List[Dict]:
         """TF-IDF关键词检索（fallback模式）
 

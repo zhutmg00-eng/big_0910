@@ -15,4 +15,8 @@
 ## 目录结构
 - `rag_eval_framework.md`：评测集构建方案、题型分布、双人标注规范与评价指标（Recall@k、MRR、引用保真度、适用范围准确率）。
 - `rag_benchmark_40_questions.md`：40 题完整题库（含标准参考答案要点与检索文件定位）。
+- `rag_benchmark_gold_dataset.json` / `rag_benchmark_gold_dataset.csv`：40 题标准金标数据集（已完成与全量 268 个 Chunk 的唯一 gold_chunk_ids 精准定块映射）。
+- `rag_retrieval_experiment_report.md`：纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验评估报告（含 Wilcoxon 符号秩显著性检验）。
+- `rag_retrieval_experiment_results.json`：评测实验全量详细指标与各题召回数据。
+- `review/`：标注者 A 与标注者 B 的双人独立审校标注表与一致性报告（Kappa = 1.0）。
 - `parts/`：按主题细分的子集模块。

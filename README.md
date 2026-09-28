@@ -100,7 +100,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 │   ├── engine/                 # 排放、预算、碳价和减排引擎
 │   ├── models/                 # Pydantic 输入模型
 │   ├── rag/                    # 解析、混合检索与生成
-├── tests/                      # 82 项自动化测试
+├── tests/                      # 97 项自动化测试（含真实基准验证与 RAG 基准回归）
 ├── packages/
 │   └── dsh-plugin-carbon-asset/ # DeepSeek Harness 官方生态插件
 ├── Dockerfile
@@ -197,13 +197,23 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
   - 敏感性：`docs/sensitivity_report.md` 与 `scripts/sensitivity_analysis.py`（满载率/里程扰动下误差方向恒为正偏，量化了满载率假设这一主要误差来源）
   - 自动化测试：`tests/test_real_fleet_benchmarks.py`
 
+### 已完成的核心科研实验能力
+
+1. **实证车队基准检验（支撑 RQ1/RQ3）**：
+   - 真实公开车队数据集（顺丰、中通、京东、冷链实测）与核算方法学。
+   - 自动化对比活动水平估算法与能源台账法，全样本 MAPE 4.23%（`docs/real_fleet_validation_report.md`）。
+   - 满载率与里程二维网格敏感性分析模块（`scripts/sensitivity_analysis.py` 与 `docs/sensitivity_report.md`）。
+2. **政策问答评测与检索对照实验（支撑 RQ2）**：
+   - 自建 40 题双碳法规与绿色交通基准题库（含金标答案、官方文件溯源与负例拒答设计）。
+   - 双人背靠背独立审校与一致性报告（Kappa = 1.0，`docs/rag_benchmark/review/`）。
+   - 全量 37 份核心法规文档（268 个 Chunk）入库即定块映射，固化 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`。
+   - 纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验与 Wilcoxon 符号秩显著性检验（MRR 0.5036，Recall@10 75.00%，`docs/rag_benchmark/rag_retrieval_experiment_report.md`）。
+
 ### 进行中 / 待办
 
-1. 政策问答评测集（30~50 题，带标准来源与适用范围标签），完成纯关键词/纯向量/混合检索三组对照后报告 Recall@k、MRR、来源准确率、适用范围准确率。
-2. 将购电间接排放、运输周转量和不确定性区间纳入模型。
-3. 指导教师/物流企业人员盲评，保留评价表和迭代记录作为结题证据。
-4. 自动化 CI 流水线（`.github/workflows/ci.yml`）已配置，推送至远端后自动执行 94 项全量测试。
-
+1. 将购电间接排放、运输周转量和不确定性区间进一步集成至前台可视化。
+2. 指导教师/物流企业人员盲评，保留评价表和迭代记录作为结题证据。
+3. 自动化 CI 流水线（`.github/workflows/ci.yml`）已配置，推送至远端后自动执行 97 项全量测试。
 ## 许可
 
 本项目为大学生创新创业训练计划科研原型，仅供教学和研究使用。
