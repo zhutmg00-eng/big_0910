@@ -15,6 +15,8 @@ def test_gold_dataset_integrity():
     assert len(dataset) == 40, f"评测题目数应为40，实际为: {len(dataset)}"
 
     vs = PolicyVectorStore()
+    if not hasattr(vs, "collection") or vs.collection is None or vs.collection.count() == 0:
+        pytest.skip("向量知识库未初始化，请先运行 scripts/ingest_policy_docs.py")
     all_chunks = vs.collection.get(include=["metadatas"])
     existing_chunk_ids = set(all_chunks["ids"])
     assert len(existing_chunk_ids) >= 268, f"政策库 chunk 数不足: {len(existing_chunk_ids)}"
@@ -31,6 +33,8 @@ def test_hybrid_retrieval_benchmark_performance():
     """验证混合重排检索在标准基准集上的核心性能门槛 (MRR >= 0.45, Recall@10 >= 0.70)"""
     dataset = json.loads(GOLD_DATASET_PATH.read_text(encoding="utf-8"))
     vs = PolicyVectorStore()
+    if not hasattr(vs, "collection") or vs.collection is None or vs.collection.count() == 0:
+        pytest.skip("向量知识库未初始化，请先运行 scripts/ingest_policy_docs.py")
 
     ranks = []
     hits10 = 0

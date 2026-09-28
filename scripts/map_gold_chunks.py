@@ -70,11 +70,16 @@ def find_matching_chunk(chunks_for_file, keywords):
 
 def map_all_gold_chunks():
     vs = PolicyVectorStore()
-    all_items = vs.collection.get(include=["documents", "metadatas"])
-    docs = all_items["documents"]
-    ids = all_items["ids"]
-    metas = all_items["metadatas"]
-
+    if hasattr(vs, "collection") and vs.collection is not None:
+        all_items = vs.collection.get(include=["documents", "metadatas"])
+        docs = all_items["documents"]
+        ids = all_items["ids"]
+        metas = all_items["metadatas"]
+    else:
+        # Fallback 模式兼容
+        docs = [d["text"] for d in vs._fallback_docs]
+        ids = [d["id"] for d in vs._fallback_docs]
+        metas = [d.get("metadata", {}) for d in vs._fallback_docs]
     file_chunks = {}
     for i, cid in enumerate(ids):
         src = metas[i]["source"]

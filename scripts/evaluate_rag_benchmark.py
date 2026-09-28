@@ -63,9 +63,9 @@ def wilcoxon_signed_rank(x: List[float], y: List[float]):
     # 渐进正态分布近似
     mean_w = n * (n + 1) / 4.0
     var_w = n * (n + 1) * (2 * n + 1) / 24.0
-    z = (abs(w - mean_w) - 0.5) / math.sqrt(var_w) if var_w > 0 else 0.0
-    # 互补误差函数计算双尾 p 值
-    p_value = math.erfc(z / math.sqrt(2))
+    z = max(0.0, abs(w - mean_w) - 0.5) / math.sqrt(var_w) if var_w > 0 else 0.0
+    # 互补误差函数计算双尾 p 值，确保取值在 [0.0, 1.0] 范围内
+    p_value = min(1.0, max(0.0, math.erfc(z / math.sqrt(2))))
     return float(w), float(p_value)
 
 def evaluate_retrieval():
