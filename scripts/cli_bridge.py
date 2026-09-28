@@ -41,6 +41,10 @@ from src.engine.tco import (
     calculate_single_vehicle_tco,
     get_tco_benchmark,
 )
+from src.engine.indirect_emission import (
+    calculate_scope2_emission,
+    calculate_turnover_and_intensity,
+)
 
 
 def handle_calculate(payload: dict) -> dict:
@@ -197,9 +201,30 @@ def handle_vehicle_types() -> dict:
     }
 
 
+def handle_turnover(payload: dict) -> dict:
+    fleet_raw = payload.get("fleet", [])
+    region = payload.get("region", "全国")
+    green_ratio = float(payload.get("green_electricity_ratio", 0.0))
+    fleet = [
+        VehicleGroupData(
+            vehicle_type=v["vehicle_type"],
+            count=int(v["count"]),
+            annual_km=float(v["annual_km"]),
+            load_factor=float(v.get("load_factor", 0.75)),
+        )
+        for v in fleet_raw
+    ]
+    scope2_res = calculate_scope2_emission(fleet, region, green_ratio)
+    turnover_res = calculate_turnover_and_intensity(fleet, scope2_emission_t=scope2_res.scope2_emission_t)
+    return {
+        "scope2": asdict(scope2_res),
+        "turnover_and_intensity": asdict(turnover_res),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="DeepSeek Harness CLI Bridge for Carbon Asset Assistant")
-    parser.add_argument("command", choices=["calculate", "tco", "reduction", "policy", "compare", "vehicle-types"])
+    parser.add_argument("command", choices=["calculate", "tco", "reduction", "policy", "compare", "vehicle-types", "turnover"])
     parser.add_argument("--json", type=str, help="JSON input payload (or via stdin)")
 
     args = parser.parse_args()
@@ -225,6 +250,8 @@ def main():
             result = handle_compare(payload)
         elif args.command == "vehicle-types":
             result = handle_vehicle_types()
+        elif args.command == "turnover":
+            result = handle_turnover(payload)
         else:
             raise ValueError(f"未知子命令: {args.command}")
 

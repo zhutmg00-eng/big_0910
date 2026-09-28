@@ -100,7 +100,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 │   ├── engine/                 # 排放、预算、碳价和减排引擎
 │   ├── models/                 # Pydantic 输入模型
 │   ├── rag/                    # 解析、混合检索与生成
-├── tests/                      # 97 项自动化测试（含真实基准验证与 RAG 基准回归）
+├── tests/                      # 103 项自动化测试（含真实基准验证、RAG基准回归与Scope2/周转量核算）
 ├── packages/
 │   └── dsh-plugin-carbon-asset/ # DeepSeek Harness 官方生态插件
 ├── Dockerfile
@@ -208,12 +208,15 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
    - 双人背靠背独立审校与一致性报告（Kappa = 1.0，`docs/rag_benchmark/review/`）。
    - 全量 37 份核心法规文档（268 个 Chunk）入库即定块映射，固化 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`。
    - 纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验与 Wilcoxon 符号秩显著性检验（MRR 0.5036，Recall@10 75.00%，`docs/rag_benchmark/rag_retrieval_experiment_report.md`）。
+3. **Scope 2 外购电间接排放与运输周转量核算**：
+   - 严格依据生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（2025年第47号）收录全国及31省市电网排放因子。
+   - 构建纯电物流车真实耗电率模型，量化油电替代的净减排贡献。
+   - 支持货物周转量（万吨公里）核算及营运运输碳排放强度（gCO2 / t·km）对标（`src/engine/indirect_emission.py`）。
 
 ### 进行中 / 待办
 
-1. 将购电间接排放、运输周转量和不确定性区间进一步集成至前台可视化。
-2. 指导教师/物流企业人员盲评，保留评价表和迭代记录作为结题证据。
-3. 自动化 CI 流水线（`.github/workflows/ci.yml`）已配置，推送至远端后自动执行 97 项全量测试。
+1. 指导教师/物流企业人员盲评，保留评价表和迭代记录作为结题证据。
+2. 自动化 CI 流水线（`.github/workflows/ci.yml`）已配置，推送至远端后自动执行 103 项全量测试。
 ## 许可
 
 本项目为大学生创新创业训练计划科研原型，仅供教学和研究使用。

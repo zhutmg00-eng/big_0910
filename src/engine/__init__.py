@@ -23,6 +23,20 @@ from src.engine.carbon_price import (
     load_carbon_price_data,
     calculate_price_stats,
 )
+from src.engine.indirect_emission import (
+    get_grid_factor,
+    get_grid_emission_factor,
+    calculate_indirect_emission,
+    calculate_scope2_emission,
+    calculate_freight_turnover,
+    calculate_turnover_and_intensity,
+    IndirectEmissionResult,
+    Scope2Result,
+    FreightTurnoverResult,
+    TurnoverIntensityResult,
+    GRID_EMISSION_FACTORS,
+    VEHICLE_ENERGY_SPECS,
+)
 
 __all__ = [
     "get_emission_factor",
@@ -41,4 +55,10 @@ __all__ = [
     "estimate_compliance_cost",
     "load_carbon_price_data",
     "calculate_price_stats",
+    "get_grid_emission_factor",
+    "calculate_scope2_emission",
+    "calculate_turnover_and_intensity",
+    "Scope2Result",
+    "TurnoverIntensityResult",
+    "GRID_EMISSION_FACTORS",
 ]
