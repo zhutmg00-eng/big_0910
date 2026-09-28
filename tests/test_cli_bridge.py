@@ -109,6 +109,32 @@ class TestCLIBridge:
         assert "ranking_by_emission" in data
         assert len(data["comparison"]) == 2
 
+    def test_turnover_command(self):
+        payload = {
+            "fleet": [
+                {
+                    "vehicle_type": "重型柴油货车",
+                    "count": 10,
+                    "annual_km": 100000.0,
+                    "load_factor": 0.80,
+                },
+                {
+                    "vehicle_type": "新能源物流车",
+                    "count": 5,
+                    "annual_km": 30000.0,
+                    "load_factor": 0.75,
+                },
+            ],
+            "region": "广东",
+            "green_electricity_ratio": 0.2,
+        }
+        code, data, err = run_bridge("turnover", payload)
+        assert code == 0
+        assert "scope2" in data
+        assert "turnover_and_intensity" in data
+        assert data["scope2"]["electric_vehicle_count"] == 5
+        assert data["turnover_and_intensity"]["total_turnover_wan_tkm"] > 0
+
     def test_invalid_command(self):
         code, data, err = run_bridge("invalid_action")
         assert code != 0

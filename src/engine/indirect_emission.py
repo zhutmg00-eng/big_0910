@@ -102,6 +102,7 @@ class IndirectEmissionResult:
     grid_name: str                        # 使用的电网因子名称
     grid_factor: float                    # 电力排放因子 (kgCO2/kWh)
     electric_vehicle_count: int           # 纯电动车辆数
+    scope2_emission_t: float = 0.0        # 兼容性别名 (tCO2e)
 
 @dataclass
 class FreightTurnoverResult:
@@ -112,6 +113,12 @@ class FreightTurnoverResult:
     scope2_intensity_g_per_tkm: float     # Scope 2 排放强度 (gCO2 / t·km)
     total_intensity_g_per_tkm: float      # 综合排放强度 (gCO2 / t·km)
     turnover_by_type: Dict[str, Dict]     # 各车型周转量与强度明细
+    total_turnover_ton_km: float = 0.0     # 兼容性别名
+    total_turnover_wan_ton_km: float = 0.0 # 兼容性别名
+    scope1_intensity_g_per_ton_km: float = 0.0 # 兼容性别名
+    well_to_wheel_intensity_g_per_ton_km: float = 0.0 # 兼容性别名
+    scope1_emission_t: float = 0.0
+    scope2_emission_t: float = 0.0
 
 def get_grid_factor(grid_key: str = "全国平均", custom_factor: Optional[float] = None) -> float:
     """获取电网二氧化碳排放因子 (kgCO2/kWh)"""
@@ -123,23 +130,26 @@ def calculate_indirect_emission(
     fleet: List[VehicleGroupData],
     grid_key: str = "全国平均",
     custom_factor: Optional[float] = None,
+    region_or_province: Optional[str] = None,
+    green_electricity_ratio: float = 0.0,
 ) -> IndirectEmissionResult:
     """
     计算车队纯电动车辆外购电力产生的 Scope 2 间接碳排放量
     """
-    factor = get_grid_factor(grid_key, custom_factor)
+    target_key = region_or_province if region_or_province else grid_key
+    factor = get_grid_factor(target_key, custom_factor)
+    # 扣除绿电
+    factor = factor * max(0.0, 1.0 - min(1.0, green_electricity_ratio))
+
     total_kwh = 0.0
     total_ev_count = 0
     emission_by_vehicle = {}
 
     for g in fleet:
-        # 仅针对新能源物流车核算用电间接排放
         if g.vehicle_type == "新能源物流车":
             spec = VEHICLE_ENERGY_SPECS.get(g.vehicle_type, {"kwh_per_km": 0.35})
             kwh_rate = spec["kwh_per_km"]
-            # 耗电量 = 车辆数 × 年均里程 × 单位里程耗电率
             group_kwh = g.count * g.annual_km * kwh_rate
-            # 间接排放量 = 耗电量 × 电网排放因子 / 1000 (kg -> t)
             group_emission_t = (group_kwh * factor) / 1000.0
 
             total_kwh += group_kwh
@@ -166,30 +176,37 @@ def calculate_indirect_emission(
         total_electricity_kwh=round(total_kwh, 2),
         indirect_emission_tco2=round(total_emission_t, 2),
         emission_by_vehicle=emission_by_vehicle,
-        grid_name=grid_key if custom_factor is None else f"自定义({custom_factor})",
+        grid_name=target_key if custom_factor is None else f"自定义({custom_factor})",
         grid_factor=round(factor, 4),
         electric_vehicle_count=total_ev_count,
+        scope2_emission_t=round(total_emission_t, 2),
     )
 
 def calculate_freight_turnover(
     fleet: List[VehicleGroupData],
-    direct_emission_t: float,
+    direct_emission_t: Optional[float] = None,
     indirect_emission_t: float = 0.0,
+    scope1_emission_t: Optional[float] = None,
+    scope2_emission_t: Optional[float] = None,
 ) -> FreightTurnoverResult:
     """
     计算车队实际货物周转量 (吨公里) 及运输碳排放强度 (gCO2 / t·km)
-    
-    公式：
-      单组周转量 = count × annual_km × rated_payload × load_factor (t·km)
-      综合碳强度 = (direct_emission_t + indirect_emission_t) × 1,000,000 / total_tkm (gCO2/t·km)
     """
+    if direct_emission_t is None:
+        if scope1_emission_t is not None:
+            direct_emission_t = scope1_emission_t
+        else:
+            from src.engine.calculator import calculate_emission
+            direct_emission_t = calculate_emission(fleet).total_emission_t
+    if scope2_emission_t is not None:
+        indirect_emission_t = scope2_emission_t
+
     total_tkm = 0.0
     turnover_by_type = {}
 
     for g in fleet:
         spec = VEHICLE_ENERGY_SPECS.get(g.vehicle_type, {"rated_payload_t": 2.0})
         payload = spec["rated_payload_t"]
-        # 实际载重周转量 = 车辆数 × 行驶里程 × 额定载重 × 实际满载率
         group_tkm = g.count * g.annual_km * payload * g.load_factor
         total_tkm += group_tkm
 
@@ -209,7 +226,6 @@ def calculate_freight_turnover(
 
     wan_tkm = total_tkm / 10000.0 if total_tkm > 0 else 0.0
 
-    # 碳排放强度计算 (gCO2 / t·km)
     scope1_intensity = (direct_emission_t * 1_000_000.0 / total_tkm) if total_tkm > 0 else 0.0
     scope2_intensity = (indirect_emission_t * 1_000_000.0 / total_tkm) if total_tkm > 0 else 0.0
     total_intensity = scope1_intensity + scope2_intensity
@@ -221,9 +237,14 @@ def calculate_freight_turnover(
         scope2_intensity_g_per_tkm=round(scope2_intensity, 2),
         total_intensity_g_per_tkm=round(total_intensity, 2),
         turnover_by_type=turnover_by_type,
+        total_turnover_ton_km=round(total_tkm, 2),
+        total_turnover_wan_ton_km=round(wan_tkm, 2),
+        scope1_intensity_g_per_ton_km=round(scope1_intensity, 2),
+        well_to_wheel_intensity_g_per_ton_km=round(total_intensity, 2),
+        scope1_emission_t=round(direct_emission_t, 2),
+        scope2_emission_t=round(indirect_emission_t, 2),
     )
 
-# 兼容性别名
 get_grid_emission_factor = get_grid_factor
 calculate_scope2_emission = calculate_indirect_emission
 calculate_turnover_and_intensity = calculate_freight_turnover

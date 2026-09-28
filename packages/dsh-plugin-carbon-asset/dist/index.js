@@ -284,4 +284,37 @@ export function apply(ctx, config = {}) {
             return await bridge.execute('/api/compare', 'compare', args);
         },
     }));
+    // 6. 运输周转量与外购电间接排放综合对标工具
+    ctx.tools?.register(createToolDefinition({
+        name: 'carbon_turnover_evaluate',
+        description: '核算物流车队实际货物周转量 (万吨公里) 及运输碳排放强度 (gCO2/t·km)，并测算纯电动车辆外购电引起的 Scope 2 间接排放量。',
+        parameters: {
+            fleet: {
+                type: 'array',
+                required: true,
+                description: '车队分组列表',
+                items: {
+                    type: 'object',
+                    additionalProperties: true,
+                    properties: {
+                        vehicle_type: { type: 'string', required: true, description: '车型名称' },
+                        count: { type: 'number', required: true, description: '车辆数量' },
+                        annual_km: { type: 'number', required: true, description: '单车年均公里数' },
+                        load_factor: { type: 'number', description: '平均满载率 (0~1)' },
+                    },
+                },
+            },
+            region: {
+                type: 'string',
+                description: '所属省份或电网区域（如全国平均、广东、上海、北京等，用于匹配最新官方电网因子）',
+            },
+            green_electricity_ratio: {
+                type: 'number',
+                description: '绿电/绿证交易比例 (0.0~1.0，绿电部分折减外购电间接排放)',
+            },
+        },
+        async execute(args) {
+            return await bridge.execute('/api/turnover', 'turnover', args);
+        },
+    }));
 }

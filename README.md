@@ -117,7 +117,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 - `carbon_reduction_scenario`：综合减排情景模拟（新能源替换 + 满载率提升优化）
 - `carbon_policy_query`：中国碳市场法规与绿色交通双碳政策智能检索与溯源问答
 - `carbon_enterprise_compare`：多物流企业多车队横向碳对标矩阵
-
+- `carbon_turnover_evaluate`：营运货物周转量（万吨公里）与新能源车 Scope 2 外购电间接排放综合对标
 ### 载入与使用方式
 在 DeepSeek Harness 的 `cordis.yml` 中挂载：
 ```yaml

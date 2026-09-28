@@ -52,3 +52,19 @@ class TestPluginPackage:
         assert "resolveDefineTool" in src_text
         assert "resolveDefineTool" in dist_text
         assert "await import('@deepseek-ai/dsh-tools')" not in src_text
+
+    def test_all_six_tools_registered(self):
+        """验证插件完整注册了 6 项核心碳资产工具"""
+        expected_tools = [
+            "carbon_calculate",
+            "carbon_tco_evaluate",
+            "carbon_reduction_scenario",
+            "carbon_policy_query",
+            "carbon_enterprise_compare",
+            "carbon_turnover_evaluate",
+        ]
+        src_text = (SRC_DIR / "index.ts").read_text(encoding="utf-8")
+        dist_text = (DIST_DIR / "index.js").read_text(encoding="utf-8")
+        for tool in expected_tools:
+            assert tool in src_text, f"src/index.ts 缺少工具: {tool}"
+            assert tool in dist_text, f"dist/index.js 缺少工具: {tool}"

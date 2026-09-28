@@ -160,13 +160,24 @@ export class CarbonEngineBridge {
         return new Promise((resolve, reject) => {
             const proc = spawn(this.pythonPath, [scriptPath, command, '--json', jsonInput], {
                 cwd: this.projectRoot,
-                env: { ...env, PYTHONIOENCODING: 'utf-8' },
+                env: { ...env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' },
             });
             let stdout = '';
             let stderr = '';
+            let isSettled = false;
+            const timer = setTimeout(() => {
+                if (!isSettled) {
+                    isSettled = true;
+                    proc.kill();
+                    reject(new Error(`Python CLI 执行超时 (30s): ${command}`));
+                }
+            }, 30000);
             proc.stdout.on('data', (data) => { stdout += data.toString('utf-8'); });
             proc.stderr.on('data', (data) => { stderr += data.toString('utf-8'); });
             proc.on('close', (code) => {
+                if (isSettled) return;
+                isSettled = true;
+                clearTimeout(timer);
                 if (code === 0) {
                     try {
                         resolve(JSON.parse(stdout));
@@ -180,6 +191,9 @@ export class CarbonEngineBridge {
                 }
             });
             proc.on('error', (err) => {
+                if (isSettled) return;
+                isSettled = true;
+                clearTimeout(timer);
                 reject(new Error(`无法启动 Python 解释器 (${this.pythonPath}): ${err.message}`));
             });
         });
