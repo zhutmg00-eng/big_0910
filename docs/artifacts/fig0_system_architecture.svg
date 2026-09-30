@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+  <rect width="1000" height="520" fill="#fcfdfc" rx="10"/>
+  <text x="40" y="42" font-size="20" font-weight="bold" fill="#1a2521">物流碳排放与减排情景决策助手 ─ 系统全层级技术架构图</text>
+  <text x="40" y="66" font-size="13" fill="#55645d">双模接入层 (FastAPI / DSH Plugin) ── 核心计算推理引擎 ── 科学问题实证支撑基准</text>
+
+  <!-- 第 1 层: 用户与接入层 -->
+  <rect x="40" y="90" width="920" height="80" fill="#f4f8f6" stroke="#e2e8e5" rx="8"/>
+  <text x="55" y="115" font-size="13" font-weight="bold" fill="#1e6b4b">【接入与呈现层 (Access &amp; Presentation)】</text>
+  
+  <rect x="230" y="108" width="210" height="48" fill="#ffffff" stroke="#2f6fa3" rx="6"/>
+  <text x="335" y="130" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">FastAPI 异步微服务</text>
+  <text x="335" y="146" font-size="10" fill="#55645d" text-anchor="middle">/calculate, /tco, /ask, /compare</text>
+
+  <rect x="460" y="108" width="230" height="48" fill="#ffffff" stroke="#1e6b4b" rx="6"/>
+  <text x="575" y="130" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">DeepSeek Harness 生态插件</text>
+  <text x="575" y="146" font-size="10" fill="#55645d" text-anchor="middle">dsh-plugin-carbon-asset (6大Tools)</text>
+
+  <rect x="710" y="108" width="230" height="48" fill="#ffffff" stroke="#c07c2a" rx="6"/>
+  <text x="825" y="130" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">GenUI / HTML 自包含展板</text>
+  <text x="825" y="146" font-size="10" fill="#55645d" text-anchor="middle">全交互可视化实证看板 (无流式挂起)</text>
+
+  <!-- 连线箭头 1 -->
+  <line x1="500" y1="170" x2="500" y2="195" stroke="#55645d" stroke-width="2"/>
+
+  <!-- 第 2 层: 核心业务引擎层 -->
+  <rect x="40" y="195" width="920" height="140" fill="#ffffff" stroke="#e2e8e5" rx="8"/>
+  <text x="55" y="220" font-size="13" font-weight="bold" fill="#2f6fa3">【核心模型与计算引擎层 (Core Engines)】</text>
+
+  <rect x="60" y="235" width="200" height="85" fill="#f8faf9" stroke="#e2e8e5" rx="6"/>
+  <text x="160" y="258" font-size="12" font-weight="bold" fill="#1a2521" text-anchor="middle">基线核算与满载惩罚</text>
+  <text x="160" y="278" font-size="11" fill="#55645d" text-anchor="middle">自下而上活动水平法</text>
+  <text x="160" y="296" font-size="10" fill="#1e6b4b" text-anchor="middle">LF = 1 + 0.15*(0.75 - l_i)</text>
+
+  <rect x="280" y="235" width="210" height="85" fill="#f8faf9" stroke="#e2e8e5" rx="6"/>
+  <text x="385" y="258" font-size="12" font-weight="bold" fill="#1a2521" text-anchor="middle">情景模拟与 TCO 联动</text>
+  <text x="385" y="278" font-size="11" fill="#55645d" text-anchor="middle">纯电替代 / 满载率提升</text>
+  <text x="385" y="296" font-size="10" fill="#1e6b4b" text-anchor="middle">回收期 / MAC / 物理守恒</text>
+
+  <rect x="510" y="235" width="210" height="85" fill="#f8faf9" stroke="#e2e8e5" rx="6"/>
+  <text x="615" y="258" font-size="12" font-weight="bold" fill="#1a2521" text-anchor="middle">Scope 2 外购电与周转量</text>
+  <text x="615" y="278" font-size="11" fill="#55645d" text-anchor="middle">2025年47号公报31省因子</text>
+  <text x="615" y="296" font-size="10" fill="#1e6b4b" text-anchor="middle">万吨公里 / gCO2/t·km强度</text>
+
+  <rect x="740" y="235" width="200" height="85" fill="#f8faf9" stroke="#e2e8e5" rx="6"/>
+  <text x="840" y="258" font-size="12" font-weight="bold" fill="#1a2521" text-anchor="middle">垂直小样本 RAG 引擎</text>
+  <text x="840" y="278" font-size="11" fill="#55645d" text-anchor="middle">37份法规268块入库即定块</text>
+  <text x="840" y="296" font-size="10" fill="#1e6b4b" text-anchor="middle">向量初筛 + 领域词重排</text>
+
+  <!-- 连线箭头 2 -->
+  <line x1="500" y1="335" x2="500" y2="360" stroke="#55645d" stroke-width="2"/>
+
+  <!-- 第 3 层: 科学问题与实证证据链层 -->
+  <rect x="40" y="360" width="920" height="125" fill="#f0f7f4" stroke="#1e6b4b" rx="8"/>
+  <text x="55" y="385" font-size="13" font-weight="bold" fill="#1e6b4b">【科研问题实证支撑体系 (Empirical Evidence for RQs)】</text>
+
+  <rect x="60" y="398" width="270" height="72" fill="#ffffff" stroke="#e2e8e5" rx="6"/>
+  <text x="195" y="418" font-size="12" font-weight="bold" fill="#2f6fa3" text-anchor="middle">RQ1: 真实车队基准检验</text>
+  <text x="195" y="438" font-size="11" fill="#55645d" text-anchor="middle">顺丰/中通/京东/冷链 45,035 辆台账</text>
+  <text x="195" y="456" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">MAPE 4.23% (恒定正偏保守可控)</text>
+
+  <rect x="365" y="398" width="270" height="72" fill="#ffffff" stroke="#e2e8e5" rx="6"/>
+  <text x="500" y="418" font-size="12" font-weight="bold" fill="#2f6fa3" text-anchor="middle">RQ2: 40题基准集与检索检验</text>
+  <text x="500" y="438" font-size="11" fill="#55645d" text-anchor="middle">双人双盲审校 Kappa=1.0 (含4负例)</text>
+  <text x="500" y="456" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">MRR 0.5036 (Wilcoxon p &lt; 0.001***)</text>
+
+  <rect x="670" y="398" width="270" height="72" fill="#ffffff" stroke="#e2e8e5" rx="6"/>
+  <text x="805" y="418" font-size="12" font-weight="bold" fill="#2f6fa3" text-anchor="middle">RQ3: 参数扰动敏感性网格</text>
+  <text x="805" y="438" font-size="11" fill="#55645d" text-anchor="middle">满载率 (-20%~+20%) × 里程 (-20%~+20%)</text>
+  <text x="805" y="456" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">误差闭环于 [+1.22%, +7.80%]</text>
+
+  <!-- 底部规范声明 -->
+  <text x="500" y="505" font-size="11" fill="#55645d" text-anchor="middle">工程规范：全仓无 C 盘写操作 | 全量 105 项自动化测试 100% 绿灯通过 | 严守科研情景模拟对标口径</text>
+</svg>
