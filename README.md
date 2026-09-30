@@ -100,7 +100,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 │   ├── engine/                 # 排放、预算、碳价和减排引擎
 │   ├── models/                 # Pydantic 输入模型
 │   ├── rag/                    # 解析、混合检索与生成
-├── tests/                      # 103 项自动化测试（含真实基准验证、RAG基准回归与Scope2/周转量核算）
+├── tests/                      # 106 项自动化测试（含真实基准验证、RAG基准回归、Scope2及PDF文书生成）
 ├── packages/
 │   └── dsh-plugin-carbon-asset/ # DeepSeek Harness 官方生态插件
 ├── Dockerfile
@@ -219,7 +219,7 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 ### 自动化测试与 CI 流水线
 
-- 本地运行 `python -m pytest`：103 项自动化测试全量通过。
+- 本地运行 `python -m pytest`：106 项自动化测试全量通过。
 - GitHub Actions 流水线（`.github/workflows/ci.yml`）：集成系统字体、依赖安装、政策定块入库及全量测试自动执行。
 
 ## 许可
