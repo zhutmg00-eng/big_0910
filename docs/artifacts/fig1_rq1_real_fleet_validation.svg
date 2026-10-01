@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="900" height="500" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
   <text x="40" y="45" font-size="20" font-weight="bold" fill="#1a2521">RQ1: 真实车队直接排放核算验证与误差基准分析</text>
   <text x="40" y="70" font-size="13" fill="#55645d">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开台账实测车队（全样本 MAPE = 4.23%）</text>
   
   <!-- 图例 -->
-  <rect x="520" y="32" width="16" height="16" fill="#2f6fa3" rx="3"/>
+  <rect x="520" y="32" width="900" height="500" fill="#2f6fa3" rx="3"/>
   <text x="545" y="45" font-size="12" fill="#1a2521">能源台账真实排放 (tCO2e)</text>
-  <rect x="710" y="32" width="16" height="16" fill="#1e6b4b" rx="3"/>
+  <rect x="710" y="32" width="900" height="500" fill="#1e6b4b" rx="3"/>
   <text x="735" y="45" font-size="12" fill="#1a2521">活动水平估算排放 (tCO2e)</text>
 
   <!-- 网格背景与坐标轴 -->
@@ -24,46 +24,46 @@
   <text x="170" y="425" font-size="12" fill="#55645d" text-anchor="end">0</text>
 
   <!-- 柱 顺丰速运(干支) -->
-  <rect x="218" y="100" width="40" height="320" fill="#2f6fa3" rx="3" opacity="0.9"/>
-  <rect x="262" y="100" width="40" height="320" fill="#1e6b4b" rx="3" opacity="0.95"/>
+  <rect x="218" y="100" width="900" height="500" fill="#2f6fa3" rx="3" opacity="0.9"/>
+  <rect x="262" y="100" width="900" height="500" fill="#1e6b4b" rx="3" opacity="0.95"/>
   <text x="260" y="445" font-size="13" font-weight="600" fill="#1a2521" text-anchor="middle">顺丰速运(干支)</text>
   
   <!-- 相对误差徽标 -->
-  <rect x="230" y="72" width="60" height="20" fill="#c07c2a" rx="10" opacity="0.15"/>
-  <rect x="230" y="72" width="60" height="20" stroke="#c07c2a" fill="none" rx="10"/>
+  <rect x="230" y="72" width="900" height="500" fill="#c07c2a" rx="10" opacity="0.15"/>
+  <rect x="230" y="72" width="900" height="500" stroke="#c07c2a" fill="none" rx="10"/>
   <text x="260" y="86" font-size="11" font-weight="bold" fill="#c07c2a" text-anchor="middle">+3.84%</text>
 
   <!-- 柱 中通快递(纯干) -->
-  <rect x="378" y="100" width="40" height="320" fill="#2f6fa3" rx="3" opacity="0.9"/>
-  <rect x="422" y="100" width="40" height="320" fill="#1e6b4b" rx="3" opacity="0.95"/>
+  <rect x="378" y="100" width="900" height="500" fill="#2f6fa3" rx="3" opacity="0.9"/>
+  <rect x="422" y="100" width="900" height="500" fill="#1e6b4b" rx="3" opacity="0.95"/>
   <text x="420" y="445" font-size="13" font-weight="600" fill="#1a2521" text-anchor="middle">中通快递(纯干)</text>
   
   <!-- 相对误差徽标 -->
-  <rect x="390" y="72" width="60" height="20" fill="#c07c2a" rx="10" opacity="0.15"/>
-  <rect x="390" y="72" width="60" height="20" stroke="#c07c2a" fill="none" rx="10"/>
+  <rect x="390" y="72" width="900" height="500" fill="#c07c2a" rx="10" opacity="0.15"/>
+  <rect x="390" y="72" width="900" height="500" stroke="#c07c2a" fill="none" rx="10"/>
   <text x="420" y="86" font-size="11" font-weight="bold" fill="#c07c2a" text-anchor="middle">+1.66%</text>
 
   <!-- 柱 京东物流(城配) -->
-  <rect x="538" y="336" width="40" height="84" fill="#2f6fa3" rx="3" opacity="0.9"/>
-  <rect x="582" y="333" width="40" height="87" fill="#1e6b4b" rx="3" opacity="0.95"/>
+  <rect x="538" y="336" width="900" height="500" fill="#2f6fa3" rx="3" opacity="0.9"/>
+  <rect x="582" y="333" width="900" height="500" fill="#1e6b4b" rx="3" opacity="0.95"/>
   <text x="580" y="445" font-size="13" font-weight="600" fill="#1a2521" text-anchor="middle">京东物流(城配)</text>
   
   <!-- 相对误差徽标 -->
-  <rect x="550" y="305" width="60" height="20" fill="#c07c2a" rx="10" opacity="0.15"/>
-  <rect x="550" y="305" width="60" height="20" stroke="#c07c2a" fill="none" rx="10"/>
+  <rect x="550" y="305" width="900" height="500" fill="#c07c2a" rx="10" opacity="0.15"/>
+  <rect x="550" y="305" width="900" height="500" stroke="#c07c2a" fill="none" rx="10"/>
   <text x="580" y="319" font-size="11" font-weight="bold" fill="#c07c2a" text-anchor="middle">+4.17%</text>
 
   <!-- 柱 生鲜冷链(重卡) -->
-  <rect x="698" y="408" width="40" height="12" fill="#2f6fa3" rx="3" opacity="0.9"/>
-  <rect x="742" y="406" width="40" height="14" fill="#1e6b4b" rx="3" opacity="0.95"/>
+  <rect x="698" y="408" width="900" height="500" fill="#2f6fa3" rx="3" opacity="0.9"/>
+  <rect x="742" y="406" width="900" height="500" fill="#1e6b4b" rx="3" opacity="0.95"/>
   <text x="740" y="445" font-size="13" font-weight="600" fill="#1a2521" text-anchor="middle">生鲜冷链(重卡)</text>
   
   <!-- 相对误差徽标 -->
-  <rect x="710" y="378" width="60" height="20" fill="#c07c2a" rx="10" opacity="0.15"/>
-  <rect x="710" y="378" width="60" height="20" stroke="#c07c2a" fill="none" rx="10"/>
+  <rect x="710" y="378" width="900" height="500" fill="#c07c2a" rx="10" opacity="0.15"/>
+  <rect x="710" y="378" width="900" height="500" stroke="#c07c2a" fill="none" rx="10"/>
   <text x="740" y="392" font-size="11" font-weight="bold" fill="#c07c2a" text-anchor="middle">+7.27%</text>
 
   <!-- 底部结论条 -->
-  <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
+  <rect x="40" y="465" width="900" height="500" fill="#f0f5f2" rx="4"/>
   <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：估算值恒定正偏 2.88%~5.20%，实证证明活动水平法具备高稳定性，满载率默认假设 (75%) 是可控主误差源。</text>
 </svg>
