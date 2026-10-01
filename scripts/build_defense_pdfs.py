@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""大创中期进展说明书与答辩指南专业出版级 PDF 构建引擎
+"""大创中期研发进展说明书与答辩核心指南专业出版级 PDF 构建引擎
 
-特点：
-1. 图文并茂：物理嵌入 4 张 300 DPI 高清系统架构图、实测对比图、检索检验图与敏感性热力图；
-2. 内容丰满详实：完整展现这半年围绕三大科学问题 (RQ1-RQ3) 的全部算法推导、真实数据复核、
+深度重构特性：
+1. 图文无缝融合：精准嵌入 4 张 300 DPI 高清实测图表，调整适宜图面比例，彻底消除大块空白；
+2. 内容详实厚实：全景展现这半年围绕三大科学问题 (RQ1-RQ3) 的全部算法推导、真实数据复核、
    40 题双盲审校、非参数统计显著性检验、外购电间接排放核算、DSH 生态插件开发及同行专家双盲评审；
 3. 答辩指南战术升级：包含 4 类评委心理解构、Slide 1-10 逐页详尽讲稿、12 大刁钻质询应对与红线禁忌；
 4. 交付至桌面：编译完成后直接将两份厚实权威的 PDF 复制交付至桌面。
@@ -55,46 +55,8 @@ C_BORDER = HexColor("#d4e2da")      # 边框色
 C_BLUE = HexColor("#1d5b88")        # 科技深蓝
 C_RED = HexColor("#8c2824")         # 警告红
 
-class NumberedCanvas(canvas.Canvas):
-    """支持 '第 X 页 / 共 Y 页' 的双遍扫描 Canvas"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._saved_page_states = []
-
-    def showPage(self):
-        self._saved_page_states.append(dict(self.__dict__))
-        self._startPage()
-
-    def save(self):
-        num_pages = len(self._saved_page_states)
-        for state in self._saved_page_states:
-            self.__dict__.update(state)
-            self.draw_page_decorations(num_pages)
-            super().showPage()
-        super().save()
-
-    def draw_page_decorations(self, total_pages):
-        if self._pageNumber == 1:
-            return  # 封面页不加页眉页脚
-        self.saveState()
-        self.setFont(FONT_NAME, 8)
-        self.setFillColor(C_MUTED)
-
-        # 页眉
-        self.drawString(20 * mm, 285 * mm, "大学生创新创业训练计划科研项目 ─ 中期研发进展与技术实证说明书")
-        self.setStrokeColor(C_BORDER)
-        self.setLineWidth(0.5)
-        self.line(20 * mm, 282 * mm, 190 * mm, 282 * mm)
-
-        # 页脚
-        self.line(20 * mm, 16 * mm, 190 * mm, 16 * mm)
-        self.drawString(20 * mm, 11 * mm, "国家级/省级大创项目《物流碳排放与减排情景决策助手》课题组")
-        page_str = f"第 {self._pageNumber} 页 / 共 {total_pages} 页"
-        self.drawRightString(190 * mm, 11 * mm, page_str)
-        self.restoreState()
-
-class GuideNumberedCanvas(canvas.Canvas):
-    """答辩指南专用 Canvas"""
+class ManualNumberedCanvas(canvas.Canvas):
+    """说明书专用双遍扫描 Canvas"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._saved_page_states = []
@@ -119,16 +81,54 @@ class GuideNumberedCanvas(canvas.Canvas):
         self.setFillColor(C_MUTED)
 
         # 页眉
-        self.drawString(20 * mm, 285 * mm, "大创中期答辩核心指南与评审问辨策略手册（团队冲刺版）")
+        self.drawString(18 * mm, 285 * mm, "大学生创新创业训练计划科研项目 ─ 中期研发进展与技术实证说明书")
         self.setStrokeColor(C_BORDER)
         self.setLineWidth(0.5)
-        self.line(20 * mm, 282 * mm, 190 * mm, 282 * mm)
+        self.line(18 * mm, 282 * mm, 192 * mm, 282 * mm)
 
         # 页脚
-        self.line(20 * mm, 16 * mm, 190 * mm, 16 * mm)
-        self.drawString(20 * mm, 11 * mm, "国家级/省级大创项目《物流碳排放与减排情景决策助手》答辩代表团队")
+        self.line(18 * mm, 16 * mm, 192 * mm, 16 * mm)
+        self.drawString(18 * mm, 11 * mm, "国家级/省级大创项目《物流碳排放与减排情景决策助手》课题组")
         page_str = f"第 {self._pageNumber} 页 / 共 {total_pages} 页"
-        self.drawRightString(190 * mm, 11 * mm, page_str)
+        self.drawRightString(192 * mm, 11 * mm, page_str)
+        self.restoreState()
+
+class GuideNumberedCanvas(canvas.Canvas):
+    """答辩指南专用双遍扫描 Canvas"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_decorations(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_decorations(self, total_pages):
+        if self._pageNumber == 1:
+            return
+        self.saveState()
+        self.setFont(FONT_NAME, 8)
+        self.setFillColor(C_MUTED)
+
+        # 页眉
+        self.drawString(18 * mm, 285 * mm, "大创中期答辩核心指南与评审问辨策略手册（团队冲刺版）")
+        self.setStrokeColor(C_BORDER)
+        self.setLineWidth(0.5)
+        self.line(18 * mm, 282 * mm, 192 * mm, 282 * mm)
+
+        # 页脚
+        self.line(18 * mm, 16 * mm, 192 * mm, 16 * mm)
+        self.drawString(18 * mm, 11 * mm, "国家级/省级大创项目《物流碳排放与减排情景决策助手》答辩代表团队")
+        page_str = f"第 {self._pageNumber} 页 / 共 {total_pages} 页"
+        self.drawRightString(192 * mm, 11 * mm, page_str)
         self.restoreState()
 
 def create_styles():
@@ -137,39 +137,39 @@ def create_styles():
     styles.add(ParagraphStyle(
         "CoverTitle",
         fontName=FONT_NAME,
-        fontSize=23,
-        leading=30,
+        fontSize=22,
+        leading=28,
         textColor=C_PRIMARY,
         alignment=TA_CENTER,
-        spaceAfter=12,
+        spaceAfter=10,
     ))
     styles.add(ParagraphStyle(
         "CoverSubtitle",
         fontName=FONT_NAME,
-        fontSize=12,
-        leading=18,
+        fontSize=11,
+        leading=16,
         textColor=C_MUTED,
         alignment=TA_CENTER,
-        spaceAfter=20,
+        spaceAfter=16,
     ))
     styles.add(ParagraphStyle(
         "DocH1",
         fontName=FONT_NAME,
-        fontSize=14,
-        leading=19,
+        fontSize=13,
+        leading=18,
         textColor=C_PRIMARY,
-        spaceBefore=14,
-        spaceAfter=6,
+        spaceBefore=11,
+        spaceAfter=5,
         keepWithNext=True,
     ))
     styles.add(ParagraphStyle(
         "DocH2",
         fontName=FONT_NAME,
-        fontSize=11,
+        fontSize=10.5,
         leading=15,
         textColor=C_SECONDARY,
-        spaceBefore=9,
-        spaceAfter=4,
+        spaceBefore=8,
+        spaceAfter=3,
         keepWithNext=True,
     ))
     styles.add(ParagraphStyle(
@@ -178,80 +178,80 @@ def create_styles():
         fontSize=9.5,
         leading=13.5,
         textColor=C_BLUE,
-        spaceBefore=6,
-        spaceAfter=3,
+        spaceBefore=5,
+        spaceAfter=2,
         keepWithNext=True,
     ))
     styles.add(ParagraphStyle(
         "DocBody",
         fontName=FONT_NAME,
-        fontSize=9,
-        leading=13.5,
+        fontSize=8.5,
+        leading=13,
         textColor=C_TEXT,
         alignment=TA_JUSTIFY,
-        spaceAfter=4,
+        spaceAfter=3,
     ))
     styles.add(ParagraphStyle(
         "DocBullet",
         fontName=FONT_NAME,
-        fontSize=9,
-        leading=13.5,
+        fontSize=8.5,
+        leading=13,
         textColor=C_TEXT,
         leftIndent=10,
-        spaceAfter=3,
+        spaceAfter=2,
     ))
     styles.add(ParagraphStyle(
         "Callout",
         fontName=FONT_NAME,
-        fontSize=8.5,
-        leading=12.5,
+        fontSize=8,
+        leading=12,
         textColor=HexColor("#1b4d34"),
     ))
     styles.add(ParagraphStyle(
         "TableHeader",
         fontName=FONT_NAME,
-        fontSize=8.5,
-        leading=11,
+        fontSize=8,
+        leading=10.5,
         textColor=white,
         alignment=TA_CENTER,
     ))
     styles.add(ParagraphStyle(
         "TableCell",
         fontName=FONT_NAME,
-        fontSize=8,
-        leading=10.5,
+        fontSize=7.5,
+        leading=10,
         textColor=C_TEXT,
         alignment=TA_CENTER,
     ))
     styles.add(ParagraphStyle(
         "TableCellLeft",
         fontName=FONT_NAME,
-        fontSize=8,
-        leading=10.5,
+        fontSize=7.5,
+        leading=10,
         textColor=C_TEXT,
         alignment=TA_LEFT,
     ))
     styles.add(ParagraphStyle(
         "FigCaption",
         fontName=FONT_NAME,
-        fontSize=8,
-        leading=11,
+        fontSize=7.5,
+        leading=10.5,
         textColor=C_MUTED,
         alignment=TA_CENTER,
-        spaceBefore=3,
-        spaceAfter=8,
+        spaceBefore=2,
+        spaceAfter=5,
     ))
     return styles
 
 def build_manual_pdf(out_path: Path):
-    """构建图文并茂、内容丰满详实的《大创中期进展说明书_技术与实证全景.pdf》"""
+    """构建图文并茂、内容丰满详实且紧凑连贯的《大创中期进展说明书_技术与实证全景.pdf》"""
     doc = SimpleDocTemplate(
         str(out_path),
         pagesize=A4,
         leftMargin=18 * mm,
         rightMargin=18 * mm,
-        topMargin=20 * mm,
-        bottomMargin=20 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
     )
     styles = create_styles()
     story = []
@@ -259,38 +259,38 @@ def build_manual_pdf(out_path: Path):
     # ============================================================
     # 封面
     # ============================================================
-    story.append(Spacer(1, 15 * mm))
+    story.append(Spacer(1, 10 * mm))
     story.append(Paragraph("国家级 / 省级大学生创新创业训练计划重点科研项目", styles["CoverSubtitle"]))
     story.append(Paragraph("物流碳排放与减排情景决策助手", styles["CoverTitle"]))
     story.append(Paragraph("中期研发进展与技术实证说明书", styles["CoverSubtitle"]))
-    story.append(HRFlowable(width="60%", thickness=2, color=C_PRIMARY, spaceAfter=18 * mm))
+    story.append(HRFlowable(width="60%", thickness=2, color=C_PRIMARY, spaceAfter=14 * mm))
 
     meta_data = [
-        [Paragraph("项目定位", styles["TableHeader"]), Paragraph("基于微观车队运营参数的物流碳排放基线估算、减排决策与政策检索科研原型系统", styles["TableCellLeft"])],
-        [Paragraph("研究主线", styles["TableHeader"]), Paragraph("紧扣活动水平法误差溯源 (RQ1)、法规语义弥散与重排 (RQ2)、参数扰动敏感性 (RQ3) 三大科学问题", styles["TableCellLeft"])],
-        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("4.5万辆真实车队复核 (MAPE 4.23%) | 40题双盲审校标准集 (Kappa=1.0) | Wilcoxon检验 p<0.001***", styles["TableCellLeft"])],
-        [Paragraph("扩展引擎", styles["TableHeader"]), Paragraph("集成2025年47号公告31省电网因子 (Scope 2) + 货运周转量碳强度 (gCO2/t·km) + DSH生态插件", styles["TableCellLeft"])],
-        [Paragraph("质量背书", styles["TableHeader"]), Paragraph("同行专家双盲评审 4.905 / 5.0 (卓越等级) | 106项自动化测试 100% 绿灯通过 | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
+        [Paragraph("项目定位", styles["TableHeader"]), Paragraph("面向公路货运微观车队的自下而上碳核算、减排多情景TCO决策与双碳政策RAG科研决策原型系统", styles["TableCellLeft"])],
+        [Paragraph("研究主线", styles["TableHeader"]), Paragraph("紧扣活动水平法误差溯源 (RQ1)、垂直法规检索长尾弥散与重排 (RQ2)、运营参数扰动敏感性机理 (RQ3) 三大科学问题", styles["TableCellLeft"])],
+        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链4.5万辆真实台账复核 (MAPE 4.23%) | 40题双盲审校标准集 (Kappa=1.0) | Wilcoxon检验 p<0.001***", styles["TableCellLeft"])],
+        [Paragraph("扩展引擎", styles["TableHeader"]), Paragraph("集成2025年47号公告31省电网因子 (Scope 2) + 货运周转量碳排放强度 (gCO2/t·km) + DeepSeek Harness 生态插件", styles["TableCellLeft"])],
+        [Paragraph("学术背书", styles["TableHeader"]), Paragraph("同行专家背靠背盲评 4.905 / 5.0 (卓越等级) | 106项自动化测试 100% 绿灯通过 | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
     ]
-    t_meta = Table(meta_data, colWidths=[28 * mm, 142 * mm])
+    t_meta = Table(meta_data, colWidths=[28 * mm, 146 * mm])
     t_meta.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (0, -1), C_PRIMARY),
         ("BACKGROUND", (1, 0), (1, -1), C_BG_LIGHT),
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 5.5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5.5),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
     ]))
     story.append(t_meta)
 
-    story.append(Spacer(1, 22 * mm))
+    story.append(Spacer(1, 16 * mm))
     disclaimer = Paragraph(
-        "<b>科研规范与免责声明</b>：本项目系大创科研决策原型系统。我国道路货运目前未纳入全国碳市场配额管理，"
+        "<b>科研规范与免责声明</b>：本项目系大学生创新创业训练计划科研原型成果。我国道路货运目前未纳入全国碳市场配额管理，"
         "系统内“模拟碳预算”仅为先进技术情景对标工具，绝对不代表法定配额缺口或履约交易承诺。新能源车尾气直接运营算零排放，"
         "外购电间接排放已通过独立 Scope 2 模型测算，严守学术红线与法律边界。",
         styles["Callout"]
     )
-    t_disc = Table([[disclaimer]], colWidths=[170 * mm])
+    t_disc = Table([[disclaimer]], colWidths=[174 * mm])
     t_disc.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), HexColor("#eef7f2")),
         ("BOX", (0, 0), (-1, -1), 1, C_SECONDARY),
@@ -303,11 +303,11 @@ def build_manual_pdf(out_path: Path):
     story.append(PageBreak())
 
     # ============================================================
-    # 系统架构全景图
+    # 第一章：系统全层级技术架构与研发背景
     # ============================================================
     story.append(Paragraph("第一章：系统全层级技术架构与研发背景", styles["DocH1"]))
     story.append(Paragraph(
-        "我国交通运输碳排放占全社会碳排放总量的 10% 左右，其中道路货运车辆因高行驶里程与重负荷运营，是交通降碳的攻坚重点。"
+        "我国交通运输碳排放占全社会总量的 10% 左右，其中道路货运车辆因高行驶里程与重负荷运营，是交通降碳的攻坚战场。"
         "但在实际运营中，广大中小货运车队普遍面临<b>‘缺乏油料台账算不清碳’、‘看不懂复杂双碳政策’、‘算不清新能源置换经济账’</b>三大痛点。"
         "为此，课题组历时半年研发了‘物流碳排放与减排情景决策助手’。系统全层级技术架构如图 0 所示：",
         styles["DocBody"]
@@ -315,7 +315,7 @@ def build_manual_pdf(out_path: Path):
 
     png0_path = PROJECT_ROOT / "docs" / "artifacts" / "fig0_system_architecture.png"
     if png0_path.exists():
-        story.append(Image(str(png0_path), width=170 * mm, height=88.5 * mm))
+        story.append(Image(str(png0_path), width=155 * mm, height=80.6 * mm))
         story.append(Paragraph("图 0：物流碳排放与减排情景决策助手 ─ 系统全层级技术架构全景", styles["FigCaption"]))
 
     story.append(Paragraph(
@@ -326,11 +326,11 @@ def build_manual_pdf(out_path: Path):
         "3. <b>科研问题实证支撑</b>：以 4.5 万辆真实公开台账、40 题双盲审校政策基准与二维扰动敏感性网格构成完整证据链，支撑 RQ1-RQ3 三大科学问题。",
         styles["DocBody"]
     ))
-    story.append(PageBreak())
 
     # ============================================================
-    # 第二章：我们做了什么
+    # 第二章：我们做了什么（六大核心技术研发全景）
     # ============================================================
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第二章：我们做了什么（六大核心技术研发全景）", styles["DocH1"]))
     story.append(Paragraph(
         "在中期研发阶段，团队拒绝‘调用通用大模型做简易外壳包装’的低质内卷，"
@@ -338,7 +338,6 @@ def build_manual_pdf(out_path: Path):
         styles["DocBody"]
     ))
 
-    # 六大模块详细展开
     m_details = [
         ("2.1 微观车队碳排放基线核算引擎 (src/engine/calculator.py)",
          "严格对标国家发改委《陆路交通运输企业温室气体排放核算方法与报告指南》，构建自下而上活动水平模型："
@@ -373,11 +372,10 @@ def build_manual_pdf(out_path: Path):
         story.append(Paragraph(title, styles["DocH2"]))
         story.append(Paragraph(desc, styles["DocBody"]))
 
-    story.append(PageBreak())
-
     # ============================================================
     # 第三章：遇到了什么关键问题
     # ============================================================
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第三章：遇到了什么关键问题（实事求是的瓶颈复盘）", styles["DocH1"]))
     story.append(Paragraph(
         "在实际科研推进中，团队坚持科研诚信，深入排查并暴露了五大深层次理论与技术瓶颈：",
@@ -410,11 +408,10 @@ def build_manual_pdf(out_path: Path):
         story.append(Paragraph(p_title, styles["DocH2"]))
         story.append(Paragraph(p_desc, styles["DocBody"]))
 
-    story.append(PageBreak())
-
     # ============================================================
     # 第四章：我们是怎么解决的
     # ============================================================
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第四章：我们是怎么解决的（技术攻克与实证证据）", styles["DocH1"]))
     story.append(Paragraph(
         "针对上述五大技术瓶颈，团队逐一开展了针对性算法重构与严密的实证检验，并形成了经得起推敲的实证图表证据链：",
@@ -431,7 +428,7 @@ def build_manual_pdf(out_path: Path):
 
     png1_path = PROJECT_ROOT / "docs" / "artifacts" / "fig1_rq1_real_fleet_validation.png"
     if png1_path.exists():
-        story.append(Image(str(png1_path), width=170 * mm, height=94.4 * mm))
+        story.append(Image(str(png1_path), width=155 * mm, height=86.1 * mm))
         story.append(Paragraph("图 1：四大真实车队直接排放核算验证与相对误差分布（全样本 MAPE = 4.23%）", styles["FigCaption"]))
 
     rq1_table_data = [
@@ -449,8 +446,8 @@ def build_manual_pdf(out_path: Path):
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -2), [white, C_BG_LIGHT]),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
     ]))
     story.append(t_rq1)
 
@@ -460,10 +457,10 @@ def build_manual_pdf(out_path: Path):
         "在温室气体核算国际准则（GHG Protocol）中，这证实了算法具备天然的‘保守估计公理’，绝不低估排放，为中小承运商提供了稳固的合规安全垫。",
         styles["DocBody"]
     ))
-    story.append(PageBreak())
 
     # 4.2 解决瓶颈二与三
-    story.append(Paragraph("4.2 针对向量弥散与法律幻觉：研发混合重排检索机制，固化反事实合规拒答 (RQ2)", styles["DocH1"]))
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph("4.2 针对向量弥散与法律幻觉：研发混合重排检索机制，固化反事实合规拒答 (RQ2)", styles["DocH2"]))
     story.append(Paragraph(
         "放弃纯依赖余弦距离的单一向量架构，创新构建‘ChromaDB 向量初筛候选集 + 中文标题覆盖率与领域词先验混合重排’机制，"
         "并在 40 题标准库上开展严密对照实验，如图 2 所示：",
@@ -472,7 +469,7 @@ def build_manual_pdf(out_path: Path):
 
     png2_path = PROJECT_ROOT / "docs" / "artifacts" / "fig2_rq2_rag_benchmark_comparison.png"
     if png2_path.exists():
-        story.append(Image(str(png2_path), width=170 * mm, height=94.4 * mm))
+        story.append(Image(str(png2_path), width=155 * mm, height=86.1 * mm))
         story.append(Paragraph("图 2：40 题标准评测集三组检索架构核心指标对比（附 Wilcoxon 检验结果）", styles["FigCaption"]))
 
     rq2_table_data = [
@@ -487,8 +484,8 @@ def build_manual_pdf(out_path: Path):
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, C_BG_LIGHT]),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
     ]))
     story.append(t_rq2)
 
@@ -499,10 +496,10 @@ def build_manual_pdf(out_path: Path):
         "系统负例拒答率达 <b>75.00%</b>，从检索源头切断了编造虚假交易指标的可能，保障了合规解答。",
         styles["DocBody"]
     ))
-    story.append(PageBreak())
 
     # 4.3 解决瓶颈四
-    story.append(Paragraph("4.3 针对多工况物理守恒：单车替换联动实际满载率，建立参数二维敏感性热力网格 (RQ3)", styles["DocH1"]))
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph("4.3 针对多工况物理守恒：单车替换联动实际满载率，建立参数二维敏感性热力网格 (RQ3)", styles["DocH2"]))
     story.append(Paragraph(
         "重构减排核算引擎，在计算单车新能源替换减排量时严格计入分组实际满载率动态修正因子 `load_adj`，"
         "并建立满载率 (-20% ~ +20%) × 年均里程 (-20% ~ +20%) 的 5×5 扰动热力网格，如图 3 所示：",
@@ -511,7 +508,7 @@ def build_manual_pdf(out_path: Path):
 
     png3_path = PROJECT_ROOT / "docs" / "artifacts" / "fig3_rq3_sensitivity_heatmap.png"
     if png3_path.exists():
-        story.append(Image(str(png3_path), width=170 * mm, height=94.4 * mm))
+        story.append(Image(str(png3_path), width=155 * mm, height=86.1 * mm))
         story.append(Paragraph("图 3：运营参数（满载率 × 年均里程）扰动敏感性矩阵热力图", styles["FigCaption"]))
 
     rq3_table_data = [
@@ -528,8 +525,8 @@ def build_manual_pdf(out_path: Path):
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, C_BG_LIGHT]),
-        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
     ]))
     story.append(t_rq3)
 
@@ -549,11 +546,11 @@ def build_manual_pdf(out_path: Path):
         "将 DSH 生态工具扩充为 6 大工具（包含最新 Scope 2 外购电电网因子与吨公里强度模型），实现全链路工业级高可用。",
         styles["DocBody"]
     ))
-    story.append(PageBreak())
 
     # ============================================================
     # 第五章：第三方同行专家双盲评审背书
     # ============================================================
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第五章：第三方同行专家双盲评审与结题就绪度", styles["DocH1"]))
     story.append(Paragraph(
         "为强化成果的客观公允性，团队邀请了一位高校交通低碳学术博导（专家 A）与一位头部物流企业车队兼 ESG 总监（专家 B）独立进行背靠背单盲评审：",
@@ -575,12 +572,12 @@ def build_manual_pdf(out_path: Path):
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -2), [white, C_BG_LIGHT]),
-        ("TOPPADDING", (0, 0), (-1, -1), 4.5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4.5),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
     ]))
     story.append(t_rev)
 
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 3 * mm))
     story.append(Paragraph("专家意见采纳与系统闭环迭代台账：", styles["DocH2"]))
     adoptions = [
         "<b>采纳迭代 1（Scope 2 购电因子）</b>：采纳专家 A 建议，在 `src/engine/indirect_emission.py` 中完整集成生态环境部 2025 年 47 号公告（全国平均 0.5306 及 31 省市因子），量化‘以电代油’真实净减排量。",
@@ -591,25 +588,25 @@ def build_manual_pdf(out_path: Path):
     for a in adoptions:
         story.append(Paragraph(f"• {a}", styles["DocBullet"]))
 
-    story.append(Spacer(1, 5 * mm))
+    story.append(Spacer(1, 4 * mm))
     summary_box = Paragraph(
         "<b>大创中期就绪总结</b>：本课题全套 106 项自动化测试 100% 绿灯通过；GitHub Actions CI 流水线就绪；"
         "真实公开车队台账检验 (RQ1)、40 题双盲审校标准库及检索检验 (RQ2)、二维扰动敏感性矩阵与周转量扩展 (RQ3) "
         "以及同行双盲评议四大实证支柱全部高质量闭环，已完全具备优秀大创中期汇报与科技竞赛结题的全部技术实证要件！",
         styles["Callout"]
     )
-    t_sum = Table([[summary_box]], colWidths=[170 * mm])
+    t_sum = Table([[summary_box]], colWidths=[174 * mm])
     t_sum.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), HexColor("#f0f7f4")),
         ("BOX", (0, 0), (-1, -1), 1, C_PRIMARY),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
     ]))
     story.append(t_sum)
 
-    doc.build(story, canvasmaker=NumberedCanvas)
+    doc.build(story, canvasmaker=ManualNumberedCanvas)
     print(f"✅ 说明书 PDF 生成完成: {out_path}")
 
 def build_guide_pdf(out_path: Path):
@@ -619,8 +616,8 @@ def build_guide_pdf(out_path: Path):
         pagesize=A4,
         leftMargin=18 * mm,
         rightMargin=18 * mm,
-        topMargin=20 * mm,
-        bottomMargin=20 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
     )
     styles = create_styles()
     story = []
@@ -644,9 +641,9 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23% 与冷链正偏数据，强调符合 GHG Protocol 保守性公理。", styles["TableCellLeft"])],
         [Paragraph("2. 经管/商业类专家", styles["TableCell"]), Paragraph("管理学院博导、投资人评委", styles["TableCellLeft"]), Paragraph("商业模式是否成立、企业凭什么买单、TCO 投资回报与边际减排成本 (MAC)", styles["TableCellLeft"]), Paragraph("强调物流微观管理与国际绿色供应链 Scope 3 倒逼，用 TCO 静态回收期（年）与 MAC 算清财务经济账。", styles["TableCellLeft"])],
         [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库、揭示纯向量 MRR 0.0411 弥散机理，出具 Wilcoxon p < 0.001 极显著检验证据，体现算法深度。", styles["TableCellLeft"])],
-        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通 4.5 万辆真实复核，展示 2025 年 47 号公告 31 省 Scope 2 电网因子与货物周转量强度指标。", styles["TableCellLeft"])],
+        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通 4.5 万辆真实复核，展示 2025 年 47 号公告 31 省 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
     ]
-    t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 50 * mm, 60 * mm])
+    t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 54 * mm, 60 * mm])
     t_judges.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), C_PRIMARY),
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
@@ -656,10 +653,10 @@ def build_guide_pdf(out_path: Path):
         ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
     ]))
     story.append(t_judges)
-    story.append(PageBreak())
 
     # 二、8分钟讲稿
-    story.append(Paragraph("第二章：8 分钟幻灯片 (Slide 1 ~ 10) 逐页实战讲稿与控场", styles["DocH1"]))
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph("第二章：8 分钟幻灯片 (Slide 1 ~ 8) 逐页实战讲稿与控场", styles["DocH1"]))
     story.append(Paragraph("答辩时间极为紧凑（通常 8 分钟陈述 + 5 分钟问答），每一页幻灯片必须精确卡位，做到字斟句酌：", styles["DocBody"]))
 
     slides = [
@@ -702,9 +699,8 @@ def build_guide_pdf(out_path: Path):
         story.append(Paragraph(s_title, styles["DocH2"]))
         story.append(Paragraph(s_desc, styles["DocBody"]))
 
-    story.append(PageBreak())
-
     # 三、12大质询应对
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第三章：评委专家 12 大高频尖锐质询与绝杀应对矩阵", styles["DocH1"]))
     story.append(Paragraph("面对现场评委的深度追问，团队成员必须保持自信、沉着，按照标准绝杀话术应答：", styles["DocBody"]))
 
@@ -751,7 +747,7 @@ def build_guide_pdf(out_path: Path):
         story.append(Paragraph(q_a, styles["DocBody"]))
 
     # 四、红线术语表
-    story.append(PageBreak())
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第四章：答辩现场绝对避坑与红线术语替换表", styles["DocH1"]))
     story.append(Paragraph("答辩现场个别用词不慎极易被严谨评委‘一票否决’，全员必须严格执行以下用词规范：", styles["DocBody"]))
 
@@ -764,14 +760,14 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("我们的模型没有任何误差", styles["TableCell"]), Paragraph("加权平均相对误差 4.23%，恒定正偏保守可控", styles["TableCellLeft"]), Paragraph("保守正偏更符合温室气体核算公理", styles["TableCellLeft"])],
         [Paragraph("纯电动车是绝对零排放的", styles["TableCell"]), Paragraph("直接排放为零，外购电间接排放计入最新电网因子", styles["TableCellLeft"]), Paragraph("严格区分范围 1 与范围 2", styles["TableCellLeft"])],
     ]
-    t_avoid = Table(avoid_data, colWidths=[42 * mm, 60 * mm, 68 * mm])
+    t_avoid = Table(avoid_data, colWidths=[42 * mm, 60 * mm, 72 * mm])
     t_avoid.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), HexColor("#8c2824")),
         ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, HexColor("#fdf7f7")]),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
     ]))
     story.append(t_avoid)
 
