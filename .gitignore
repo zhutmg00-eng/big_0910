@@ -53,3 +53,13 @@ __pycache__/
 .playwright-cli/
 output/playwright/
 tmp/
+
+# 私人与答辩文书产物（不上传Git）
+*.pdf
+docs/artifacts/*.pdf
+docs/artifacts/*.png
+docs/artifacts/user_screenshot.png
+docs/artifacts/debug_*.png
+docs/expert_review/
+docs/*中期*.md
+docs/*答辩*.md
