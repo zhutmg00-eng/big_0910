@@ -53,12 +53,12 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="510" y="235" width="210" height="85" fill="#f8faf9" stroke="{GRID}" rx="6"/>
   <text x="615" y="258" font-size="12" font-weight="bold" fill="{INK}" text-anchor="middle">Scope 2 外购电与周转量</text>
-  <text x="615" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">2025年47号公报31省因子</text>
+  <text x="615" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">2025年47号公告30省因子</text>
   <text x="615" y="296" font-size="10" fill="{GREEN}" text-anchor="middle">万吨公里 / gCO2/t·km强度</text>
 
   <rect x="740" y="235" width="200" height="85" fill="#f8faf9" stroke="{GRID}" rx="6"/>
-  <text x="840" y="258" font-size="12" font-weight="bold" fill="{INK}" text-anchor="middle">垂直小样本 RAG 引擎</text>
-  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">37份法规268块入库即定块</text>
+  <text x="840" y="258" font-size="12" font-weight="bold" fill="{INK}" text-anchor="middle">垂直领域 RAG 检索</text>
+  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">37份法规268块入库定块</text>
   <text x="840" y="296" font-size="10" fill="{GREEN}" text-anchor="middle">向量初筛 + 领域词重排</text>
 
   <!-- 连线箭头 2 -->
@@ -70,21 +70,21 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="60" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="195" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ1: 真实车队基准检验</text>
-  <text x="195" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">顺丰/中通/京东/冷链 45,035 辆台账</text>
-  <text x="195" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">MAPE 4.23% (恒定正偏保守可控)</text>
+  <text x="195" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">顺丰/中通/京东/冷链 51,990 辆台账</text>
+  <text x="195" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">等权 MAPE 4.23% (加权 2.38%)</text>
 
   <rect x="365" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="500" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ2: 40题基准集与检索检验</text>
-  <text x="500" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">双人双盲审校 Kappa=1.0 (含4负例)</text>
+  <text x="500" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">背靠背审校基准 (含4负例)</text>
   <text x="500" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">MRR 0.5036 (Wilcoxon p &lt; 0.001***)</text>
 
   <rect x="670" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="805" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ3: 参数扰动敏感性网格</text>
-  <text x="805" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">满载率 (-20%~+20%) × 里程 (-20%~+20%)</text>
-  <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">误差闭环于 [+1.22%, +7.80%]</text>
+  <text x="805" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">实载率 (-0.3~+0.15) × 里程 (±20%)</text>
+  <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">50组扫描：3.04% ~ 29.80%</text>
 
   <!-- 底部规范声明 -->
-  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">工程规范：全仓无 C 盘写操作 | 全量 105 项自动化测试 100% 绿灯通过 | 严守科研情景模拟对标口径</text>
+  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">工程规范：全仓本地环境运行 | 全量 117 项自动化测试全部通过 | 严格遵循情景模拟与非纳管边界</text>
 </svg>'''
 
 svg_path.write_text(svg, encoding="utf-8")

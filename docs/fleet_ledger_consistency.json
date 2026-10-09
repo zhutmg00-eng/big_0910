@@ -1,0 +1,330 @@
+{
+  "conversion_factors": {
+    "diesel_kg_co2_per_liter": 2.73,
+    "gasoline_kg_co2_per_liter": 2.31,
+    "lng_kg_co2_per_kg": 2.69,
+    "grid_electricity_kg_co2_per_kwh": 0.5703
+  },
+  "cases": [
+    {
+      "benchmark_id": "SF_Express_2023",
+      "company_name": "顺丰控股（综合物流车队样本）",
+      "vehicles_total": 27500,
+      "rows": [
+        {
+          "vehicle_type": "重型柴油货车",
+          "count": 2800,
+          "annual_km": 105000,
+          "load_factor": 0.82,
+          "fuel_type": "柴油",
+          "vkm": 294000000,
+          "co2_kg": 257838000.0,
+          "equivalent_fuel_units": 94446153.8
+        },
+        {
+          "vehicle_type": "中型柴油货车",
+          "count": 4200,
+          "annual_km": 55000,
+          "load_factor": 0.78,
+          "fuel_type": "柴油",
+          "vkm": 231000000,
+          "co2_kg": 117348000.0,
+          "equivalent_fuel_units": 42984615.4
+        },
+        {
+          "vehicle_type": "轻型柴油货车",
+          "count": 8500,
+          "annual_km": 32000,
+          "load_factor": 0.7,
+          "fuel_type": "柴油",
+          "vkm": 272000000,
+          "co2_kg": 101728000.0,
+          "equivalent_fuel_units": 37263003.7
+        },
+        {
+          "vehicle_type": "新能源物流车",
+          "count": 12000,
+          "annual_km": 28000,
+          "load_factor": 0.72,
+          "fuel_type": "电动",
+          "note": "电动车，无直接燃烧燃料"
+        }
+      ],
+      "per_fuel": {
+        "柴油": {
+          "disclosed_qty": 168500000,
+          "model_equivalent_qty": 174693772.9,
+          "ratio_model_over_disclosed": 1.0368,
+          "disclosed_qty_implied_total_vkm_km": 768742341.0,
+          "model_total_vkm_km": 797000000,
+          "implied_vehicle_fraction": 0.9645,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "重型柴油货车",
+              "count": 2800,
+              "annual_km": 105000,
+              "model_share": 0.5406,
+              "allocated_disclosed_units": 91097562.6,
+              "implied_units_per_vehicle_year": 32534.8,
+              "implied_l_per_100km": 30.99,
+              "model_implied_l_per_100km": 33.0
+            },
+            {
+              "vehicle_type": "中型柴油货车",
+              "count": 4200,
+              "annual_km": 55000,
+              "model_share": 0.2461,
+              "allocated_disclosed_units": 41460594.6,
+              "implied_units_per_vehicle_year": 9871.6,
+              "implied_l_per_100km": 17.95,
+              "model_implied_l_per_100km": 19.0
+            },
+            {
+              "vehicle_type": "轻型柴油货车",
+              "count": 8500,
+              "annual_km": 32000,
+              "model_share": 0.2133,
+              "allocated_disclosed_units": 35941842.8,
+              "implied_units_per_vehicle_year": 4228.5,
+              "implied_l_per_100km": 13.21,
+              "model_implied_l_per_100km": 12.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "benchmark_id": "ZTO_Express_Trunk_2023",
+      "company_name": "中通快递（长途干线甩挂车队）",
+      "vehicles_total": 10400,
+      "rows": [
+        {
+          "vehicle_type": "重型柴油半挂牵引车(>49t)",
+          "count": 9200,
+          "annual_km": 135000,
+          "load_factor": 0.88,
+          "fuel_type": "柴油",
+          "vkm": 1242000000,
+          "co2_kg": 1124010000.0,
+          "equivalent_fuel_units": 411725274.7
+        },
+        {
+          "vehicle_type": "中型柴油货车",
+          "count": 1200,
+          "annual_km": 60000,
+          "load_factor": 0.8,
+          "fuel_type": "柴油",
+          "vkm": 72000000,
+          "co2_kg": 36576000.0,
+          "equivalent_fuel_units": 13397802.2
+        }
+      ],
+      "per_fuel": {
+        "柴油": {
+          "disclosed_qty": 418200000,
+          "model_equivalent_qty": 425123076.9,
+          "ratio_model_over_disclosed": 1.0166,
+          "disclosed_qty_implied_total_vkm_km": 1292601672.0,
+          "model_total_vkm_km": 1314000000,
+          "implied_vehicle_fraction": 0.9837,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "重型柴油半挂牵引车(>49t)",
+              "count": 9200,
+              "annual_km": 135000,
+              "model_share": 0.9685,
+              "allocated_disclosed_units": 405020379.4,
+              "implied_units_per_vehicle_year": 44024.0,
+              "implied_l_per_100km": 32.61,
+              "model_implied_l_per_100km": null
+            },
+            {
+              "vehicle_type": "中型柴油货车",
+              "count": 1200,
+              "annual_km": 60000,
+              "model_share": 0.0315,
+              "allocated_disclosed_units": 13179620.6,
+              "implied_units_per_vehicle_year": 10983.0,
+              "implied_l_per_100km": 18.31,
+              "model_implied_l_per_100km": 19.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "benchmark_id": "JD_Logistics_Green_2023",
+      "company_name": "京东物流（绿色仓配示范车队）",
+      "vehicles_total": 14000,
+      "rows": [
+        {
+          "vehicle_type": "轻型柴油货车",
+          "count": 3500,
+          "annual_km": 35000,
+          "load_factor": 0.75,
+          "fuel_type": "柴油",
+          "vkm": 122500000,
+          "co2_kg": 45815000.0,
+          "equivalent_fuel_units": 16782051.3
+        },
+        {
+          "vehicle_type": "微型汽油货车",
+          "count": 2000,
+          "annual_km": 22000,
+          "load_factor": 0.7,
+          "fuel_type": "汽油",
+          "vkm": 44000000,
+          "co2_kg": 9504000.0,
+          "equivalent_fuel_units": 4114285.7
+        },
+        {
+          "vehicle_type": "LNG重型货车",
+          "count": 500,
+          "annual_km": 75000,
+          "load_factor": 0.8,
+          "fuel_type": "LNG",
+          "vkm": 37500000,
+          "co2_kg": 27000000.0,
+          "equivalent_fuel_units": 10037174.7
+        },
+        {
+          "vehicle_type": "新能源物流车",
+          "count": 8000,
+          "annual_km": 30000,
+          "load_factor": 0.75,
+          "fuel_type": "电动",
+          "note": "电动车，无直接燃烧燃料"
+        }
+      ],
+      "per_fuel": {
+        "柴油": {
+          "disclosed_qty": 15200000,
+          "model_equivalent_qty": 16782051.3,
+          "ratio_model_over_disclosed": 1.1041,
+          "disclosed_qty_implied_total_vkm_km": 110951872.0,
+          "model_total_vkm_km": 122500000,
+          "implied_vehicle_fraction": 0.9057,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "轻型柴油货车",
+              "count": 3500,
+              "annual_km": 35000,
+              "model_share": 1.0,
+              "allocated_disclosed_units": 15200000.0,
+              "implied_units_per_vehicle_year": 4342.9,
+              "implied_l_per_100km": 12.41,
+              "model_implied_l_per_100km": 12.0
+            }
+          ]
+        },
+        "汽油": {
+          "disclosed_qty": 3700000,
+          "model_equivalent_qty": 4114285.7,
+          "ratio_model_over_disclosed": 1.112,
+          "disclosed_qty_implied_total_vkm_km": 39569445.0,
+          "model_total_vkm_km": 44000000,
+          "implied_vehicle_fraction": 0.8993,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "微型汽油货车",
+              "count": 2000,
+              "annual_km": 22000,
+              "model_share": 1.0,
+              "allocated_disclosed_units": 3700000.0,
+              "implied_units_per_vehicle_year": 1850.0,
+              "implied_l_per_100km": 8.41,
+              "model_implied_l_per_100km": 8.0
+            }
+          ]
+        },
+        "LNG": {
+          "disclosed_qty": 10800000,
+          "model_equivalent_qty": 10037174.7,
+          "ratio_model_over_disclosed": 0.9294,
+          "disclosed_qty_implied_total_vkm_km": 40350000.0,
+          "model_total_vkm_km": 37500000,
+          "implied_vehicle_fraction": 1.076,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "LNG重型货车",
+              "count": 500,
+              "annual_km": 75000,
+              "model_share": 1.0,
+              "allocated_disclosed_units": 10800000.0,
+              "implied_units_per_vehicle_year": 21600.0,
+              "implied_l_per_100km": null,
+              "model_implied_l_per_100km": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "benchmark_id": "Regional_Coldchain_Urban_2023",
+      "company_name": "某区域冷链商超配送车队（行业实测样本）",
+      "vehicles_total": 90,
+      "rows": [
+        {
+          "vehicle_type": "中型柴油货车",
+          "count": 25,
+          "annual_km": 48000,
+          "load_factor": 0.6,
+          "fuel_type": "柴油",
+          "vkm": 1200000,
+          "co2_kg": 609600.0,
+          "equivalent_fuel_units": 223296.7
+        },
+        {
+          "vehicle_type": "轻型柴油货车",
+          "count": 45,
+          "annual_km": 36000,
+          "load_factor": 0.58,
+          "fuel_type": "柴油",
+          "vkm": 1620000,
+          "co2_kg": 605880.0,
+          "equivalent_fuel_units": 221934.1
+        },
+        {
+          "vehicle_type": "新能源物流车",
+          "count": 20,
+          "annual_km": 30000,
+          "load_factor": 0.65,
+          "fuel_type": "电动",
+          "note": "电动车，无直接燃烧燃料"
+        }
+      ],
+      "per_fuel": {
+        "柴油": {
+          "disclosed_qty": 425000,
+          "model_equivalent_qty": 445230.8,
+          "ratio_model_over_disclosed": 1.0476,
+          "disclosed_qty_implied_total_vkm_km": 2691862.0,
+          "model_total_vkm_km": 2820000,
+          "implied_vehicle_fraction": 0.9546,
+          "allocated_per_vehicle": [
+            {
+              "vehicle_type": "中型柴油货车",
+              "count": 25,
+              "annual_km": 48000,
+              "model_share": 0.5015,
+              "allocated_disclosed_units": 213150.3,
+              "implied_units_per_vehicle_year": 8526.0,
+              "implied_l_per_100km": 17.76,
+              "model_implied_l_per_100km": 19.0
+            },
+            {
+              "vehicle_type": "轻型柴油货车",
+              "count": 45,
+              "annual_km": 36000,
+              "model_share": 0.4985,
+              "allocated_disclosed_units": 211849.7,
+              "implied_units_per_vehicle_year": 4707.8,
+              "implied_l_per_100km": 13.08,
+              "model_implied_l_per_100km": 12.0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

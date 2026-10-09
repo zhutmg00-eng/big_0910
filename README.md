@@ -200,26 +200,38 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 ### 已完成的核心科研实验能力
 
 1. **实证车队基准检验（支撑 RQ1/RQ3）**：
-   - 真实公开车队数据集（顺丰、中通、京东、冷链实测）与核算方法学。
-   - 自动化对比活动水平估算法与能源台账法，全样本 MAPE 4.23%（`docs/real_fleet_validation_report.md`）。
-   - 满载率与里程二维网格敏感性分析模块（`scripts/sensitivity_analysis.py` 与 `docs/sensitivity_report.md`）。
+   - 4 组公开车队数据集（顺丰、中通、京东、区域冷链实测，合计 51,990 辆）与核算方法学。
+   - 自动化对比活动水平估算法与能源台账法：案例等权 MAPE 4.23%、按排放量加权 2.38%
+     （`docs/real_fleet_validation_report.md`、`docs/derived_metrics.json`）。
+   - 活动参数与披露能耗的一致性核验（等效燃料量比值 + 反推百公里油耗，
+     `scripts/check_fleet_ledger_consistency.py`）。
+   - 实载率与里程二维网格敏感性分析（`scripts/sensitivity_analysis.py`、`docs/sensitivity_report.md`）。
 2. **政策问答评测与检索对照实验（支撑 RQ2）**：
    - 自建 40 题双碳法规与绿色交通基准题库（含金标答案、官方文件溯源与负例拒答设计）。
-   - 双人背靠背独立审校与一致性报告（Kappa = 1.0，`docs/rag_benchmark/review/`）。
+   - 双人背靠背独立审校与一致性报告（`docs/rag_benchmark/review/`；两位审读者判定完全一致，
+     但类别分布不平衡，Kappa 不作为公信力证据）。
    - 全量 37 份核心法规文档（268 个 Chunk）入库即定块映射，固化 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`。
-   - 纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验与 Wilcoxon 符号秩显著性检验（MRR 0.5036，Recall@10 75.00%，`docs/rag_benchmark/rag_retrieval_experiment_report.md`）。
+   - 纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验与 Wilcoxon 符号秩检验
+     （MRR 0.5036、Source-Hit@3 80.0%、Recall@10 75.0%；与纯关键词检索无显著差异 $p=0.398$，
+     `docs/rag_benchmark/rag_retrieval_experiment_report.md`）。
 3. **Scope 2 外购电间接排放与运输周转量核算**：
-   - 严格依据生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（2025年第47号）收录全国及31省市电网排放因子。
-   - 构建纯电物流车真实耗电率模型，量化油电替代的净减排贡献。
-   - 支持货物周转量（万吨公里）核算及营运运输碳排放强度（gCO2 / t·km）对标（`src/engine/indirect_emission.py`）。
-4. **指导教师与行业专家双盲评审体系**：
-   - 制定涵盖科学性、检索保真度、落地性与免责审慎度四大维度的量化量表（`docs/expert_review/评审指标规范与量化评分量表.md`）。
-   - 高校交通能源博导与头部物流车队ESG总监双专家独立评分（综合加权均分 4.905 / 5.0，卓越等级）。
-   - 归档意见采纳与闭环迭代台账（`docs/expert_review/专家盲评综合评估与意见采纳报告.md`）。
+   - 依据生态环境部、国家统计局《关于发布 2023 年电力二氧化碳排放因子的公告》（2025 年第 47 号）
+     收录全国、区域（7 个）与省级（30 个）电网排放因子。
+   - 构建纯电物流车耗电率模型，量化油电替代的净减排贡献，并给出临界电网碳强度判据
+     （重卡 0.5847、轻卡 1.0686 kgCO₂/kWh）。
+   - 支持货物周转量（万吨公里）核算及营运运输碳排放强度（gCO₂/(t·km)）对标
+     （`src/engine/indirect_emission.py`）。
+4. **专家咨询评审记录**：
+   - 制定涵盖科学性、检索保真度、落地性与免责审慎度四个维度的量化量表
+     （`docs/expert_review/评审指标规范与量化评分量表.md`）。
+   - 两位受邀专家（高校交通能源方向教师、物流企业 ESG 负责人）背靠背独立评分，
+     综合加权均分 4.905/5.0。需注意：这是课题组自行邀请的定制化咨询评审，
+     不是独立同行评议，因此评分数值不作为论文结论的证据。
+   - 归档意见采纳台账（`docs/expert_review/专家盲评综合评估与意见采纳报告.md`）。
 
 ### 自动化测试与 CI 流水线
 
-- 本地运行 `python -m pytest`：106 项自动化测试全量通过。
+- 本地运行 `python -m pytest`：**117 项自动化测试全部通过**。
 - GitHub Actions 流水线（`.github/workflows/ci.yml`）：集成系统字体、依赖安装、政策定块入库及全量测试自动执行。
 
 ## 许可

@@ -88,6 +88,9 @@ class TCOEconomicParameters:
     electricity_price_yuan_per_kwh: float = 0.80  # 综合电价（元/kWh）
     discount_rate: float = 0.06  # 年贴现率 r（默认6%）
     lifespan_years: int = 5  # 车辆运营评估周期 N（年）
+    is_baas_mode: bool = False  # 是否启用换电车电分离 (BaaS, Battery as a Service) 模式
+    baas_chassis_discount_wan: float = 0.0  # 剥离动力电池后的单车购置立减金额（万元/车，默认重卡20万，其他按比例）
+    baas_annual_battery_rental_yuan: float = 0.0  # 单车年电池租赁费（元/年/车，重卡约4.5万/年）
 
 
 @dataclass
@@ -220,10 +223,23 @@ def calculate_single_vehicle_tco(
         )
 
     # 1. 初始投资增量 ΔCAPEX（元）
-    single_capex_delta = (
-        (spec.ev_vehicle_price_wan - spec.ice_vehicle_price_wan + spec.charger_cost_wan)
-        * 10000.0
-    )
+    # 若启用车电分离 (BaaS) 模式：剥离电池购置费，且无需自建昂贵专用重卡充电桩
+    if params.is_baas_mode:
+        # 若未指定立减金额，默认重卡立减20万，中卡立减10万，轻卡立减5万，微型立减2万
+        default_chassis_discount = (
+            params.baas_chassis_discount_wan
+            if params.baas_chassis_discount_wan > 0
+            else (20.0 if "重型" in vehicle_type else 10.0 if "中型" in vehicle_type else 5.0 if "轻型" in vehicle_type else 2.0)
+        )
+        single_capex_delta = (
+            (spec.ev_vehicle_price_wan - default_chassis_discount - spec.ice_vehicle_price_wan)
+            * 10000.0
+        )
+    else:
+        single_capex_delta = (
+            (spec.ev_vehicle_price_wan - spec.ice_vehicle_price_wan + spec.charger_cost_wan)
+            * 10000.0
+        )
     delta_capex_total = single_capex_delta * replace_count
 
     # 2. 燃料与电能单价确定
@@ -242,15 +258,25 @@ def calculate_single_vehicle_tco(
     )
     single_annual_energy_saving = max(0.0, single_annual_fuel_cost - single_annual_elec_cost)
 
-    # 4. 单车年维保节省计算
+    # 4. 单车年维保与电池租赁成本计算
     single_annual_maint_saving = (
         spec.annual_maintenance_ice_yuan * spec.maintenance_saving_ratio
     )
+    # 若为 BaaS 模式，需计入年电池租赁费作为额外 OPEX 支出 (冲减节省)
+    single_annual_battery_rental = 0.0
+    if params.is_baas_mode:
+        single_annual_battery_rental = (
+            params.baas_annual_battery_rental_yuan
+            if params.baas_annual_battery_rental_yuan > 0
+            else (45000.0 if "重型" in vehicle_type else 22000.0 if "中型" in vehicle_type else 12000.0 if "轻型" in vehicle_type else 5000.0)
+        )
 
     # 5. 车队年运营节省 ΔOPEX（元/年）
+    # ΔOPEX = 能耗节省 + 维保节省 - 电池租赁费
+    single_annual_opex_saving = single_annual_energy_saving + single_annual_maint_saving - single_annual_battery_rental
     annual_energy_saving_total = single_annual_energy_saving * replace_count
     annual_maint_saving_total = single_annual_maint_saving * replace_count
-    annual_opex_saving_total = annual_energy_saving_total + annual_maint_saving_total
+    annual_opex_saving_total = single_annual_opex_saving * replace_count
 
     # 6. 静态投资回收期 T_payback（年）
     payback_period: Optional[float] = None

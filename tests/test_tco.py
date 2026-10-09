@@ -180,6 +180,41 @@ class TestTCOAPI:
         assert response.status_code == 422
 
 
+    def test_baas_mode_heavy_truck(self):
+        """测试前沿车电分离 (BaaS) 换电重卡模式：大幅削减 CAPEX，增加电池租赁费。"""
+        # 1. 常规充电模式
+        std_res = calculate_single_vehicle_tco(
+            vehicle_type="重型柴油货车",
+            replace_count=10,
+            annual_km=80000.0,
+            annual_co2_reduction_t=701.6,
+            econ_params=TCOEconomicParameters(is_baas_mode=False),
+        )
+        # 2. BaaS 换电模式（车电分离立减20万，无需自建专用重卡充电桩）
+        baas_res = calculate_single_vehicle_tco(
+            vehicle_type="重型柴油货车",
+            replace_count=10,
+            annual_km=80000.0,
+            annual_co2_reduction_t=701.6,
+            econ_params=TCOEconomicParameters(
+                is_baas_mode=True,
+                baas_chassis_discount_wan=20.0,
+                baas_annual_battery_rental_yuan=45000.0,
+            ),
+        )
+        # BaaS 单车初始增量: (65 - 20 - 35) = 10 万元/辆 (标准模式为33万元/辆)
+        assert baas_res.delta_capex_total_yuan == 1000000.0
+        assert baas_res.delta_capex_total_yuan < std_res.delta_capex_total_yuan
+        # BaaS 年运营节省冲减了电池租赁费 (4.5万/年/车)
+        # 标准年运营节省: 1,136,500 元/年
+        # BaaS 年运营节省: 1,136,500 - 45,000*10 = 686,500 元/年
+        assert baas_res.annual_opex_saving_total_yuan == 686500.0
+        # BaaS 回收期: 1,000,000 / 686,500 ≈ 1.46 年 (标准模式为 2.90 年，大幅加快资金回本)
+        assert baas_res.payback_period_years is not None
+        assert round(baas_res.payback_period_years, 2) == 1.46
+        assert baas_res.payback_period_years < std_res.payback_period_years
+
+
 class TestTCOReductionIntegration:
     def test_reduction_scenario_populates_tco(self):
         """测试减排情景分析中自动集成 TCO 计算与建议。"""

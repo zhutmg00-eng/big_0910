@@ -1,0 +1,4077 @@
+{
+  "generated_by": "scripts/gen_derived_metrics.py",
+  "note": "本文件是论文与图表的唯一数字台账；修改引擎参数后需重跑本脚本与 build_academic_pdf.py。",
+  "fleet_cases": [
+    {
+      "id": "SF_Express_2023",
+      "company": "顺丰控股（综合物流车队样本）",
+      "scenario": "全国性干支线结合与绿色同城配送",
+      "vehicles_total": 27500,
+      "vehicles_ice": 15500,
+      "vehicles_ev": 12000,
+      "e_model_tco2": 477676.96,
+      "e_model_no_lf_tco2": 476914.0,
+      "e_fuel_tco2": 460005.0,
+      "e_reported_tco2": 460005.0,
+      "rel_err_pct": 3.84,
+      "rel_err_no_lf_pct": 3.68,
+      "load_factor_contribution_tco2": 762.96,
+      "turnover_wan_tkm": 833308.0,
+      "intensity_g_per_tkm": 57.32,
+      "reported_scope1_tco2": 460005.0
+    },
+    {
+      "id": "ZTO_Express_Trunk_2023",
+      "company": "中通快递（长途干线甩挂车队）",
+      "scenario": "长途大运力甩挂重载干线运输",
+      "vehicles_total": 10400,
+      "vehicles_ice": 10400,
+      "vehicles_ev": 0,
+      "e_model_tco2": 1160586.0,
+      "e_model_no_lf_tco2": 1160586.0,
+      "e_fuel_tco2": 1141686.0,
+      "e_reported_tco2": 1141686.0,
+      "rel_err_pct": 1.66,
+      "rel_err_no_lf_pct": 1.66,
+      "load_factor_contribution_tco2": 0.0,
+      "turnover_wan_tkm": 2778480.0,
+      "intensity_g_per_tkm": 41.77,
+      "reported_scope1_tco2": 1141686.0
+    },
+    {
+      "id": "JD_Logistics_Green_2023",
+      "company": "京东物流（绿色仓配示范车队）",
+      "scenario": "区域绿色仓配一体化与高比例新能源示范",
+      "vehicles_total": 14000,
+      "vehicles_ice": 6000,
+      "vehicles_ev": 8000,
+      "e_model_tco2": 82390.28,
+      "e_model_no_lf_tco2": 82319.0,
+      "e_fuel_tco2": 79095.0,
+      "e_reported_tco2": 79800.0,
+      "rel_err_pct": 4.17,
+      "rel_err_no_lf_pct": 4.08,
+      "load_factor_contribution_tco2": 71.28,
+      "turnover_wan_tkm": 131839.0,
+      "intensity_g_per_tkm": 62.49,
+      "reported_scope1_tco2": 79800.0
+    },
+    {
+      "id": "Regional_Coldchain_Urban_2023",
+      "company": "某区域冷链商超配送车队（行业实测样本）",
+      "scenario": "区域城配与生鲜冷链运输（含返程空驶与制冷能耗）",
+      "vehicles_total": 90,
+      "vehicles_ice": 70,
+      "vehicles_ev": 20,
+      "e_model_tco2": 1244.65,
+      "e_model_no_lf_tco2": 1215.48,
+      "e_fuel_tco2": 1160.25,
+      "e_reported_tco2": 1160.25,
+      "rel_err_pct": 7.27,
+      "rel_err_no_lf_pct": 4.76,
+      "load_factor_contribution_tco2": 29.17,
+      "turnover_wan_tkm": 841.9,
+      "intensity_g_per_tkm": 147.83,
+      "reported_scope1_tco2": 1160.25
+    }
+  ],
+  "mape": {
+    "n_cases": 4,
+    "equal_weight_pct": 4.23,
+    "emission_weight_pct": 2.38,
+    "pooled_pct": 2.38,
+    "equal_weight_no_lf_pct": 3.54,
+    "vehicles_total": 51990,
+    "vehicles_ice": 31970,
+    "vehicles_ev": 20020,
+    "min_pct": 1.66,
+    "max_pct": 7.27,
+    "sum_e_model": 1721897.89,
+    "sum_e_fuel": 1681946.25,
+    "sum_load_factor_contribution": 863.41
+  },
+  "sensitivity": {
+    "grid": {
+      "-0.30|0.8": 13.47,
+      "-0.30|0.9": 3.04,
+      "-0.30|1.0": 8.17,
+      "-0.30|1.1": 18.98,
+      "-0.30|1.2": 29.8,
+      "-0.25|0.8": 14.09,
+      "-0.25|0.9": 3.39,
+      "-0.25|1.0": 7.39,
+      "-0.25|1.1": 18.13,
+      "-0.25|1.2": 28.87,
+      "-0.20|0.8": 14.71,
+      "-0.20|0.9": 4.05,
+      "-0.20|1.0": 6.61,
+      "-0.20|1.1": 17.28,
+      "-0.20|1.2": 27.94,
+      "-0.15|0.8": 15.33,
+      "-0.15|0.9": 4.75,
+      "-0.15|1.0": 5.84,
+      "-0.15|1.1": 16.42,
+      "-0.15|1.2": 27.01,
+      "-0.10|0.8": 15.86,
+      "-0.10|0.9": 5.34,
+      "-0.10|1.0": 5.17,
+      "-0.10|1.1": 15.69,
+      "-0.10|1.2": 26.21,
+      "-0.05|0.8": 16.3,
+      "-0.05|0.9": 5.84,
+      "-0.05|1.0": 4.62,
+      "-0.05|1.1": 15.08,
+      "-0.05|1.2": 25.55,
+      "+0.00|0.8": 16.61,
+      "+0.00|0.9": 6.19,
+      "+0.00|1.0": 4.23,
+      "+0.00|1.1": 14.66,
+      "+0.00|1.2": 25.08,
+      "+0.05|0.8": 16.82,
+      "+0.05|0.9": 6.42,
+      "+0.05|1.0": 3.97,
+      "+0.05|1.1": 14.37,
+      "+0.05|1.2": 24.77,
+      "+0.10|0.8": 16.98,
+      "+0.10|0.9": 6.6,
+      "+0.10|1.0": 3.78,
+      "+0.10|1.1": 14.16,
+      "+0.10|1.2": 24.53,
+      "+0.15|0.8": 17.14,
+      "+0.15|0.9": 6.78,
+      "+0.15|1.0": 3.58,
+      "+0.15|1.1": 13.94,
+      "+0.15|1.2": 24.3
+    },
+    "grid_5x5": [
+      [
+        13.47,
+        15.33,
+        16.61,
+        16.98,
+        17.14
+      ],
+      [
+        3.04,
+        4.75,
+        6.19,
+        6.6,
+        6.78
+      ],
+      [
+        8.17,
+        5.84,
+        4.23,
+        3.78,
+        3.58
+      ],
+      [
+        18.98,
+        16.42,
+        14.66,
+        14.16,
+        13.94
+      ],
+      [
+        29.8,
+        27.01,
+        25.08,
+        24.53,
+        24.3
+      ]
+    ],
+    "row_labels_km_scale": [
+      0.8,
+      0.9,
+      1.0,
+      1.1,
+      1.2
+    ],
+    "col_labels_load_delta": [
+      -0.3,
+      -0.15,
+      0.0,
+      0.1,
+      0.15
+    ],
+    "min_pct": 3.04,
+    "max_pct": 29.8,
+    "median_pct": 14.52,
+    "n": 50,
+    "over10": 30,
+    "mileage_effect_pp": 20.85,
+    "load_effect_pp": -4.59
+  },
+  "grid": {
+    "n_provinces": 30,
+    "province_order": [
+      "云南",
+      "四川",
+      "青海",
+      "海南",
+      "湖北",
+      "福建",
+      "广东",
+      "甘肃",
+      "广西",
+      "吉林",
+      "辽宁",
+      "浙江",
+      "湖南",
+      "黑龙江",
+      "北京",
+      "重庆",
+      "贵州",
+      "上海",
+      "江苏",
+      "江西",
+      "河南",
+      "新疆",
+      "宁夏",
+      "山东",
+      "陕西",
+      "内蒙古",
+      "河北",
+      "安徽",
+      "山西",
+      "天津"
+    ],
+    "province_factors": {
+      "北京": 0.5554,
+      "天津": 0.6796,
+      "河北": 0.6516,
+      "山西": 0.6634,
+      "内蒙古": 0.6479,
+      "辽宁": 0.4878,
+      "吉林": 0.4671,
+      "黑龙江": 0.5229,
+      "上海": 0.5737,
+      "江苏": 0.5827,
+      "浙江": 0.4974,
+      "安徽": 0.6553,
+      "福建": 0.4211,
+      "江西": 0.5836,
+      "山东": 0.6191,
+      "河南": 0.5897,
+      "湖北": 0.4044,
+      "湖南": 0.4976,
+      "广东": 0.4419,
+      "广西": 0.4476,
+      "海南": 0.3648,
+      "重庆": 0.5581,
+      "四川": 0.1564,
+      "贵州": 0.5683,
+      "云南": 0.1333,
+      "陕西": 0.6335,
+      "甘肃": 0.4471,
+      "青海": 0.1796,
+      "宁夏": 0.6187,
+      "新疆": 0.6021
+    },
+    "region_factors": {
+      "华北区域": 0.6361,
+      "东北区域": 0.5122,
+      "华东区域": 0.55,
+      "华中区域": 0.5271,
+      "西北区域": 0.5543,
+      "南方区域": 0.4042,
+      "西南区域": 0.2472
+    },
+    "national": {
+      "average": 0.5306,
+      "non_fossil_excluded": 0.6096,
+      "fossil_only": 0.8273
+    },
+    "heavy": {
+      "ef_ice_kg_per_km": 0.877,
+      "kwh_per_100km": 150.0,
+      "threshold_kg_per_kwh": 0.5847,
+      "regions_above_threshold": [
+        "天津",
+        "山西",
+        "安徽",
+        "河北",
+        "内蒙古",
+        "陕西",
+        "山东",
+        "宁夏",
+        "新疆",
+        "河南"
+      ],
+      "threshold_range_kwh_per_100km_140_165": [
+        0.5315,
+        0.6264
+      ],
+      "threshold_range_with_ef_pm10pct": [
+        0.4784,
+        0.6891
+      ]
+    },
+    "light": {
+      "ef_ice_kg_per_km": 0.374,
+      "kwh_per_100km": 35.0,
+      "threshold_kg_per_kwh": 1.0686,
+      "threshold_at_40kwh": 0.935,
+      "min_net_pct_across_provinces": 36.4
+    },
+    "by_province": {
+      "北京": {
+        "factor": 0.5554,
+        "heavy_scope2_t_per_km": 0.8331,
+        "heavy_net_pct": 5.01,
+        "light_scope2_t_per_km": 0.1944,
+        "light_net_pct": 48.02
+      },
+      "天津": {
+        "factor": 0.6796,
+        "heavy_scope2_t_per_km": 1.0194,
+        "heavy_net_pct": -16.24,
+        "light_scope2_t_per_km": 0.2379,
+        "light_net_pct": 36.4
+      },
+      "河北": {
+        "factor": 0.6516,
+        "heavy_scope2_t_per_km": 0.9774,
+        "heavy_net_pct": -11.45,
+        "light_scope2_t_per_km": 0.2281,
+        "light_net_pct": 39.02
+      },
+      "山西": {
+        "factor": 0.6634,
+        "heavy_scope2_t_per_km": 0.9951,
+        "heavy_net_pct": -13.47,
+        "light_scope2_t_per_km": 0.2322,
+        "light_net_pct": 37.92
+      },
+      "内蒙古": {
+        "factor": 0.6479,
+        "heavy_scope2_t_per_km": 0.9719,
+        "heavy_net_pct": -10.82,
+        "light_scope2_t_per_km": 0.2268,
+        "light_net_pct": 39.37
+      },
+      "辽宁": {
+        "factor": 0.4878,
+        "heavy_scope2_t_per_km": 0.7317,
+        "heavy_net_pct": 16.57,
+        "light_scope2_t_per_km": 0.1707,
+        "light_net_pct": 54.35
+      },
+      "吉林": {
+        "factor": 0.4671,
+        "heavy_scope2_t_per_km": 0.7006,
+        "heavy_net_pct": 20.11,
+        "light_scope2_t_per_km": 0.1635,
+        "light_net_pct": 56.29
+      },
+      "黑龙江": {
+        "factor": 0.5229,
+        "heavy_scope2_t_per_km": 0.7844,
+        "heavy_net_pct": 10.56,
+        "light_scope2_t_per_km": 0.183,
+        "light_net_pct": 51.07
+      },
+      "上海": {
+        "factor": 0.5737,
+        "heavy_scope2_t_per_km": 0.8605,
+        "heavy_net_pct": 1.88,
+        "light_scope2_t_per_km": 0.2008,
+        "light_net_pct": 46.31
+      },
+      "江苏": {
+        "factor": 0.5827,
+        "heavy_scope2_t_per_km": 0.874,
+        "heavy_net_pct": 0.34,
+        "light_scope2_t_per_km": 0.2039,
+        "light_net_pct": 45.47
+      },
+      "浙江": {
+        "factor": 0.4974,
+        "heavy_scope2_t_per_km": 0.7461,
+        "heavy_net_pct": 14.93,
+        "light_scope2_t_per_km": 0.1741,
+        "light_net_pct": 53.45
+      },
+      "安徽": {
+        "factor": 0.6553,
+        "heavy_scope2_t_per_km": 0.9829,
+        "heavy_net_pct": -12.08,
+        "light_scope2_t_per_km": 0.2294,
+        "light_net_pct": 38.68
+      },
+      "福建": {
+        "factor": 0.4211,
+        "heavy_scope2_t_per_km": 0.6316,
+        "heavy_net_pct": 27.98,
+        "light_scope2_t_per_km": 0.1474,
+        "light_net_pct": 60.59
+      },
+      "江西": {
+        "factor": 0.5836,
+        "heavy_scope2_t_per_km": 0.8754,
+        "heavy_net_pct": 0.18,
+        "light_scope2_t_per_km": 0.2043,
+        "light_net_pct": 45.39
+      },
+      "山东": {
+        "factor": 0.6191,
+        "heavy_scope2_t_per_km": 0.9286,
+        "heavy_net_pct": -5.89,
+        "light_scope2_t_per_km": 0.2167,
+        "light_net_pct": 42.06
+      },
+      "河南": {
+        "factor": 0.5897,
+        "heavy_scope2_t_per_km": 0.8845,
+        "heavy_net_pct": -0.86,
+        "light_scope2_t_per_km": 0.2064,
+        "light_net_pct": 44.81
+      },
+      "湖北": {
+        "factor": 0.4044,
+        "heavy_scope2_t_per_km": 0.6066,
+        "heavy_net_pct": 30.83,
+        "light_scope2_t_per_km": 0.1415,
+        "light_net_pct": 62.16
+      },
+      "湖南": {
+        "factor": 0.4976,
+        "heavy_scope2_t_per_km": 0.7464,
+        "heavy_net_pct": 14.89,
+        "light_scope2_t_per_km": 0.1742,
+        "light_net_pct": 53.43
+      },
+      "广东": {
+        "factor": 0.4419,
+        "heavy_scope2_t_per_km": 0.6629,
+        "heavy_net_pct": 24.42,
+        "light_scope2_t_per_km": 0.1547,
+        "light_net_pct": 58.65
+      },
+      "广西": {
+        "factor": 0.4476,
+        "heavy_scope2_t_per_km": 0.6714,
+        "heavy_net_pct": 23.44,
+        "light_scope2_t_per_km": 0.1567,
+        "light_net_pct": 58.11
+      },
+      "海南": {
+        "factor": 0.3648,
+        "heavy_scope2_t_per_km": 0.5472,
+        "heavy_net_pct": 37.61,
+        "light_scope2_t_per_km": 0.1277,
+        "light_net_pct": 65.86
+      },
+      "重庆": {
+        "factor": 0.5581,
+        "heavy_scope2_t_per_km": 0.8372,
+        "heavy_net_pct": 4.54,
+        "light_scope2_t_per_km": 0.1953,
+        "light_net_pct": 47.77
+      },
+      "四川": {
+        "factor": 0.1564,
+        "heavy_scope2_t_per_km": 0.2346,
+        "heavy_net_pct": 73.25,
+        "light_scope2_t_per_km": 0.0547,
+        "light_net_pct": 85.36
+      },
+      "贵州": {
+        "factor": 0.5683,
+        "heavy_scope2_t_per_km": 0.8525,
+        "heavy_net_pct": 2.8,
+        "light_scope2_t_per_km": 0.1989,
+        "light_net_pct": 46.82
+      },
+      "云南": {
+        "factor": 0.1333,
+        "heavy_scope2_t_per_km": 0.2,
+        "heavy_net_pct": 77.2,
+        "light_scope2_t_per_km": 0.0467,
+        "light_net_pct": 87.53
+      },
+      "陕西": {
+        "factor": 0.6335,
+        "heavy_scope2_t_per_km": 0.9502,
+        "heavy_net_pct": -8.35,
+        "light_scope2_t_per_km": 0.2217,
+        "light_net_pct": 40.72
+      },
+      "甘肃": {
+        "factor": 0.4471,
+        "heavy_scope2_t_per_km": 0.6706,
+        "heavy_net_pct": 23.53,
+        "light_scope2_t_per_km": 0.1565,
+        "light_net_pct": 58.16
+      },
+      "青海": {
+        "factor": 0.1796,
+        "heavy_scope2_t_per_km": 0.2694,
+        "heavy_net_pct": 69.28,
+        "light_scope2_t_per_km": 0.0629,
+        "light_net_pct": 83.19
+      },
+      "宁夏": {
+        "factor": 0.6187,
+        "heavy_scope2_t_per_km": 0.9281,
+        "heavy_net_pct": -5.82,
+        "light_scope2_t_per_km": 0.2165,
+        "light_net_pct": 42.1
+      },
+      "新疆": {
+        "factor": 0.6021,
+        "heavy_scope2_t_per_km": 0.9031,
+        "heavy_net_pct": -2.98,
+        "light_scope2_t_per_km": 0.2107,
+        "light_net_pct": 43.65
+      }
+    }
+  },
+  "carbon_price": {
+    "stats_recent_90d": {
+      "当前价": 98.32,
+      "近90日均价": 90.72,
+      "近90日最高": 98.56,
+      "近90日最低": 84.5,
+      "波动率(%)": 1.69
+    },
+    "rows_total": 274,
+    "rows_real": 73,
+    "rows_interpolated": 201,
+    "date_min": "2021-07-16",
+    "date_max": "2026-08-11",
+    "synthetic_share_pct": 73.4
+  },
+  "fleet_alpha": {
+    "e_direct_tco2": 9500.09,
+    "e_direct_no_lf_tco2": 9424.5,
+    "lf_contribution_tco2": 75.59,
+    "per_vehicle_heavy_tco2": 88.358,
+    "per_vehicle_light_tco2": 13.286,
+    "turnover_wan_tkm": 17727.5,
+    "intensity_g_per_tkm": 53.59,
+    "budget_heavy_per_vehicle": 63.144,
+    "budget_light_per_vehicle": 10.098,
+    "budget_total_tco2": 6819.3,
+    "gap_tco2": 2680.79,
+    "cost_scenario": {
+      "情景判断": "超出模拟碳预算",
+      "预算差额_t": 2680.79,
+      "当前碳价_元每吨": 98.32,
+      "近90日均价_元每吨": 78.67,
+      "碳价波动率": "2.37%",
+      "情景成本_参考价": 263575.27,
+      "情景成本区间_low": 137256.45,
+      "情景成本区间_high": 264218.66,
+      "备注": "科研情景估算，不代表物流企业当前存在碳市场履约义务"
+    }
+  },
+  "tco": {
+    "benchmarks": {
+      "重型柴油货车": {
+        "ice_price_wan": 35.0,
+        "ev_price_wan": 65.0,
+        "charger_wan": 3.0,
+        "fuel_l_per_100km": 33.0,
+        "elec_kwh_per_100km": 140.0,
+        "maint_ice_yuan": 15000.0
+      },
+      "轻型柴油货车": {
+        "ice_price_wan": 11.0,
+        "ev_price_wan": 17.0,
+        "charger_wan": 0.8,
+        "fuel_l_per_100km": 12.0,
+        "elec_kwh_per_100km": 35.0,
+        "maint_ice_yuan": 6000.0
+      }
+    },
+    "light_cases": [
+      {
+        "label": "purchase",
+        "vehicle_type": "轻型柴油货车",
+        "count": 20,
+        "annual_km": 35000.0,
+        "delta_capex_per_vehicle_wan": 6.8,
+        "delta_capex_total_wan": 136.0,
+        "annual_opex_saving_per_vehicle_wan": 2.38,
+        "payback_years": 2.86,
+        "annual_co2_reduction_t": 265.73,
+        "mac_yuan_per_tco2e": -485.52,
+        "lifespan_years": 5,
+        "is_baas": false
+      },
+      {
+        "label": "baas",
+        "vehicle_type": "轻型柴油货车",
+        "count": 20,
+        "annual_km": 35000.0,
+        "delta_capex_per_vehicle_wan": 1.0,
+        "delta_capex_total_wan": 20.0,
+        "annual_opex_saving_per_vehicle_wan": 1.03,
+        "payback_years": 0.97,
+        "annual_co2_reduction_t": 265.73,
+        "mac_yuan_per_tco2e": -502.58,
+        "lifespan_years": 5,
+        "is_baas": true
+      }
+    ],
+    "heavy_cases": [
+      {
+        "label": "purchase",
+        "vehicle_type": "重型柴油货车",
+        "count": 20,
+        "annual_km": 100000.0,
+        "delta_capex_per_vehicle_wan": 33.0,
+        "delta_capex_total_wan": 660.0,
+        "annual_opex_saving_per_vehicle_wan": 14.075,
+        "payback_years": 2.34,
+        "annual_co2_reduction_t": 1767.15,
+        "mac_yuan_per_tco2e": -595.06,
+        "lifespan_years": 5,
+        "is_baas": false
+      },
+      {
+        "label": "baas",
+        "vehicle_type": "重型柴油货车",
+        "count": 20,
+        "annual_km": 100000.0,
+        "delta_capex_per_vehicle_wan": 10.0,
+        "delta_capex_total_wan": 200.0,
+        "annual_opex_saving_per_vehicle_wan": 9.575,
+        "payback_years": 1.04,
+        "annual_co2_reduction_t": 1767.15,
+        "mac_yuan_per_tco2e": -686.6,
+        "lifespan_years": 5,
+        "is_baas": true
+      }
+    ]
+  },
+  "rag": {
+    "source_file": "docs/rag_benchmark/rag_retrieval_experiment_results.json",
+    "raw_keys": [
+      "benchmark_metadata",
+      "detailed_results",
+      "statistical_significance",
+      "summary_metrics"
+    ],
+    "payload": {
+      "benchmark_metadata": {
+        "total_questions": 40,
+        "total_chunks": 268,
+        "embedding_model": "chromadb-default"
+      },
+      "summary_metrics": {
+        "keyword": {
+          "MRR": 0.4879,
+          "Recall@3": 0.525,
+          "Recall@5": 0.675,
+          "Recall@10": 0.7,
+          "Source_Hit@3": 0.775,
+          "Source_Hit@5": 0.825,
+          "Source_Hit@10": 0.825,
+          "Negative_Rejection_Accuracy": 0.5
+        },
+        "vector": {
+          "MRR": 0.0411,
+          "Recall@3": 0.025,
+          "Recall@5": 0.025,
+          "Recall@10": 0.15,
+          "Source_Hit@3": 0.125,
+          "Source_Hit@5": 0.2,
+          "Source_Hit@10": 0.45,
+          "Negative_Rejection_Accuracy": 0.0
+        },
+        "hybrid": {
+          "MRR": 0.5036,
+          "Recall@3": 0.6,
+          "Recall@5": 0.65,
+          "Recall@10": 0.75,
+          "Source_Hit@3": 0.8,
+          "Source_Hit@5": 0.825,
+          "Source_Hit@10": 0.825,
+          "Negative_Rejection_Accuracy": 0.75
+        }
+      },
+      "statistical_significance": {
+        "hybrid_vs_keyword": {
+          "W_stat": 23.0,
+          "p_value": 0.3983,
+          "is_significant_005": false
+        },
+        "hybrid_vs_vector": {
+          "W_stat": 0.0,
+          "p_value": 0.0,
+          "is_significant_005": true
+        }
+      },
+      "detailed_results": {
+        "keyword": [
+          {
+            "id": "Q01",
+            "type": "对比",
+            "theme": "配额分配·行业覆盖扩容（跨年度方案对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_6"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q02",
+            "type": "对比",
+            "theme": "配额分配·分配方法延续与变化（跨年度方案对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 10,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_0",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_20",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_2"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q03",
+            "type": "适用",
+            "theme": "配额分配·钢铁行业扩围后配额核定（适用型正例）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_21"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q04",
+            "type": "适用",
+            "theme": "配额分配·物流企业履约义务（负例/拒答）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_8",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_14"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q05",
+            "type": "适用",
+            "theme": "配额分配·发电企业缺口率上限豁免（计算型）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_4",
+              "2023-2024配额分配方案_全文.md_3",
+              "2023-2024配额分配方案_全文.md_4"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q06",
+            "type": "事实",
+            "theme": "配额分配·预分配与年度清缴流程",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_10",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q07",
+            "type": "事实",
+            "theme": "配额分配·2023-2024 方案核算口径与规则变化",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "2023-2024配额分配方案_全文.md_5",
+              "2023-2024配额分配方案_全文.md_2"
+            ],
+            "top_sources": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q08",
+            "type": "事实",
+            "theme": "配额分配·铝冶炼行业覆盖气体与核定单元",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_19",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q09",
+            "type": "事实",
+            "theme": "顶层制度·条例施行日期",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例_国务院版.md_9",
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "碳排放权交易管理暂行条例.md_0"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q10",
+            "type": "对比",
+            "theme": "顶层制度·条例与办法关系对比",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_0",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_0"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q11",
+            "type": "事实",
+            "theme": "顶层制度·未按期足额清缴的罚则",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2023-2024配额分配方案_全文.md_5",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_10"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024配额分配方案_全文.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q12",
+            "type": "事实",
+            "theme": "顶层制度·数据造假处罚：重点排放单位与技术服务机构之别",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例.md_4",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "碳排放权交易管理暂行条例.md_6"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q13",
+            "type": "事实",
+            "theme": "顶层制度·CCER 抵销配额清缴的比例限制",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "暂行条例国新办政策解读_吹风会.md_17"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q14",
+            "type": "事实",
+            "theme": "MRV·发电设施核算边界更新（购入电力口径退出核算）",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "核算指南技术要求更新内容.md_0",
+              "核算指南技术要求更新内容.md_1",
+              "核算指南更新技术要求通知.md_0"
+            ],
+            "top_sources": [
+              "核算指南技术要求更新内容.md",
+              "核算指南技术要求更新内容.md",
+              "核算指南更新技术要求通知.md"
+            ]
+          },
+          {
+            "id": "Q15",
+            "type": "事实",
+            "theme": "MRV·排放因子取值与数据质量控制方案编制时点",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "核算指南技术要求更新内容.md_0",
+              "企业温室气体排放核查技术指南_发电设施.md_11",
+              "企业温室气体排放核查技术指南_发电设施.md_37"
+            ],
+            "top_sources": [
+              "核算指南技术要求更新内容.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q16",
+            "type": "事实",
+            "theme": "MRV·核查实施的基本要求与核查机构质量责任",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "企业温室气体排放核查技术指南_发电设施.md_2",
+              "企业温室气体排放核查技术指南_发电设施.md_10",
+              "企业温室气体排放核查技术指南_发电设施.md_11"
+            ],
+            "top_sources": [
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q17",
+            "type": "事实",
+            "theme": "MRV·核查/技术审核机构独立性与造假处罚",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 4,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例.md_4",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "碳排放权交易管理暂行条例.md_3"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q18",
+            "type": "适用",
+            "theme": "MRV·数据质量控制方案执行的核查与保守性处理（情景应用）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "企业温室气体排放核查技术指南_发电设施.md_22",
+              "企业温室气体排放核查技术指南_发电设施.md_14",
+              "企业温室气体排放核查技术指南_发电设施.md_10"
+            ],
+            "top_sources": [
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q19",
+            "type": "对比",
+            "theme": "MRV·购电间接排放核算口径（物流企业 vs 发电企业，跨文件对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1"
+            ],
+            "top_sources": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q20",
+            "type": "事实",
+            "theme": "CCER·管理办法与市场启动的基本制度框架",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_17",
+              "暂行条例国新办政策解读_吹风会.md_1",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_0"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q21",
+            "type": "事实",
+            "theme": "CCER·自愿减排项目基本条件：额外性/真实性/唯一性",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "暂行条例国新办政策解读_吹风会.md_19",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_2"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q22",
+            "type": "事实",
+            "theme": "CCER·项目方法学与审定登记制度",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 3,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_2",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q23",
+            "type": "事实",
+            "theme": "CCER·减排量登记、注销与交易机构职责",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_4",
+              "CCER方法学_煤矿低浓度瓦斯.md_0"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "CCER方法学_煤矿低浓度瓦斯.md"
+            ]
+          },
+          {
+            "id": "Q24",
+            "type": "适用",
+            "theme": "CCER·物流企业自建新能源车队能否开发 CCER 项目（负例）",
+            "difficulty": "难",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "CCER方法学_煤矿低浓度瓦斯.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_4"
+            ],
+            "top_sources": [
+              "CCER方法学_煤矿低浓度瓦斯.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q25",
+            "type": "对比",
+            "theme": "CCER·履约抵销的制度层级：条例授权／办法比例／周期方案时点",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_14",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_10"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q26",
+            "type": "对比",
+            "theme": "试点纳入机制：纳入门槛与行业范围三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "GBT32150-2025_工业企业温室气体排放核算和报告通则.md_0"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "交通运输碳达峰实施方案.md",
+              "GBT32150-2025_工业企业温室气体排放核算和报告通则.md"
+            ]
+          },
+          {
+            "id": "Q27",
+            "type": "对比",
+            "theme": "试点配额分配方式三地对比",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "广东碳排放权交易管理办法.md_1",
+              "上海碳排放管理办法.md_0"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md",
+              "上海碳排放管理办法.md"
+            ]
+          },
+          {
+            "id": "Q28",
+            "type": "对比",
+            "theme": "试点交易平台与履约机制三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "2023-2024配额分配方案_全文.md_2",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_10"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "2023-2024配额分配方案_全文.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q29",
+            "type": "适用",
+            "theme": "适用性负例：在京物流企业（设施已纳入全国市场）是否还要按北京试点履约",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "北京碳排放权交易管理办法.md_1",
+              "广东碳排放权交易管理办法.md_0"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "北京碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md"
+            ]
+          },
+          {
+            "id": "Q30",
+            "type": "适用",
+            "theme": "适用性负例：注册在粤的小型公路货运公司是否须在广东碳市场履约（拒答题）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "广东碳排放权交易管理办法.md_0",
+              "广东碳排放权交易管理办法.md_1",
+              "北京碳排放权交易管理办法.md_0"
+            ],
+            "top_sources": [
+              "广东碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md",
+              "北京碳排放权交易管理办法.md"
+            ]
+          },
+          {
+            "id": "Q31",
+            "type": "适用",
+            "theme": "跨市场边界：地方试点配额能否用于全国碳市场履约",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 3,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "广东碳排放权交易管理办法.md_0",
+              "上海碳排放管理办法.md_0",
+              "北京碳排放权交易管理办法.md_0"
+            ],
+            "top_sources": [
+              "广东碳排放权交易管理办法.md",
+              "上海碳排放管理办法.md",
+              "北京碳排放权交易管理办法.md"
+            ]
+          },
+          {
+            "id": "Q32",
+            "type": "事实",
+            "theme": "交通运输碳达峰总体目标与时间点",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "交通运输碳达峰实施方案.md_2",
+              "交通运输碳达峰实施方案.md_1",
+              "交通运输碳达峰实施方案.md_4"
+            ],
+            "top_sources": [
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md"
+            ]
+          },
+          {
+            "id": "Q33",
+            "type": "适用",
+            "theme": "运输结构调整（公转铁/公转水）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0",
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0"
+            ],
+            "top_sources": [
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md",
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q34",
+            "type": "对比",
+            "theme": "新能源车推广与购置节奏",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "交通运输碳达峰实施方案.md_3"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md"
+            ]
+          },
+          {
+            "id": "Q35",
+            "type": "事实",
+            "theme": "GB30510 限值适用对象",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q36",
+            "type": "适用",
+            "theme": "GB30510 是否直接约束物流企业排放（边界判断题）",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q37",
+            "type": "适用",
+            "theme": "公路水路营业性运输工具碳排放核算方法要点（与项目自身核算公式呼应）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0"
+            ],
+            "top_sources": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md",
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          },
+          {
+            "id": "Q38",
+            "type": "适用",
+            "theme": "冷链/干线车队节能情景",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q39",
+            "type": "对比",
+            "theme": "政策工具箱分层与综合适用性（顶层跨领域对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q40",
+            "type": "事实",
+            "theme": "产品碳足迹/碳标识制度建设与物流服务准备（顶层收尾）",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0"
+            ],
+            "top_sources": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md",
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          }
+        ],
+        "vector": [
+          {
+            "id": "Q01",
+            "type": "对比",
+            "theme": "配额分配·行业覆盖扩容（跨年度方案对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "暂行条例国新办政策解读_吹风会.md_22"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q02",
+            "type": "对比",
+            "theme": "配额分配·分配方法延续与变化（跨年度方案对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "暂行条例国新办政策解读_吹风会.md_3",
+              "2025年全国碳市场有关工作通知.md_1"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "2025年全国碳市场有关工作通知.md"
+            ]
+          },
+          {
+            "id": "Q03",
+            "type": "适用",
+            "theme": "配额分配·钢铁行业扩围后配额核定（适用型正例）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "2023-2024配额分配方案_全文.md_0"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q04",
+            "type": "适用",
+            "theme": "配额分配·物流企业履约义务（负例/拒答）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 10,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "绿色交通十四五发展规划.md_0",
+              "2025年全国碳市场有关工作通知.md_1"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "绿色交通十四五发展规划.md",
+              "2025年全国碳市场有关工作通知.md"
+            ]
+          },
+          {
+            "id": "Q05",
+            "type": "适用",
+            "theme": "配额分配·发电企业缺口率上限豁免（计算型）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_10",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_2",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_3"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q06",
+            "type": "事实",
+            "theme": "配额分配·预分配与年度清缴流程",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025年全国碳市场有关工作通知.md_1",
+              "碳排放权交易管理暂行条例.md_3",
+              "2025年全国碳市场运行情况.md_0"
+            ],
+            "top_sources": [
+              "2025年全国碳市场有关工作通知.md",
+              "碳排放权交易管理暂行条例.md",
+              "2025年全国碳市场运行情况.md"
+            ]
+          },
+          {
+            "id": "Q07",
+            "type": "事实",
+            "theme": "配额分配·2023-2024 方案核算口径与规则变化",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_17",
+              "暂行条例国新办政策解读_吹风会.md_22"
+            ],
+            "top_sources": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q08",
+            "type": "事实",
+            "theme": "配额分配·铝冶炼行业覆盖气体与核定单元",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "企业温室气体排放核查技术指南_发电设施.md_36"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q09",
+            "type": "事实",
+            "theme": "顶层制度·条例施行日期",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_14",
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "企业温室气体排放核查技术指南_发电设施.md_8"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q10",
+            "type": "对比",
+            "theme": "顶层制度·条例与办法关系对比",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "暂行条例国新办政策解读_吹风会.md_12",
+              "暂行条例国新办政策解读_吹风会.md_17"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q11",
+            "type": "事实",
+            "theme": "顶层制度·未按期足额清缴的罚则",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "企业温室气体排放核查技术指南_发电设施.md_4",
+              "碳排放权交易管理暂行条例.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q12",
+            "type": "事实",
+            "theme": "顶层制度·数据造假处罚：重点排放单位与技术服务机构之别",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md"
+            ]
+          },
+          {
+            "id": "Q13",
+            "type": "事实",
+            "theme": "顶层制度·CCER 抵销配额清缴的比例限制",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_23",
+              "交通运输碳达峰实施方案.md_3",
+              "2023-2024配额分配方案_全文.md_14"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "交通运输碳达峰实施方案.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q14",
+            "type": "事实",
+            "theme": "MRV·发电设施核算边界更新（购入电力口径退出核算）",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 6,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "核算指南更新技术要求通知.md_0",
+              "企业温室气体排放核查技术指南_发电设施.md_2",
+              "企业温室气体排放核算与报告指南_钢铁行业.md_28"
+            ],
+            "top_sources": [
+              "核算指南更新技术要求通知.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核算与报告指南_钢铁行业.md"
+            ]
+          },
+          {
+            "id": "Q15",
+            "type": "事实",
+            "theme": "MRV·排放因子取值与数据质量控制方案编制时点",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 9,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1",
+              "碳排放权交易管理暂行条例.md_3",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_16"
+            ],
+            "top_sources": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "碳排放权交易管理暂行条例.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q16",
+            "type": "事实",
+            "theme": "MRV·核查实施的基本要求与核查机构质量责任",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "省级温室气体清单编制指南_2025版通知.md_2",
+              "企业温室气体排放核算与报告指南_钢铁行业.md_7",
+              "2025年全国碳市场有关工作通知.md_7"
+            ],
+            "top_sources": [
+              "省级温室气体清单编制指南_2025版通知.md",
+              "企业温室气体排放核算与报告指南_钢铁行业.md",
+              "2025年全国碳市场有关工作通知.md"
+            ]
+          },
+          {
+            "id": "Q17",
+            "type": "事实",
+            "theme": "MRV·核查/技术审核机构独立性与造假处罚",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例.md_7",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md"
+            ]
+          },
+          {
+            "id": "Q18",
+            "type": "适用",
+            "theme": "MRV·数据质量控制方案执行的核查与保守性处理（情景应用）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q19",
+            "type": "对比",
+            "theme": "MRV·购电间接排放核算口径（物流企业 vs 发电企业，跨文件对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "企业温室气体排放核算与报告指南_钢铁行业.md_47",
+              "碳排放权交易管理暂行条例_国务院版.md_10"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "企业温室气体排放核算与报告指南_钢铁行业.md",
+              "碳排放权交易管理暂行条例_国务院版.md"
+            ]
+          },
+          {
+            "id": "Q20",
+            "type": "事实",
+            "theme": "CCER·管理办法与市场启动的基本制度框架",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "碳排放权交易管理办法_试行_全文.md_1"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "碳排放权交易管理办法_试行_全文.md"
+            ]
+          },
+          {
+            "id": "Q21",
+            "type": "事实",
+            "theme": "CCER·自愿减排项目基本条件：额外性/真实性/唯一性",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "暂行条例国新办政策解读_吹风会.md_18"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q22",
+            "type": "事实",
+            "theme": "CCER·项目方法学与审定登记制度",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "碳排放权交易管理暂行条例_国务院版.md_4"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "碳排放权交易管理暂行条例_国务院版.md"
+            ]
+          },
+          {
+            "id": "Q23",
+            "type": "事实",
+            "theme": "CCER·减排量登记、注销与交易机构职责",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "企业温室气体排放核算与报告指南_钢铁行业.md_37",
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "交通运输碳达峰实施方案.md_3"
+            ],
+            "top_sources": [
+              "企业温室气体排放核算与报告指南_钢铁行业.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "交通运输碳达峰实施方案.md"
+            ]
+          },
+          {
+            "id": "Q24",
+            "type": "适用",
+            "theme": "CCER·物流企业自建新能源车队能否开发 CCER 项目（负例）",
+            "difficulty": "难",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "绿色交通十四五发展规划.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "绿色交通十四五发展规划.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q25",
+            "type": "对比",
+            "theme": "CCER·履约抵销的制度层级：条例授权／办法比例／周期方案时点",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1",
+              "碳排放权交易管理暂行条例.md_3",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_16"
+            ],
+            "top_sources": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "碳排放权交易管理暂行条例.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q26",
+            "type": "对比",
+            "theme": "试点纳入机制：纳入门槛与行业范围三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "绿色交通十四五发展规划.md_0",
+              "暂行条例国新办政策解读_吹风会.md_22"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "绿色交通十四五发展规划.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q27",
+            "type": "对比",
+            "theme": "试点配额分配方式三地对比",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "碳排放权交易管理暂行条例_国务院版.md_10"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "碳排放权交易管理暂行条例_国务院版.md"
+            ]
+          },
+          {
+            "id": "Q28",
+            "type": "对比",
+            "theme": "试点交易平台与履约机制三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "十五五碳达峰行动方案_2026.md_4",
+              "暂行条例国新办政策解读_吹风会.md_4"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "十五五碳达峰行动方案_2026.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q29",
+            "type": "适用",
+            "theme": "适用性负例：在京物流企业（设施已纳入全国市场）是否还要按北京试点履约",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "2023-2024配额分配方案_全文.md_12"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q30",
+            "type": "适用",
+            "theme": "适用性负例：注册在粤的小型公路货运公司是否须在广东碳市场履约（拒答题）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "2023-2024配额分配方案_全文.md_12",
+              "企业温室气体排放核查技术指南_发电设施.md_36"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "2023-2024配额分配方案_全文.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q31",
+            "type": "适用",
+            "theme": "跨市场边界：地方试点配额能否用于全国碳市场履约",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_0",
+              "企业温室气体排放核查技术指南_发电设施.md_4",
+              "2025年全国碳市场运行情况.md_0"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "2025年全国碳市场运行情况.md"
+            ]
+          },
+          {
+            "id": "Q32",
+            "type": "事实",
+            "theme": "交通运输碳达峰总体目标与时间点",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q33",
+            "type": "适用",
+            "theme": "运输结构调整（公转铁/公转水）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "暂行条例国新办政策解读_吹风会.md_17"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q34",
+            "type": "对比",
+            "theme": "新能源车推广与购置节奏",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 10,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "2023-2024配额分配方案_全文.md_12",
+              "暂行条例国新办政策解读_吹风会.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "2023-2024配额分配方案_全文.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q35",
+            "type": "事实",
+            "theme": "GB30510 限值适用对象",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_12",
+              "绿色交通十四五发展规划.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "绿色交通十四五发展规划.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q36",
+            "type": "适用",
+            "theme": "GB30510 是否直接约束物流企业排放（边界判断题）",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "暂行条例国新办政策解读_吹风会.md_22"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q37",
+            "type": "适用",
+            "theme": "公路水路营业性运输工具碳排放核算方法要点（与项目自身核算公式呼应）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5",
+              "企业温室气体排放核查技术指南_发电设施.md_36",
+              "十五五碳达峰行动方案_2026.md_6"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "十五五碳达峰行动方案_2026.md"
+            ]
+          },
+          {
+            "id": "Q38",
+            "type": "适用",
+            "theme": "冷链/干线车队节能情景",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 6,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_22",
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q39",
+            "type": "对比",
+            "theme": "政策工具箱分层与综合适用性（顶层跨领域对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "2023-2024配额分配方案_全文.md_1",
+              "碳排放权交易管理暂行条例.md_7"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "2023-2024配额分配方案_全文.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q40",
+            "type": "事实",
+            "theme": "产品碳足迹/碳标识制度建设与物流服务准备（顶层收尾）",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "2023-2024配额分配方案_全文.md_12",
+              "碳排放权交易管理暂行条例_国务院版.md_10"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "2023-2024配额分配方案_全文.md",
+              "碳排放权交易管理暂行条例_国务院版.md"
+            ]
+          }
+        ],
+        "hybrid": [
+          {
+            "id": "Q01",
+            "type": "对比",
+            "theme": "配额分配·行业覆盖扩容（跨年度方案对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_17",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_0"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q02",
+            "type": "对比",
+            "theme": "配额分配·分配方法延续与变化（跨年度方案对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 6,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_16",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_17",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q03",
+            "type": "适用",
+            "theme": "配额分配·钢铁行业扩围后配额核定（适用型正例）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2023-2024配额分配方案_全文.md_1",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md"
+            ]
+          },
+          {
+            "id": "Q04",
+            "type": "适用",
+            "theme": "配额分配·物流企业履约义务（负例/拒答）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_0",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_8"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q05",
+            "type": "适用",
+            "theme": "配额分配·发电企业缺口率上限豁免（计算型）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_3",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_4",
+              "2023-2024配额分配方案_全文.md_3"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q06",
+            "type": "事实",
+            "theme": "配额分配·预分配与年度清缴流程",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_10"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q07",
+            "type": "事实",
+            "theme": "配额分配·2023-2024 方案核算口径与规则变化",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "2023-2024配额分配方案_全文.md_5",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1"
+            ],
+            "top_sources": [
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md"
+            ]
+          },
+          {
+            "id": "Q08",
+            "type": "事实",
+            "theme": "配额分配·铝冶炼行业覆盖气体与核定单元",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_1",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_5",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_0"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q09",
+            "type": "事实",
+            "theme": "顶层制度·条例施行日期",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例_国务院版.md_10",
+              "碳排放权交易管理暂行条例.md_0",
+              "碳排放权交易管理暂行条例_国务院版.md_9"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md",
+              "碳排放权交易管理暂行条例_国务院版.md"
+            ]
+          },
+          {
+            "id": "Q10",
+            "type": "对比",
+            "theme": "顶层制度·条例与办法关系对比",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2023-2024配额分配方案_全文.md_0",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_0",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md_1"
+            ],
+            "top_sources": [
+              "2023-2024配额分配方案_全文.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md",
+              "2023-2024年度全国碳排放权交易配额总量和分配方案.md"
+            ]
+          },
+          {
+            "id": "Q11",
+            "type": "事实",
+            "theme": "顶层制度·未按期足额清缴的罚则",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12",
+              "2023-2024配额分配方案_全文.md_5"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q12",
+            "type": "事实",
+            "theme": "顶层制度·数据造假处罚：重点排放单位与技术服务机构之别",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 7,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "碳排放权交易管理暂行条例.md_6",
+              "碳排放权交易管理暂行条例.md_7"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q13",
+            "type": "事实",
+            "theme": "顶层制度·CCER 抵销配额清缴的比例限制",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "暂行条例国新办政策解读_吹风会.md_17"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q14",
+            "type": "事实",
+            "theme": "MRV·发电设施核算边界更新（购入电力口径退出核算）",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "核算指南更新技术要求通知.md_0",
+              "核算指南技术要求更新内容.md_0",
+              "核算指南技术要求更新内容.md_1"
+            ],
+            "top_sources": [
+              "核算指南更新技术要求通知.md",
+              "核算指南技术要求更新内容.md",
+              "核算指南技术要求更新内容.md"
+            ]
+          },
+          {
+            "id": "Q15",
+            "type": "事实",
+            "theme": "MRV·排放因子取值与数据质量控制方案编制时点",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "核算指南技术要求更新内容.md_0",
+              "企业温室气体排放核查技术指南_发电设施.md_11",
+              "企业温室气体排放核查技术指南_发电设施.md_4"
+            ],
+            "top_sources": [
+              "核算指南技术要求更新内容.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q16",
+            "type": "事实",
+            "theme": "MRV·核查实施的基本要求与核查机构质量责任",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "企业温室气体排放核查技术指南_发电设施.md_2",
+              "企业温室气体排放核查技术指南_发电设施.md_19",
+              "企业温室气体排放核查技术指南_发电设施.md_10"
+            ],
+            "top_sources": [
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q17",
+            "type": "事实",
+            "theme": "MRV·核查/技术审核机构独立性与造假处罚",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 7,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "碳排放权交易管理暂行条例.md_7",
+              "碳排放权交易管理暂行条例_国务院版.md_4",
+              "碳排放权交易管理暂行条例.md_3"
+            ],
+            "top_sources": [
+              "碳排放权交易管理暂行条例.md",
+              "碳排放权交易管理暂行条例_国务院版.md",
+              "碳排放权交易管理暂行条例.md"
+            ]
+          },
+          {
+            "id": "Q18",
+            "type": "适用",
+            "theme": "MRV·数据质量控制方案执行的核查与保守性处理（情景应用）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "企业温室气体排放核查技术指南_发电设施.md_22",
+              "企业温室气体排放核查技术指南_发电设施.md_14",
+              "企业温室气体排放核查技术指南_发电设施.md_10"
+            ],
+            "top_sources": [
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md",
+              "企业温室气体排放核查技术指南_发电设施.md"
+            ]
+          },
+          {
+            "id": "Q19",
+            "type": "对比",
+            "theme": "MRV·购电间接排放核算口径（物流企业 vs 发电企业，跨文件对比）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0",
+              "绿色交通十四五发展规划.md_1"
+            ],
+            "top_sources": [
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          },
+          {
+            "id": "Q20",
+            "type": "事实",
+            "theme": "CCER·管理办法与市场启动的基本制度框架",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 8,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_17",
+              "暂行条例国新办政策解读_吹风会.md_1",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_0"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q21",
+            "type": "事实",
+            "theme": "CCER·自愿减排项目基本条件：额外性/真实性/唯一性",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "暂行条例国新办政策解读_吹风会.md_17",
+              "暂行条例国新办政策解读_吹风会.md_1"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md"
+            ]
+          },
+          {
+            "id": "Q22",
+            "type": "事实",
+            "theme": "CCER·项目方法学与审定登记制度",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 3,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "暂行条例国新办政策解读_吹风会.md_18",
+              "暂行条例国新办政策解读_吹风会.md_19",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3"
+            ],
+            "top_sources": [
+              "暂行条例国新办政策解读_吹风会.md",
+              "暂行条例国新办政策解读_吹风会.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q23",
+            "type": "事实",
+            "theme": "CCER·减排量登记、注销与交易机构职责",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 5,
+            "hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "CCER方法学_煤矿低浓度瓦斯.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_4"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "CCER方法学_煤矿低浓度瓦斯.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q24",
+            "type": "适用",
+            "theme": "CCER·物流企业自建新能源车队能否开发 CCER 项目（负例）",
+            "difficulty": "难",
+            "applicability_label": "不适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_3",
+              "CCER方法学_煤矿低浓度瓦斯.md_0",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md_4"
+            ],
+            "top_sources": [
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md",
+              "CCER方法学_煤矿低浓度瓦斯.md",
+              "推进绿色低碳转型加强全国碳市场建设意见_2025.md"
+            ]
+          },
+          {
+            "id": "Q25",
+            "type": "对比",
+            "theme": "CCER·履约抵销的制度层级：条例授权／办法比例／周期方案时点",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_16",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12"
+            ],
+            "top_sources": [
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q26",
+            "type": "对比",
+            "theme": "试点纳入机制：纳入门槛与行业范围三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "GBT32150-2025_工业企业温室气体排放核算和报告通则.md_1"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "交通运输碳达峰实施方案.md",
+              "GBT32150-2025_工业企业温室气体排放核算和报告通则.md"
+            ]
+          },
+          {
+            "id": "Q27",
+            "type": "对比",
+            "theme": "试点配额分配方式三地对比",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "广东碳排放权交易管理办法.md_1",
+              "上海碳排放管理办法.md_0"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md",
+              "上海碳排放管理办法.md"
+            ]
+          },
+          {
+            "id": "Q28",
+            "type": "对比",
+            "theme": "试点交易平台与履约机制三地对比",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "2023-2024配额分配方案_全文.md_2",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md_12"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "2023-2024配额分配方案_全文.md",
+              "2025-2026年度配额总量和分配方案_征求意见稿.md"
+            ]
+          },
+          {
+            "id": "Q29",
+            "type": "适用",
+            "theme": "适用性负例：在京物流企业（设施已纳入全国市场）是否还要按北京试点履约",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "北京碳排放权交易管理办法.md_0",
+              "北京碳排放权交易管理办法.md_1",
+              "2023-2024配额分配方案_全文.md_0"
+            ],
+            "top_sources": [
+              "北京碳排放权交易管理办法.md",
+              "北京碳排放权交易管理办法.md",
+              "2023-2024配额分配方案_全文.md"
+            ]
+          },
+          {
+            "id": "Q30",
+            "type": "适用",
+            "theme": "适用性负例：注册在粤的小型公路货运公司是否须在广东碳市场履约（拒答题）",
+            "difficulty": "易",
+            "applicability_label": "不适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "广东碳排放权交易管理办法.md_1",
+              "广东碳排放权交易管理办法.md_0",
+              "北京碳排放权交易管理办法.md_1"
+            ],
+            "top_sources": [
+              "广东碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md",
+              "北京碳排放权交易管理办法.md"
+            ]
+          },
+          {
+            "id": "Q31",
+            "type": "适用",
+            "theme": "跨市场边界：地方试点配额能否用于全国碳市场履约",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "上海碳排放管理办法.md_0",
+              "北京碳排放权交易管理办法.md_0",
+              "广东碳排放权交易管理办法.md_0"
+            ],
+            "top_sources": [
+              "上海碳排放管理办法.md",
+              "北京碳排放权交易管理办法.md",
+              "广东碳排放权交易管理办法.md"
+            ]
+          },
+          {
+            "id": "Q32",
+            "type": "事实",
+            "theme": "交通运输碳达峰总体目标与时间点",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "交通运输碳达峰实施方案.md_2",
+              "交通运输碳达峰实施方案.md_1",
+              "交通运输碳达峰实施方案.md_3"
+            ],
+            "top_sources": [
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md"
+            ]
+          },
+          {
+            "id": "Q33",
+            "type": "适用",
+            "theme": "运输结构调整（公转铁/公转水）",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 2,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0",
+              "绿色交通十四五发展规划.md_1"
+            ],
+            "top_sources": [
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          },
+          {
+            "id": "Q34",
+            "type": "对比",
+            "theme": "新能源车推广与购置节奏",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "交通运输碳达峰实施方案.md_3"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "交通运输碳达峰实施方案.md",
+              "交通运输碳达峰实施方案.md"
+            ]
+          },
+          {
+            "id": "Q35",
+            "type": "事实",
+            "theme": "GB30510 限值适用对象",
+            "difficulty": "易",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q36",
+            "type": "适用",
+            "theme": "GB30510 是否直接约束物流企业排放（边界判断题）",
+            "difficulty": "难",
+            "applicability_label": "部分适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q37",
+            "type": "适用",
+            "theme": "公路水路营业性运输工具碳排放核算方法要点（与项目自身核算公式呼应）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "绿色交通十四五发展规划.md_0"
+            ],
+            "top_sources": [
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md",
+              "交通运输碳达峰实施方案.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          },
+          {
+            "id": "Q38",
+            "type": "适用",
+            "theme": "冷链/干线车队节能情景",
+            "difficulty": "中",
+            "applicability_label": "适用",
+            "first_rank": 3,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2",
+              "绿色交通十四五发展规划.md_0"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "绿色交通十四五发展规划.md"
+            ]
+          },
+          {
+            "id": "Q39",
+            "type": "对比",
+            "theme": "政策工具箱分层与综合适用性（顶层跨领域对比）",
+            "difficulty": "难",
+            "applicability_label": "适用",
+            "first_rank": 1,
+            "hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "source_hits_at_k": {
+              "3": true,
+              "5": true,
+              "10": true
+            },
+            "top_retrieved_ids": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_0",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_1",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md_2"
+            ],
+            "top_sources": [
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md",
+              "GB30510-2024_重型商用车辆燃料消耗量限值.md"
+            ]
+          },
+          {
+            "id": "Q40",
+            "type": "事实",
+            "theme": "产品碳足迹/碳标识制度建设与物流服务准备（顶层收尾）",
+            "difficulty": "中",
+            "applicability_label": "部分适用",
+            "first_rank": 0,
+            "hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "source_hits_at_k": {
+              "3": false,
+              "5": false,
+              "10": false
+            },
+            "top_retrieved_ids": [
+              "绿色交通十四五发展规划.md_0",
+              "交通运输碳达峰实施方案.md_2",
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md_0"
+            ],
+            "top_sources": [
+              "绿色交通十四五发展规划.md",
+              "交通运输碳达峰实施方案.md",
+              "公路水路营业性运输工具碳排放核算方法_征求意见稿.md"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

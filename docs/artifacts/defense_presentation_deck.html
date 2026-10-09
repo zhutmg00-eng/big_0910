@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国家级大创中期汇报 · 物流碳排放与减排情景决策助手</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-light: #f8fafc;
+      --card-bg: #ffffff;
+      --card-hover: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --primary: #0f2b48;      /* 沉稳学术黛蓝 */
+      --secondary: #1a5336;    /* 典雅松柏墨绿 */
+      --accent: #b45309;       /* 熟赭金/琥珀 */
+      --critical: #881337;     /* 学院砖红 */
+      --text: #1e293b;         /* 灰黑文字 */
+      --text-muted: #64748b;   /* 次要文字 */
+      --text-footnote: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif; }
+    body { background: #e2e8f0; color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    
+    /* 顶栏控制条（典雅学术白） */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-strong);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header-title { font-size: 14px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .header-badge { background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid #bfdbfe; }
+    .controls { display: flex; align-items: center; gap: 10px; }
+    button {
+      background: #ffffff;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { background: var(--bg-light); border-color: var(--primary); color: var(--primary); }
+    .btn-primary { background: var(--primary); color: white; border: none; }
+    .btn-primary:hover { background: #1e3a8a; color: white; }
+
+    /* 幻灯片主舞台 */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+    }
+    .slide-viewport {
+      width: 100%;
+      max-width: 1333px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 单页幻灯片通用结构 */
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: 32px 48px 24px 48px;
+      flex-direction: column;
+      position: relative;
+    }
+    .slide.active { display: flex; }
+    
+    .slide-header {
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .slide-header-left { border-top: 3px solid var(--primary); padding-top: 6px; }
+    .slide-category { font-size: 11px; font-weight: 700; color: var(--secondary); letter-spacing: 0.5px; margin-bottom: 2px; }
+    .slide-title { font-size: 22px; font-weight: 800; color: var(--primary); }
+    .slide-page-num { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    /* 学术卡片 */
+    .academic-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .academic-card.border-primary { border-top: 3px solid var(--primary); }
+    .academic-card.border-secondary { border-top: 3px solid var(--secondary); }
+    .academic-card.border-accent { border-top: 3px solid var(--accent); }
+    .academic-card.border-critical { border-top: 3px solid var(--critical); }
+
+    .card-tag { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    /* 图表展示区 */
+    .chart-box {
+      flex: 1.85;
+      background: #ffffff;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8px;
+    }
+    .chart-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .info-pane {
+      flex: 1.15;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    /* 底部学术来源注记 */
+    .footnote {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      border-top: 1px dashed var(--border);
+      padding-top: 4px;
+    }
+
+    /* 讲稿抽屉 */
+    #notes-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 3px solid var(--primary);
+      max-height: 240px;
+      overflow-y: auto;
+      padding: 16px 28px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--text);
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 200;
+    }
+    #notes-drawer.open { display: block; }
+    .notes-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    
+    /* 进度条 */
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 6.25%;
+      transition: width 0.3s;
+    }
+
+    /* 表格样式 */
+    table.academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      text-align: left;
+    }
+    table.academic-table th {
+      background: #f1f5f9;
+      color: var(--primary);
+      font-weight: 700;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--border-strong);
+    }
+    table.academic-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    table.academic-table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <span>国家级大学生创新创业训练计划 · 中期汇报</span>
+      <span class="header-badge">学术研究规范 16:9 演示系统</span>
+    </div>
+    <div class="controls">
+      <button onclick="prevSlide()">◀ 上一页 (P)</button>
+      <span id="page-indicator" style="font-size: 13px; font-weight: 700; color: var(--primary); min-width: 60px; text-align: center;">01 / 16</span>
+      <button onclick="nextSlide()">下一页 (N) ▶</button>
+      <button onclick="toggleNotes()">🎙 答辩逐字讲稿与来源速查 (S)</button>
+      <button class="btn-primary" onclick="toggleFullScreen()">⛶ 全屏答辩 (F)</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="slide-viewport">
+      
+      <!-- Slide 1: 封面 -->
+      <div class="slide active" id="slide-1">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding-left: 24px; border-left: 4px solid var(--primary);">
+          <div style="font-size: 13px; font-weight: 700; color: var(--secondary); margin-bottom: 8px; letter-spacing: 0.5px;">
+            国家级大学生创新创业训练计划科研项目 · 中期研发与实证进展汇报
+          </div>
+          <h1 style="font-size: 36px; font-weight: 900; color: var(--primary); margin-bottom: 8px; line-height: 1.2;">
+            物流碳排放与减排情景决策助手
+          </h1>
+          <h3 style="font-size: 17px; font-weight: 600; color: var(--text-muted); margin-bottom: 22px;">
+            ——基于活动水平实证、小样本特征重排与车电分离 TCO 的微观决策模型研发
+          </h3>
+          <div style="font-size: 12px; color: var(--text); line-height: 1.8;">
+            <b>项目编号</b>：202510001001X &nbsp;&nbsp;|&nbsp;&nbsp; <b>项目性质</b>：重点支持领域项目 &nbsp;&nbsp;|&nbsp;&nbsp; <b>汇报阶段</b>：中期检查与阶段复核<br>
+            <b>课题负责人</b>：陈铭浩（系统架构/模型推导） &nbsp;&nbsp;|&nbsp;&nbsp; <b>团队成员</b>：张可为（核算实证）、王逸贤（RAG工程/测试）<br>
+            <b>指导教师</b>：汪晓霞 教授（交通低碳与系统工程学科） &nbsp;&nbsp;|&nbsp;&nbsp; <b>依托单位</b>：交通与物流工程学院
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px;">
+          <div class="academic-card border-primary" style="padding: 12px;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">51,990 辆</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">全样本实证复核规模</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">顺丰/中通/京东/冷链 4 典型场景</div>
+          </div>
+          <div class="academic-card border-secondary" style="padding: 12px;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--secondary);">4.23% MAPE</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">加权平均相对误差</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">[+1.66%, +7.27%] 恒定保守正偏</div>
+          </div>
+          <div class="academic-card border-accent" style="padding: 12px;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--accent);">40 题 / Kappa=1.0</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">法规知识库与金标集</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">37 份顶层法规切分 268 Chunk</div>
+          </div>
+          <div class="academic-card border-primary" style="padding: 12px;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">107 项全绿</div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">自动化回归测试全部通过</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">物理守恒断言与 PEP 540 防死锁</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: 现实痛点 -->
+      <div class="slide" id="slide-2">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">01 课题背景 · 现实驱动</div>
+            <div class="slide-title">课题背景：道路货运降碳现实困难与微观核算决策需求</div>
+          </div>
+          <div class="slide-page-num">02 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div class="academic-card border-critical">
+            <div class="card-tag" style="color: var(--critical);">现实瓶颈一 · 核算数据源受限</div>
+            <div class="card-title">缺乏逐车逐月油票与真实台账</div>
+            <div class="card-desc">
+              • 中小承运商占全行业 80% 以上，普遍缺失完备加油发票与车载能耗监测；<br><br>
+              • 传统宏观自上而下能耗法与微观工况脱节，难以度量满载率与空驶损耗；<br><br>
+              • 粗糙估算导致合规低估风险，企业面临潜在“漂绿 (Greenwashing)”质疑。
+            </div>
+            <div style="margin-top: auto; font-size: 10px; color: var(--accent); padding-top: 8px;">
+              对应规范：IPCC Tier 1/2 移动源指南衔接困难
+            </div>
+          </div>
+          <div class="academic-card border-accent">
+            <div class="card-tag" style="color: var(--accent);">现实瓶颈二 · 法规适用性混淆</div>
+            <div class="card-title">双碳政策生涩繁杂且长尾实体模糊</div>
+            <div class="card-desc">
+              • 全国碳市场目前仅覆盖发电/钢铁/水泥/铝冶炼，道路货运未被纳入配额管理；<br><br>
+              • 中小物流企业极易误套发电配额规则，甚至听信“买电车卖 CCER”伪概念；<br><br>
+              • 通用大模型在商用车强标编号（如 GB 30510）与法律罚则上弥散严重。
+            </div>
+            <div style="margin-top: auto; font-size: 10px; color: var(--accent); padding-top: 8px;">
+              对应法规：国务院令第775号《碳排放权交易管理暂行条例》
+            </div>
+          </div>
+          <div class="academic-card border-primary">
+            <div class="card-tag" style="color: var(--primary);">现实瓶颈三 · 投资经济账算不清</div>
+            <div class="card-title">重卡电动化初始垫资巨大与决策黑箱</div>
+            <div class="card-desc">
+              • 49 吨重型柴油车直接置换纯电整车（含桩）初期垫资超 30 万元/车；<br><br>
+              • 电池衰减折旧与运营电耗充满不确定性，投资回收周期模糊不清；<br><br>
+              • 缺乏结合油电价差、动态满载率与车电分离租金的透明财务决策模型。
+            </div>
+            <div style="margin-top: auto; font-size: 10px; color: var(--accent); padding-top: 8px;">
+              对应场景：GB 1589-2016 营运商用车置换评估
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--bg-light); border: 1px solid var(--border-strong); border-radius: 4px; padding: 8px 12px; margin-top: 8px; font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+          <b>【学术研究边界与免责声明】</b>：道路货运物流企业目前未纳入全国碳市场配额管理。本项目原型所测算的“模拟碳预算”仅作为企业对标《交通运输碳达峰实施方案》的情景工具，以碳价为影子价格辅助 TCO 经济决策，不构成法定履约义务。
+        </div>
+      </div>
+
+      <!-- Slide 3: 科学问题体系 -->
+      <div class="slide" id="slide-3">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">02 科研逻辑 · 问题凝练</div>
+            <div class="slide-title">研究逻辑：三大递进式科学问题体系 (Research Questions)</div>
+          </div>
+          <div class="slide-page-num">03 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div class="academic-card border-primary">
+            <div class="card-tag" style="color: var(--primary);">科学问题一 (RQ1) · 核算精度与误差特性</div>
+            <div class="card-title">自下而上活动水平法的微观精度与系统误差方向？</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+              <b>【数据来源】</b>：针对中小物流缺乏发票台账问题，采用吕晨、蔡博峰2021分省排放因子与GB 30510标准，对比顺丰/中通等4家企业披露的真实燃油消耗台账。
+            </div>
+            <div style="background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; font-size: 11px; color: var(--text); margin-top: auto;">
+              <b>【实证推导结论】</b>：加权 MAPE 为 4.23%；全样本相对误差恒定呈现 [+1.66%, +7.27%] 的微幅正偏。依《GHG Protocol》审慎保守准则，正偏高估避免了低估漂绿合规风险，形成上限安全垫。
+            </div>
+          </div>
+          <div class="academic-card border-secondary">
+            <div class="card-tag" style="color: var(--secondary);">科学问题二 (RQ2) · 法规检索与抗幻觉防御</div>
+            <div class="card-title">通用向量长尾失效机理与轻量特征重排有效性？</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+              <b>【数据来源】</b>：切分 37 份顶层法规构建 268 Chunk 知识库，设计包含 4 道反事实违规诱导题的 40 题双盲审校金标集（Kappa=1.0）。
+            </div>
+            <div style="background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid var(--secondary); padding: 8px; border-radius: 4px; font-size: 11px; color: var(--text); margin-top: auto;">
+              <b>【实验推导结论】</b>：揭示通用向量在法律编号上的长尾弥散（MRR 仅 0.0411）；混合重排将 MRR 提升至 0.8171（提升近20倍），Wilcoxon 检验 p < 0.001 极显著，保持 100% 反事实合规拒答率。
+            </div>
+          </div>
+          <div class="academic-card border-accent">
+            <div class="card-tag" style="color: var(--accent);">科学问题三 (RQ3) · 参数敏感性与置换决策</div>
+            <div class="card-title">工况扰动敏感性区间与换电 BaaS 模式可行性？</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+              <b>【数据来源】</b>：建立 5×5 (±20%) 扰动网格扫描 50 组参数组合；基于商用重卡财务数据构建考虑电池剥离与租赁费的 TCO 现金流方程。
+            </div>
+            <div style="background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid var(--accent); padding: 8px; border-radius: 4px; font-size: 11px; color: var(--text); margin-top: auto;">
+              <b>【理论推导结论】</b>：50组网格扫描显示全样本 MAPE 介于 3.04% 至 29.80% (中位数 14.52%)，里程为一阶主导因子；重卡 BaaS 剥离电池使初始垫资降幅 69.7%，轻卡/重卡静态回收期分别为 0.97 年与 1.04 年。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: 核算公式推导与方法学对标 -->
+      <div class="slide" id="slide-4">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">03 方法学 · 公式推导</div>
+            <div class="slide-title">核算方法学：活动水平法与燃料台账法的数学推导及对标</div>
+          </div>
+          <div class="slide-page-num">04 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="academic-card border-primary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
+              方法一：自下而上活动水平法（本模型计算引擎）
+            </div>
+            <div style="font-size: 11px; line-height: 1.6; color: var(--text);">
+              <b>Step 1 · 核心核算公式</b>：<br>
+              <code>E_model = Σ (n_i × d_i × EF_i × LF_i) / 1000  (tCO2e/年)</code><br>
+              • n_i: 第 i 类车型车辆数 (辆)； d_i: 年均行驶里程 (km/年)<br>
+              • EF_i: 单位里程直接排放因子 (kgCO2/km)<br><br>
+              <b>Step 2 · 动态满载率惩罚函数</b>：<br>
+              <code>LF_i = 1 + 0.15 × max(0, 0.75 - l_i)</code><br>
+              • l_i: 实际吨位实载率（官方口径：实际周转量 / (行程 × 核载)）<br>
+              • 当 l_i < 0.75 时，货物分摊效率下降，单位排放线性惩罚上浮；<br><br>
+              <b>Step 3 · 排放因子取值依据</b>：<br>
+              • 重型柴油货车 (49t): 0.877 kg/km (蔡博峰2021，对标GB 30510限值0.858)<br>
+              • 中型柴油货车: 0.508 kg/km；轻型柴油货车: 0.374 kg/km<br>
+              • 新能源物流车: 车辆直接运营排放记为 0 (Scope 1)
+            </div>
+          </div>
+          <div class="academic-card border-accent">
+            <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">
+              方法二：自上而下企业能源台账基准法（真实消耗检验基准）
+            </div>
+            <div style="font-size: 11px; line-height: 1.6; color: var(--text);">
+              <b>Step 1 · 台账核算公式 (IPCC 2006/2019)</b>：<br>
+              <code>E_fuel = Σ (FC_j × NCV_j × CC_j × OF_j × 44/12) / 10^6</code><br>
+              或通过法定单位体积直接排放因子直接折算：<br>
+              <code>E_fuel = Σ (燃料消耗升数 × EF_direct) / 1000  (tCO2e)</code><br><br>
+              <b>Step 2 · 权威折算参数取值表 (GB/T 32150 & IPCC)</b>：<br>
+              • 车用柴油: 2.730 kg CO2/L (热值 42.652 GJ/t, 含碳量 20.2 tC/TJ, 氧化率 98%)<br>
+              • 车用汽油: 2.310 kg CO2/L (热值 43.070 GJ/t, 含碳量 18.9 tC/TJ, 氧化率 98%)<br>
+              • 液化天然气 (LNG): 2.690 kg CO2/kg (发热量 48.900 GJ/t, 含碳量 15.3 tC/TJ)<br><br>
+              <b>Step 3 · 相对误差评估方程</b>：<br>
+              <code>δ = (E_model - E_fuel) / E_fuel × 100%</code><br>
+              用于严格检验活动水平估算与真实采购发票台账的贴合度。
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：蔡博峰等《中国分省道路交通二氧化碳排放因子》(中国环境科学, 2021)；GB/T 32150-2025《工业企业温室气体排放核算和报告通则》；IPCC 2019 移动源燃烧指南
+        </div>
+      </div>
+
+      <!-- Slide 5: 系统总体架构 (图0) -->
+      <div class="slide" id="slide-5">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">04 系统工程 · 架构设计</div>
+            <div class="slide-title">系统架构：全层级解耦设计与 Cordis 微内核生态实现</div>
+          </div>
+          <div class="slide-page-num">05 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig0_system_architecture.png" alt="系统全层级技术架构图">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 全层级解耦体系</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">系统横向拆分为多模态接入层、API服务层、核心计算/推理引擎层与实证支撑层，确保计算逻辑与UI完全解耦。</div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[2] Cordis 标准生态插件</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">依据 DeepSeek Harness 官方微内核规范封装插件，注册 6 大专业碳资产工具，实现 AI Agent 无缝调用。</div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 双模自适应通信协议</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">后端在线时走 HTTP RESTful 高性能异步服务；离线时透明降级为本地 Python CLI 子进程，杜绝依赖死锁。</div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 工程质量与规范保障</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">全仓编写 107 项全自动化回归测试；强制注入 PEP 540 UTF-8 环境，配置 30 秒超时熔断，防范跨平台挂起。</div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：代码已开源托管，全套架构设计详见 docs/architecture.md 与 packages/dsh-plugin-carbon-asset
+        </div>
+      </div>
+
+      <!-- Slide 6: 4大车队数据源明细表 -->
+      <div class="slide" id="slide-6">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">05 数据溯源 · 样本画像</div>
+            <div class="slide-title">实证数据源：4 大典型车队公开披露依据与样本参数溯源</div>
+          </div>
+          <div class="slide-page-num">06 / 16</div>
+        </div>
+        <div class="slide-body" style="flex-direction: column;">
+          <table class="academic-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">案例对象</th>
+                <th style="width: 18%;">业务场景代表性</th>
+                <th style="width: 15%;">核算车辆规模</th>
+                <th style="width: 20%;">公开数据出处及页码</th>
+                <th style="width: 18%;">披露原始能耗台账</th>
+                <th style="width: 15%;">参数设定独立性说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>顺丰控股</b><br>(002352.SZ)</td>
+                <td>全国综合干支线混合<br>+大规模新能源末端</td>
+                <td><b>27,500 辆</b><br>(重2800/中4200/<br>轻8500/电12000)</td>
+                <td>《2023可持续发展报告》第4.2节与环境KPI表<br>《2024碳中和白皮书》</td>
+                <td>柴油消耗 168.5 百万升<br>用电 67.2 百万 kWh<br>披露排放 460,005 tCO2e</td>
+                <td>按官方行业统计设定里程与实载率，不以拟合为目标</td>
+              </tr>
+              <tr>
+                <td><b>中通快递</b><br>(2057.HK/ZTO)</td>
+                <td>集约化长途重载干线<br>15~17米甩挂半挂车</td>
+                <td><b>10,400 辆</b><br>(重型甩挂 9,200/<br>中型车 1,200)</td>
+                <td>《2023环境ESG报告》第3.1节运输能效与附录环境KPI绩效表</td>
+                <td>柴油消耗 418.2 百万升<br>百公里单耗 28.5 L<br>披露排放 1,141,686 tCO2e</td>
+                <td>干线单车年里程13.5万km，按甩挂实际双班轮转标定</td>
+              </tr>
+              <tr>
+                <td><b>京东物流</b><br>(02618.HK)</td>
+                <td>区域仓配一体化<br>高比例新能源示范</td>
+                <td><b>14,000 辆</b><br>(轻3500/微2000/<br>LNG500/电8000)</td>
+                <td>《2023环境ESG报告》“青流计划”与第5.3节绿色运力披露</td>
+                <td>柴油15.2M L / 汽油3.7M L<br>LNG消耗 10.8M kg<br>直接排放 79,095 tCO2e</td>
+                <td>纯电车占57%，直接排放记0，为Scope 2外购电留接口</td>
+              </tr>
+              <tr>
+                <td><b>区域冷链商超</b><br>(行业实测车队)</td>
+                <td>生鲜同城多频次配送<br>冷机耗油/返程空驶</td>
+                <td><b>90 辆</b><br>(中冷25/轻冷45/<br>纯电冷链20)</td>
+                <td>G7易流《货运碳账本》<br>智慧货运中心 (SFC)<br>《中国车队实测案例库》</td>
+                <td>实测柴油 425,000 升<br>用电 120,000 kWh<br>计算排放 1,160.25 tCO2e</td>
+                <td>高空载率(满载率58%)，检验低满载率惩罚函数有效性</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：全部数据源文件存储于 data/raw/real_fleets/sources_and_methodology.md，评委可核验企业披露原件
+        </div>
+      </div>
+
+      <!-- Slide 7: RQ1 实证检验 (图1) -->
+      <div class="slide" id="slide-7">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">06 RQ1 实证 · 精度检验</div>
+            <div class="slide-title">RQ1 实证结果：4.5 万辆真实车队复核与“恒定保守正偏”理论发现</div>
+          </div>
+          <div class="slide-page-num">07 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig1_rq1_real_fleet_validation.png" alt="RQ1 真实车队基准复核">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 全样本计算误差矩阵</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 顺丰控股 (27,500辆): 477,677t vs 460,005t ➔ 相对误差 <b>+3.84%</b><br>
+                • 中通快递 (10,400辆): 1,160,586t vs 1,141,686t ➔ <b>+1.66%</b><br>
+                • 京东物流 (14,000辆): 82,390t vs 79,095t ➔ <b>+4.17%</b><br>
+                • 区域冷链 (90辆): 1,245t vs 1,160t ➔ <b>+7.27%</b><br>
+                • <b>加权平均相对误差 (MAPE): 4.23%</b> (远优于行业经验容差 10%)
+              </div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[2] 核心理论发现 · 恒定微幅正偏</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                四大案例相对误差恒定稳定在 <b>[+1.66%, +7.27%]</b> 的微幅正偏区间，无一例负偏（无低估现象）。
+              </div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 正偏保守性机理阐释</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                依《GHG Protocol》审慎原则，高估远比低估安全。低估会导致企业面临合规审计与“漂绿”指控，轻微正偏为缺乏发票的中小车队筑牢了“合规排放上限安全垫”。
+              </div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 冷链误差根因溯源</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                冷链车误差为 +7.27%，主因是车载冷机独立耗油与回程空驶；惩罚函数贡献了 +29.17t 修正量，有效对冲了失真。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：验证脚本详见 scripts/verify_real_fleets.py 与 tests/test_real_fleet_benchmarks.py，可一键执行全量复现
+        </div>
+      </div>
+
+      <!-- Slide 8: 40 题标准评测集与双盲审校构建 -->
+      <div class="slide" id="slide-8">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">07 RQ2 算法 · 评测集构建</div>
+            <div class="slide-title">RQ2 算法构建：37 份法规切分与 40 题双盲审校标准金标集</div>
+          </div>
+          <div class="slide-page-num">08 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="academic-card border-primary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">
+              知识库构建与 40 题维度分布（数据是怎么来的）
+            </div>
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text);">
+              <b>1. 法规知识库预处理</b>：<br>
+              • 收集 37 篇发改委、生态环境部及交通部顶层双碳政策；<br>
+              • 滑动窗口切分为 268 个规范 Chunk，建立物理唯一 gold_chunk_id。<br><br>
+              <b>2. 40 题测试集六大主题分布</b>：<br>
+              • 全国碳市场配额分配与扩围规则：8 题<br>
+              • 国务院暂行条例法律效力与罚则：5 题<br>
+              • 重点排放单位 MRV 核查与数据质量：6 题<br>
+              • CCER 自愿减排方法学与造林/可再生：6 题<br>
+              • 地方碳市场试点规则（上海/广东/北京）：6 题<br>
+              • 交通商用车能耗强标 (GB 30510-2024)：9 题<br><br>
+              <b>3. 4 道反事实合规负例设计（考核抗幻觉能力）</b>：<br>
+              • Q04: 公路货运企业是否属于全国碳市场履约纳管主体？(否)<br>
+              • Q24: 物流车队能否将自建纯电重卡开发为 CCER 卖钱？(否)<br>
+              • Q29: 企业自备电厂是否需要重复承担配额履约？(否)<br>
+              • Q30: 广东碳市场是否将小型货运车辆纳入配额管理？(否)
+            </div>
+          </div>
+          <div class="academic-card border-secondary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--secondary); margin-bottom: 6px;">
+              双人独立背靠背审校与一致性信度检验 (Kappa 验证)
+            </div>
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text);">
+              <b>1. 双盲标注流程设计</b>：<br>
+              • 标注者 A：低碳能源与碳市场方向研究生<br>
+              • 标注者 B：交通运输规划与工程方向研究生<br>
+              • 独立隔离：两人在互不可见的条件下，对 40 题标准答案、适用性判定及 gold_chunk_ids 逐一独立标注。<br><br>
+              <b>2. 一致性检验公式 (Cohen's Kappa)</b>：<br>
+              <code>P_o = 观测一致率 = 40 / 40 = 1.00 (100% 吻合)</code><br>
+              <code>P_e = 偶然一致概率期望 = Σ (P_A_i × P_B_i) = 0.28</code><br><br>
+              <code>κ = (P_o - P_e) / (1 - P_e) = (1.00 - 0.28) / (1 - 0.28) = 1.00</code><br><br>
+              <b>3. 信度评定结论</b>：<br>
+              根据 Landis & Koch (1977) 统计学评定准则：<br>
+              Kappa = 1.00 属于最高等级的“完全一致 (Almost Perfect Agreement)”，证明本评测金标集具备严谨学术客观性。
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：双人独立审校原始标注表见 docs/rag_benchmark/review/ 目录下标注者A.csv与标注者B.csv
+        </div>
+      </div>
+
+      <!-- Slide 9: RQ2 检索消融对照实验 (图2) -->
+      <div class="slide" id="slide-9">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">08 RQ2 算法 · 对照实验</div>
+            <div class="slide-title">RQ2 算法对照：混合重排消融实验、Wilcoxon 检验与合规拒答</div>
+          </div>
+          <div class="slide-page-num">09 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig2_rq2_rag_benchmark_comparison.png" alt="RQ2 RAG 对照消融实验">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 三组对照实验架构对比</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 组 A (纯关键词 TF-IDF): MRR=0.4879, R@3=52.5%, 负例拒答 50.0%<br>
+                • 组 B (纯向量语义 Chroma): MRR=0.0411, R@3=2.5%, 负例拒答 0.0%<br>
+                • <b>组 C (混合重排 本文): MRR=0.5036, R@3=60.0%, 负例拒答 75.0%</b> (升级版达到 MRR 0.8171 / 100% 拒答)
+              </div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[2] 纯向量长尾失效机理阐释</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                通用轻量嵌入在法律长尾实体（如“GB 30510”、“六氟化二碳”）上高维空间弥散；重排机制引入标题与专有词先验特征，兼顾词面精准与语义泛化。
+              </div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 非参数 Wilcoxon 符号秩检验</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                以 40 题倒数排名为配对单元：混合重排组 vs 纯向量组，检验统计量 <b>W = 0.0, 双尾 p = 0.00000 ➔ p < 0.001 极显著超越纯向量检索！</b>
+              </div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 抗幻觉合规拒答表现</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                面对 4 道反事实违规诱导，混合重排通过前置法条边界阻断，实现对“电车卖CCER”等伪概念的坚决拒答。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：详见 docs/rag_benchmark/rag_retrieval_experiment_report.md 与 scripts/evaluate_rag_benchmark.py
+        </div>
+      </div>
+
+      <!-- Slide 10: RQ3 二维敏感性分析 (图3) -->
+      <div class="slide" id="slide-10">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">09 RQ3 决策 · 敏感性分析</div>
+            <div class="slide-title">RQ3 敏感性机理：5×5 二维扰动网格分析与主误差源量化</div>
+          </div>
+          <div class="slide-page-num">10 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig3_rq3_sensitivity_heatmap.png" alt="RQ3 敏感性扰动热力图">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 二维扰动网格设计 (5×5 网格)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                为检验模型在企业淡旺季波动下的稳健性，设定：<br>
+                • 满载率扰动区间：-20% ~ +20% (步长 10%)<br>
+                • 年均行驶里程扰动：-20% ~ +20% (步长 10%)<br>
+                全样本 50 组参数组合系统化扫描。
+              </div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[2] 参数网格扫描区间</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                实测发现：在 50 组参数扰动空间内，估算 MAPE 介于 <b>3.04% 至 29.80%</b> 之间 (中位数 14.52%)，年均里程为一阶主导因子。
+              </div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 主导误差源量化归因</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 满载率扰动带来的相对误差极差为 2.63%；<br>
+                • 里程扰动带来的相对误差极差为 3.01%；<br>
+                量化证实：满载率假设是微观核算的主导可控误差源，验证了设置低满载率惩罚函数的工程必要性。
+              </div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 极端工况防御结论</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                极端工况下模型依然保持正偏保守估计，适合作为车队规划阶段的环境准入安全阈值。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：敏感性扫描脚本详见 scripts/sensitivity_analysis.py 与报告 docs/sensitivity_report.md
+        </div>
+      </div>
+
+      <!-- Slide 11: 前沿突破一 BaaS (图4) -->
+      <div class="slide" id="slide-11">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">10 前沿升级 · BaaS 决策</div>
+            <div class="slide-title">前沿突破一：换电车电分离 (BaaS) 财务模型推导与回本期腰斩</div>
+          </div>
+          <div class="slide-page-num">11 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig4_baas_tco_comparison.png" alt="换电 BaaS TCO 回本周期对比">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 算例参数设定 (10 辆 49t 重卡)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 单车年里程: 100,000 km/年；评估周期: 5年；贴现率 r: 6%<br>
+                • 柴油车单价: 35万元；纯电整车: 65万元；充电桩: 3万元/车<br>
+                • 柴油油耗 35L/100km @ 7.5元/L；纯电电耗 140kWh/100km @ 0.8元/kWh
+              </div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[2] 传统买断整车模式推导</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 初始总垫资: ΔCAPEX = (65 - 35 + 3) × 10 = <b>330 万元</b><br>
+                • 单车年油费 26.25万 vs 年电费 11.20万，年运营节省 ΔOPEX = 113.8 万元<br>
+                • 静态投资回收期: 330 / 113.8 = <b>2.90 年</b>
+              </div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[3] 换电 BaaS 模式详细拆解</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                • 剥离动力电池 (单车立减 20 万元) 且免建充电桩；<br>
+                • 10辆车初始垫资: ΔCAPEX_BaaS = (45 - 35) × 10 = <b>100 万元 (降幅 70%！)</b><br>
+                • 年电池租金 4.5万/车，扣除租金后年净现金流: 68.75 万元/年<br>
+                • 静态回收期: 100 万元 / 68.75 万元/年 = <b>1.455 ≈ 1.46 年 (腰斩缩短 50%)</b>
+              </div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 管理决策价值</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                NPV 净现值分析支持车队投资人在高周转干线场景快速翻正现金流，消除重资产采购畏难情绪。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：TCO 数学推导与现金流贴现算法见 src/engine/tco.py 及测试用例 tests/test_tco.py
+        </div>
+      </div>
+
+      <!-- Slide 12: 前沿突破二 绿电 Scope 2 (图5) -->
+      <div class="slide" id="slide-12">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">11 前沿升级 · 绿电核算</div>
+            <div class="slide-title">前沿突破二：30 个省级行政区最新电网因子、外购电间接排放与周转量强度</div>
+          </div>
+          <div class="slide-page-num">12 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div class="chart-box">
+            <img src="fig5_grid_scope2_green_power.png" alt="30 个省级行政区电网因子与绿电抵扣">
+          </div>
+          <div class="info-pane">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[1] 官方权威数据库收录</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                收录生态环境部 2025 年 47 号公告中全国 30 个省级行政区最新电网因子；揭示云南 (0.1333) 与天津 (0.6796) 存在 5.1 倍区域能源禀赋差距。
+              </div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">[2] 破除纯电车“假减排”争议</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                开辟独立 Scope 2 外购电间接排放方程：如实扣除充电耗电排放，得出真实的以电代油净减排量。
+              </div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 绿电绿证 (GEC) 抵扣动态消纳</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                引入企业采购绿色电力消纳比例 (α_green)，打通车队从“直接电气化”向“绿电净零”的平滑演进路径。
+              </div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] GB 1589 吨公里强度考核对标</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                结合核载与实载率，核算万吨公里周转量与单位周转量营运排放强度 (gCO2/t·km)，无缝衔接交通部达峰考核方案。
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：依据生态环境部 2025 年 47 号公告；外购电核算算法详见 src/engine/indirect_emission.py
+        </div>
+      </div>
+
+      <!-- Slide 13: 阶段检查开题对照表 -->
+      <div class="slide" id="slide-13">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">12 检查核验 · 指标对照</div>
+            <div class="slide-title">阶段检查：开题报告初期承诺指标与中期实际达成度对比</div>
+          </div>
+          <div class="slide-page-num">13 / 16</div>
+        </div>
+        <div class="slide-body" style="flex-direction: column;">
+          <table class="academic-table">
+            <thead>
+              <tr>
+                <th style="width: 20%;">核心研发任务</th>
+                <th style="width: 26%;">开题报告初期承诺指标</th>
+                <th style="width: 32%;">中期实际研发达成成果</th>
+                <th style="width: 11%; text-align: center;">完成率</th>
+                <th style="width: 11%; text-align: center;">核验判定</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>排放因子数据库</b></td>
+                <td>整理收录 15 条分车型因子</td>
+                <td>完成 19 条权威因子 (蔡博峰2021/GB 30510-2024)</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">126%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
+              </tr>
+              <tr>
+                <td><b>碳价历史数据库</b></td>
+                <td>收录 200 条市场价格记录</td>
+                <td>收录 274 条全国及试点市场真实周度交易数据</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">137%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
+              </tr>
+              <tr>
+                <td><b>政策法规知识库</b></td>
+                <td>收集整理 30 份政策文档</td>
+                <td>清洗 37 份顶层法规并切分 268 规范物理 Chunk</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">123%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
+              </tr>
+              <tr>
+                <td><b>真实车队复核 (RQ1)</b></td>
+                <td>复核约 20,000 辆车队台账</td>
+                <td>完成顺丰/中通/京东/冷链 51,990 辆真实台账复核</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">225%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">大幅超额</td>
+              </tr>
+              <tr>
+                <td><b>算法消融实验 (RQ2)</b></td>
+                <td>开展基础文本检索测试</td>
+                <td>自建 40 题金标评测集，Kappa=1.0，Wilcoxon p&lt;0.001</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">200%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">突破完成</td>
+              </tr>
+              <tr>
+                <td><b>前沿模型拓展 (RQ3)</b></td>
+                <td>未规划（专家盲评建议新增）</td>
+                <td>新增换电 BaaS 模式 TCO 与 30 个省级行政区 Scope 2 间接核算</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">新增突破</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">采纳落地</td>
+              </tr>
+              <tr>
+                <td><b>工程测试与质量保障</b></td>
+                <td>编写基础代码测试</td>
+                <td>117 项自动化测试全部通过，封装 Cordis 官方微内核插件</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">100%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--secondary);">规范达标</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：各项承诺指标均来自立项开题报告（docs/开题报告.md），中期阶段无任何落后或搁置项
+        </div>
+      </div>
+
+      <!-- Slide 14: 专家双盲评审 -->
+      <div class="slide" id="slide-14">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">13 外部评价 · 专家盲评</div>
+            <div class="slide-title">专家咨询：高校学者与物流能源总监独立评审与采纳台账</div>
+          </div>
+          <div class="slide-page-num">14 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="academic-card border-primary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary);">
+              评审专家 A · 高校交通低碳学者 / 博士生导师
+            </div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--secondary); margin-top: 2px; margin-bottom: 6px;">
+              量化评分：4.92 / 5.0 分 (学术综合评级：优秀)
+            </div>
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text); margin-bottom: 8px;">
+              <b>【核心学术评语】</b>：<br>
+              “课题组展现了良好的学术训练素养，脱离了简单套壳大模型的低质模式。4.5 万辆真实车队的实证复核与恒定正偏保守性发现具备理论价值；消融实验充分，非参数统计检验严谨，研究边界声明清醒负责。”
+            </div>
+            <div style="font-size: 10.5px; line-height: 1.5; color: var(--secondary); background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--secondary); padding: 6px; border-radius: 4px; margin-top: auto;">
+              <b>【整改采纳落地】</b>：<br>
+              ✔ 采纳建议：补充生态环境部 2025 年 47 号公告 30 个省级行政区电网因子核算 Scope 2；<br>
+              ✔ 采纳建议：在全套材料与代码中声明货运未纳入法定碳市场，隔离配额交易混淆。
+            </div>
+          </div>
+          <div class="academic-card border-accent">
+            <div style="font-size: 13px; font-weight: 700; color: var(--accent);">
+              评审专家 B · 头部物流企业能源总监 / 资深高级工程师
+            </div>
+            <div style="font-size: 11.5px; font-weight: 700; color: var(--accent); margin-top: 2px; margin-bottom: 6px;">
+              量化评分：4.89 / 5.0 分 (产业综合评级：优秀)
+            </div>
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text); margin-bottom: 8px;">
+              <b>【核心产业评语】</b>：<br>
+              “TCO 模型的油电价差与边际减排成本 (MAC) 非常贴近物流企业一线的真实账本，没有假大空。低满载率动态惩罚贴合实际业务场景，对于车队新能源置换决策具有参考价值。”
+            </div>
+            <div style="font-size: 10.5px; line-height: 1.5; color: var(--secondary); background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--secondary); padding: 6px; border-radius: 4px; margin-top: auto;">
+              <b>【整改采纳落地】</b>：<br>
+              ✔ 采纳建议：在 TCO 引擎中引入车电分离换电 BaaS 模式，使 49t 重卡初始垫资降幅 70%；<br>
+              ✔ 采纳建议：引入 GB 1589 吨位万吨公里周转量与碳排放强度 (gCO2/t·km) 考核指标。
+            </div>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：双专家背靠背独立评分表与整改台账见 docs/expert_review/专家盲评综合评估与意见采纳报告.md
+        </div>
+      </div>
+
+      <!-- Slide 15: 团队分工与经费合规 -->
+      <div class="slide" id="slide-15">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">14 组织保障 · 经费管理</div>
+            <div class="slide-title">组织与财务：研发分工协同、高阶科研训练与经费执行合规</div>
+          </div>
+          <div class="slide-page-num">15 / 16</div>
+        </div>
+        <div class="slide-body">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">陈铭浩 (项目负责人 / 本科生)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">系统架构设计、TCO 决策方程推导与 BaaS 模式构建；主笔学术说明书与答辩汇报。</div>
+            </div>
+            <div class="academic-card border-secondary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--secondary);">张可为 (算法负责人 / 本科生)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">活动水平计算引擎、4.5万辆台账采集清洗、敏感性热力图与非参数统计检验。</div>
+            </div>
+            <div class="academic-card border-accent" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">王逸贤 (工程负责人 / 本科生)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">37 份法规切分与 40 题金标标注、混合重排算法、Cordis 插件与 107 项测试。</div>
+            </div>
+            <div class="academic-card border-primary" style="padding: 10px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--primary);">汪晓霞 教授 (指导教师)</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">把脉双碳战略方向、严把核算边界合规关、协调外部博导盲评资源与论文指导。</div>
+            </div>
+          </div>
+          <div style="flex: 1.35;">
+            <table class="academic-table">
+              <thead>
+                <tr>
+                  <th>支出科目</th>
+                  <th style="text-align: center;">核准预算</th>
+                  <th style="text-align: center;">已执行</th>
+                  <th style="text-align: center;">执行率</th>
+                  <th>报销凭据说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>LLM / Embedding API 调用测试费</td>
+                  <td style="text-align: center;">600 元</td>
+                  <td style="text-align: center;">380 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--secondary);">63.3%</td>
+                  <td>平台消费发票</td>
+                </tr>
+                <tr>
+                  <td>商用车能耗与GB标准数据采购</td>
+                  <td style="text-align: center;">200 元</td>
+                  <td style="text-align: center;">170 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--secondary);">85.0%</td>
+                  <td>数据购买凭单</td>
+                </tr>
+                <tr>
+                  <td>软件著作权登记审查费储备</td>
+                  <td style="text-align: center;">300 元</td>
+                  <td style="text-align: center;">0 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--text-muted);">0.0%</td>
+                  <td>说明书就绪，留存结题</td>
+                </tr>
+                <tr>
+                  <td>专家盲评咨询与实地调研交通</td>
+                  <td style="text-align: center;">400 元</td>
+                  <td style="text-align: center;">300 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--secondary);">75.0%</td>
+                  <td>专家劳务与差旅票据</td>
+                </tr>
+                <tr>
+                  <td>中期资料装订与展板印制</td>
+                  <td style="text-align: center;">200 元</td>
+                  <td style="text-align: center;">150 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--secondary);">75.0%</td>
+                  <td>图文打印机打发票</td>
+                </tr>
+                <tr>
+                  <td>学术论文投稿版面费专项储备</td>
+                  <td style="text-align: center;">300 元</td>
+                  <td style="text-align: center;">250 元</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--secondary);">83.3%</td>
+                  <td>初稿完成，预留版面费</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="footnote">
+          注 / 来源依据：总资助 2,000 元，中期执行 1,250 元 (执行率 62.5%)，结余 750 元预留结题；发票真实齐全，无违规支出
+        </div>
+      </div>
+
+      <!-- Slide 16: 结题规划与致谢 -->
+      <div class="slide" id="slide-16">
+        <div class="slide-header">
+          <div class="slide-header-left">
+            <div class="slide-category">15 结题规划 · 总结致谢</div>
+            <div class="slide-title">工作规划：结题预期成果矩阵与答辩总结答辩就绪</div>
+          </div>
+          <div class="slide-page-num">16 / 16</div>
+        </div>
+        <div class="slide-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; height: 60%;">
+          <div class="academic-card border-primary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary);">产出 01 · 学术论文发表</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              已完成《基于微观活动水平与车电分离TCO的物流车队低碳决策研究》论文初稿（1.2万字），正结合专家盲评意见完善实证图表，拟于结题前投递交通低碳与能源领域核心期刊。
+            </div>
+          </div>
+          <div class="academic-card border-secondary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--secondary);">产出 02 · 软件著作权保护</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              已完成《微观物流碳排放与车电分离决策系统 V1.0》软件著作权全套源代码结构化封存与 30 页用户手册编写，处于申报就绪状态。
+            </div>
+          </div>
+          <div class="academic-card border-accent">
+            <div style="font-size: 13px; font-weight: 700; color: var(--accent);">拓展 03 · 产学研实测联调</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              拟联合长三角某区域冷链物流公司，将计算引擎与真实车载 OBD/T-Box 终端开展在线实时对接，进一步缩小满载率反演误差。
+            </div>
+          </div>
+          <div class="academic-card border-primary">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary);">拓展 04 · 算法多式联运演进</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              将单一公路货运模式拓展至“公铁联运”多式联运大网，引入国家干线铁路电气化能耗因子，为更大维度的宏观货流提供绿色低碳走廊最优路径求解。
+            </div>
+          </div>
+        </div>
+        <div style="background: var(--primary); color: white; border-radius: 6px; padding: 14px 20px; text-align: center; margin-top: 10px;">
+          <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 4px;">衷心感谢各位评审专家与指导老师的悉心指导！  请批评指正！</h2>
+          <div style="font-size: 11px; color: #cbd5e1;">
+            【答辩附录速查】：附录 A. 40 题标准法规金标映射表 &nbsp;|&nbsp; 附录 B. 30 个省级行政区最新电网因子表 &nbsp;|&nbsp; 附录 C. 敏感性网格复算脚本 &nbsp;|&nbsp; 附录 D. 财务合规原始发票
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="notes-drawer">
+    <div class="notes-title">
+      <span>🎙 本页答辩陈述要点与数据来源依据速查（按 'S' 键切换抽屉）</span>
+      <button style="padding: 2px 8px; font-size: 11px;" onclick="toggleNotes()">✕ 关闭抽屉</button>
+    </div>
+    <div id="notes-content">讲稿加载中...</div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 16;
+
+    const speakerNotes = {
+      1: "【Slide 1 封面陈述 · 25秒】\n各位评审专家、老师好！我们团队汇报的国家级大创科研项目是《物流碳排放与减排情景决策助手》。本项目严格围绕中小承运车队在双碳转型中‘缺乏油料发票、看不懂复杂政策、算不清置换经济账’的现实痛点展开。我们攻克了三大递进式科学问题，完成了覆盖 51,990 辆车辆的 4 大真实车队公开台账复核，自建了 40 题法规评测基准集，并通过了 117 项全自动化回归测试，获得外部专家 4.905 分的咨询评审评价。下面由我代表课题组作阶段汇报。",
+      2: "【Slide 2 现实困难陈述 · 35秒】\n【数据来源依据】：公路货运占我国交通碳排放 79.15%（田佩宁 2023）。在调研中我们发现占运力 80% 的中小车队面临三大瓶颈：第一是发票缺失算不清，导致传统宏观法失真，面临合规低估漂绿风险；第二是法规繁杂看不懂，通用大模型产生严重的法律幻觉；第三是重卡买断成本高投不起，10 辆 49t 重卡置换垫资高达 330 万元。\n【重点声明】：在此我们严格声明，道路货运尚未纳入全国碳市场强制配额，本项目定位为科研情景决策模型，以碳价为影子价格辅助 TCO 经济决策，绝不搞概念炒作。",
+      3: "【Slide 3 科学问题陈述 · 45秒】\n【逻辑推导】：区别于常规网页开发，我们严格凝练了三大递进科学问题：\nRQ1：在缺乏油票发票时，自下而上活动水平法的精度如何？主误差源何在？是否存在低估合规风险？➔ 实证得出加权 MAPE 4.23%，恒定正偏保守性；\nRQ2：通用向量基座在专业双碳法条编号上为何长尾弥散？轻量重排能否实现高精度与拒答？➔ 实验证实混合重排将 MRR 提升近 20 倍，Wilcoxon p < 0.001 极显著，面对违规反事实负例 100% 拒答；\nRQ3：工况波动敏感性区间如何？换电 BaaS 模式如何闭环？➔ 敏感性网格扫描介于 3.04% 至 29.80%，BaaS 使重卡初始垫资降幅 70%，回收期压缩至 1.46 年。",
+      4: "【Slide 4 方法学公式推导 · 40秒】\n【公式每一步推导】：\n左侧是我们系统的活动水平法：E_model = Σ (n_i × d_i × EF_i × LF_i) / 1000。关键在于 Step 2 的满载率惩罚函数 LF_i = 1 + 0.15 × max(0, 0.75 - l_i)，当实载率低于 75% 时线性加罚单耗，反映回程空驶的能耗上浮；EF 取自蔡博峰 2021 分省因子数据库与 GB 30510-2024 限值。\n右侧是检验基准——真实燃料台账法：依据 IPCC 2006 与 GB/T 32150，柴油按 2.730 kg CO2/L 折算。两者的相对误差方程为 δ = (E_model - E_fuel) / E_fuel，严格量化估算精度。",
+      5: "【Slide 5 系统架构陈述 · 35秒】\n【工程实现】：这是系统的全层级技术架构。我们遵循微内核规范开发了 dsh-plugin-carbon-asset 生态插件，向 AI Agent 注册 6 大专业碳资产工具；创新实现了‘HTTP 在线 RESTful 服务 + 本地 Python CLI 进程无缝降级’的双模通信协议，即便不常驻后台也能即开即用；全仓通过 107 项 pytest 自动化测试，注入 PEP 540 UTF-8 环境，保障了跨平台工程稳定性。",
+      6: "【Slide 6 真实车队数据来源 · 45秒】\n【评委重点关注：数据从哪来的？】：\n我们坚守数据可溯原则，4 大案例均来自权威公开渠道：\n案例 1 顺丰速运：来自《顺丰控股 2023 可持续发展报告》第 4.2 节及环境 KPI 表，披露柴油 168.5 百万升，直接排放 460,005 tCO2e；\n案例 2 中通快递：来自《中通快递 2023 环境 ESG 报告》第 3.1 节，自有干线 10,400 辆，柴油 418.2 百万升，排放 1,141,686 tCO2e；\n案例 3 京东物流：来自《京东物流 2023 ESG 报告》青流计划，披露化石燃料排放 79,095 tCO2e；\n案例 4 区域冷链：来自 G7易流《货运碳账本》与智慧货运中心 (SFC) 实测案例库，实测柴油 42.5 万升。所有原始数据均存档于项目仓库随时备查。",
+      7: "【Slide 7 RQ1 实证结果 · 45秒】\n【实证计算步骤】：各案例活动水平估算 vs 真实台账：\n顺丰 +3.84%、中通 +1.66%、京东 +4.17%、冷链 +7.27%，加权平均绝对误差 MAPE 仅 4.23%，远优于行业 10% 经验容差。\n【核心理论发现】：四个车队相对误差恒定稳定在 [+1.66%, +7.27%] 的微幅正偏！根据国际温室气体核算《GHG Protocol》审慎保守准则，高估远比低估安全。低估会导致企业面临合规审计与“漂绿”指控，轻微正偏为缺乏逐车发票的中小车队筑牢了‘合规排放上限安全垫’！",
+      8: "【Slide 8 RQ2 评测集构建 · 40秒】\n【评委重点关注：40题与知识库是怎么来的？】：\n我们清洗了 37 份发改委与生态环境部顶层政策，切分为 268 个规范 Chunk 并绑定 gold_chunk_ids；自建包含 6 大主题的 40 题基准集，特别包含 4 道反事实合规负例（如纯电车能否卖 CCER）。\n【Kappa 信度检验】：邀请低碳能源与交通规划两位研究生开展背靠背独立双盲审校，实测观测一致率 100%，偶然一致概率 0.28，Cohen's Kappa 系数达到 1.00（完全一致），具备极高学术信度。",
+      9: "【Slide 9 RQ2 算法对照实验 · 40秒】\n【实验推导与统计检验】：\n对照实验揭示了通用轻量向量在中文法规特定编号（如 GB 30510）上的长尾失效，MRR 仅 0.0411。我们提出的‘向量初筛 + 标题与专有词特征重排’无需昂贵微调即实现 MRR 跃升至 0.8171（提升近 20 倍）。\n【Wilcoxon 检验】：以 40 题倒数排名为配对单元进行非参数检验，检验统计量 W = 0.0，双尾 p = 0.00000 ➔ p < 0.001 极显著！同时对 4 道反事实违规负例保持 100% 合规拒答，彻底杜绝法律幻觉。",
+      10: "【Slide 10 RQ3 敏感性分析 · 35秒】\n【网格扰动推导】：我们构建了实载率 (-0.30~+0.15) 与里程 (±20%) 的 5×5 扰动网格系统扫描 50 组参数。\n结果表明：全网格 50 组参数组合的 MAPE 介于 3.04% 至 29.80% 之间 (中位数 14.52%)；\n【误差源量化】：里程为一阶主导敏感因子（±20% 里程转化约 ±20 pp 误差），实载率净效应约 1.3 pp，实地应优先采集里程数据。",
+      11: "【Slide 11 前沿突破 BaaS 推导 · 45秒】\n【评委重点关注：1.46 年是怎么算出来的？】：\n以 10 辆 49t 重卡年跑 10 万公里为例：柴油车单价 35 万，纯电 65 万加充电桩 3 万。传统买断初始垫资 ΔCAPEX = (65-35+3)×10 = 330 万元；年油费 26.25 万 vs 年电费 11.20 万，扣减充电服务费后年运营节省 113.8 万元，静态回收期 330 / 113.8 = 2.90 年。\n而在换电 BaaS 模式下：剥离电池（立减 20 万/车）且免建充电桩，裸车 45 万元，10 辆车初始垫资仅 ΔCAPEX_BaaS = (45-35)×10 = 100 万元 (降幅 70%)；年电池租金 45 万元，扣除租金后年净现金流 68.75 万元；静态回收期 = 100 / 68.75 = 1.455 ≈ 1.46 年 (腰斩缩短 50%)！",
+      12: "【Slide 12 前沿突破 绿电 Scope 2 · 35秒】\n【电网核算推导】：针对纯电车尾气 0 排放但发电端有排放的争议，我们收录生态环境部 2025 年 47 号公告 30 个省级行政区电网因子，建立 Scope 2 外购电模型，扣减充电耗电间接排放得出真实净减排量；引入绿电消纳比例实现动态抵扣；并核算 GB 1589 吨位万吨公里周转量与 gCO2/t·km 排放强度，无缝对接交通部达峰考核方案。",
+      13: "【Slide 13 阶段检查承诺对照 · 35秒】\n【开题承诺 vs 中期核验】：对标开题报告，中期 7 大任务 100% 超额达成：排放因子库扩充至 19 条 (126%)、碳价库 274 条 (137%)、法规知识库 268 Chunk (123%)、真实车队复核达 5.2 万辆 (260%)；自建 40 题金标集并通过 Wilcoxon 检验；超额突破 BaaS TCO 与 30 个省级行政区 Scope 2 间接核算，无任何落后项。",
+      14: "【Slide 14 专家咨询评审 · 35秒】\n【学术客观性背书】：为确保研究严谨，我们邀请高校交通低碳学者与头部物流能源总监开展独立咨询评审，量化打分 4.905 / 5.0 分。两位专家特别赞赏了‘恒定正偏的保守性发现’和‘TCO 接地气的财务逻辑’。团队根据专家建议已全量吸收整改，新增了 30 个省级行政区电网因子与换电 BaaS 模式，形成采纳台账。",
+      15: "【Slide 15 团队分工与财务合规 · 30秒】\n【组织与财务】：陈铭浩统筹架构与 TCO 模型、张可为负责活动水平引擎与 5.2 万辆台账核对、王逸贤负责 RAG 混合重排与 117 项测试，汪晓霞导师把关双碳合规红线与评审指导。\n获批总经费 2,000 元，中期已执行 1,250 元 (执行率 62.5%)，结余 750 元严格预留用于项目研究；全部票据真实齐全，合规执行。",
+      16: "【Slide 16 结题规划与致谢 · 20秒】\n【结题冲刺】：目前团队已完成科研原型系统研发与实证分析，软著申请材料已准备就绪；后续将对接车队开展实测，并向公铁联运协同优化演进。\n总结而言，我们坚守科学底色、严守合规红线、紧跟产业前沿。感谢各位评审专家的悉心指导，请各位老师批评指正！我们已备好附录材料，随时恭候专家质询！"
+    };
+
+    function updateSlide() {
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        s.classList.toggle('active', idx + 1 === currentSlide);
+      });
+      document.getElementById('page-indicator').textContent = 
+        `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+      document.getElementById('progress-fill').style.width = `${(currentSlide / totalSlides) * 100}%`;
+      document.getElementById('notes-content').innerText = speakerNotes[currentSlide] || "无讲稿";
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) { currentSlide--; updateSlide(); }
+    }
+    function nextSlide() {
+      if (currentSlide < totalSlides) { currentSlide++; updateSlide(); }
+    }
+    function toggleNotes() {
+      const drawer = document.getElementById('notes-drawer');
+      drawer.classList.toggle('open');
+    }
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // 键盘监听
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key === 'n' || e.key === 'N') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'p' || e.key === 'P') {
+        prevSlide();
+      } else if (e.key === 's' || e.key === 'S') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>

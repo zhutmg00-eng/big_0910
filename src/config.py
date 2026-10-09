@@ -1,10 +1,11 @@
 """全局配置 — API密钥、路径、参数"""
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-
-# 加载.env文件
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # ============================================================
 # 路径配置

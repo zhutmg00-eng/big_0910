@@ -1,7 +1,7 @@
 """车辆直接运营排放因子数据库。
 
 数据来源：
-- 蔡博峰等. 中国分省道路交通二氧化碳排放因子. 中国环境科学, 2021.
+- 吕晨, 张哲, 陈徐梅, 马冬, 蔡博峰. 中国分省道路交通二氧化碳排放因子[J]. 中国环境科学, 2021, 41(7): 3276-3287.
 - GB 30510-2024《重型商用车辆燃料消耗量限值》（第四阶段，2025年7月实施）
 - GB 30510-2018《重型商用车辆燃料消耗量限值》（第三阶段，已废止）
 - IPCC 2019 Refinement, Volume 2, Chapter 3 (Mobile Combustion)
@@ -22,7 +22,7 @@ BUILTIN_FACTORS: Dict[str, Dict] = {
         "fuel_type": "柴油",
         "fuel_consumption_l_per_100km": 33.0,
         "avg_annual_km": 80000,
-        "source": "中国环境科学2021(蔡博峰等)",
+        "source": "中国环境科学2021, 41(7): 3276-3287(吕晨、蔡博峰等)",
         "gb2024_factor": 0.858,
         "gb2024_note": "GB 30510-2024限值对应的CO2参考值，较第三阶段加严约15%",
     },
@@ -31,7 +31,7 @@ BUILTIN_FACTORS: Dict[str, Dict] = {
         "fuel_type": "柴油",
         "fuel_consumption_l_per_100km": 19.0,
         "avg_annual_km": 50000,
-        "source": "中国环境科学2021(蔡博峰等)",
+        "source": "中国环境科学2021, 41(7): 3276-3287(吕晨、蔡博峰等)",
         "gb2024_factor": 0.536,
     },
     "轻型柴油货车": {
@@ -39,7 +39,7 @@ BUILTIN_FACTORS: Dict[str, Dict] = {
         "fuel_type": "柴油",
         "fuel_consumption_l_per_100km": 12.0,
         "avg_annual_km": 30000,
-        "source": "中国环境科学2021(蔡博峰等)",
+        "source": "中国环境科学2021, 41(7): 3276-3287(吕晨、蔡博峰等)",
         "gb2024_factor": 0.257,
     },
     "微型汽油货车": {
@@ -47,7 +47,7 @@ BUILTIN_FACTORS: Dict[str, Dict] = {
         "fuel_type": "汽油",
         "fuel_consumption_l_per_100km": 8.0,
         "avg_annual_km": 20000,
-        "source": "中国环境科学2021(蔡博峰等)",
+        "source": "中国环境科学2021, 41(7): 3276-3287(吕晨、蔡博峰等)",
         "gb2024_factor": 0.282,
     },
     "LNG重型货车": {

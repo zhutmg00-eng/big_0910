@@ -161,27 +161,27 @@ def generate_svg_rq2(summary, stats):
 
 def generate_svg_rq3():
     """生成高质量纯矢量 SVG 格式的 RQ3 敏感性热力图"""
-    # 满载率扰动 (-20% ~ +20%) × 里程扰动 (-20% ~ +20%)
-    loads = ["-20%", "-10%", "基准 (0%)", "+10%", "+20%"]
-    kms = ["-20%", "-10%", "基准 (0%)", "+10%", "+20%"]
-    # 相对误差矩阵 (MAPE %)
+    # 实载率偏移 (-0.30 ~ +0.15) × 里程缩放 (0.8 ~ 1.2)
+    loads = ["-0.30", "-0.15", "0.00 (基准)", "+0.10", "+0.15"]
+    kms = ["×0.8", "×0.9", "×1.0 (基准)", "×1.1", "×1.2"]
+    # 相对误差矩阵 (MAPE %) 取自 docs/derived_metrics.json (50组扫描子集)
     grid = [
-        [+1.22, +1.89, +2.54, +3.20, +3.85],
-        [+2.05, +2.84, +3.55, +4.28, +5.01],
-        [+2.88, +3.60, +4.23, +5.12, +5.89],
-        [+3.65, +4.45, +5.20, +6.02, +6.82],
-        [+4.38, +5.25, +6.10, +7.01, +7.80],
+        [13.47, 15.33, 16.61, 16.98, 17.14],
+        [3.04, 4.75, 6.19, 6.60, 6.78],
+        [8.17, 5.84, 4.23, 3.78, 3.58],
+        [18.98, 16.42, 14.66, 14.16, 13.94],
+        [29.80, 27.01, 25.08, 24.53, 24.30],
     ]
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
-  <text x="40" y="45" font-size="20" font-weight="bold" fill="{INK}">RQ3: 运营参数（满载率 × 年均里程）扰动敏感性矩阵</text>
-  <text x="40" y="70" font-size="13" fill="{MUTED}">分析在 ±20% 运营参数双向网格扰动下，估算模型相对基准台账的偏离度分布规律</text>
+  <text x="40" y="45" font-size="20" font-weight="bold" fill="{INK}">RQ3: 运营参数（年均里程缩放 × 实载率偏移）敏感性矩阵</text>
+  <text x="40" y="70" font-size="13" fill="{MUTED}">分析在实载率 (-0.30~+0.15) 与年里程 (±20%) 扰动下模型误差的传导规律 (中位数 14.52%)</text>
 
-  <!-- 纵坐标轴说明 (满载率扰动) -->
-  <text x="110" y="270" font-size="14" font-weight="bold" fill="{INK}" text-anchor="middle" transform="rotate(-90, 110, 270)">满载率扰动 (Δ Load Factor)</text>
+  <!-- 纵坐标轴说明 (里程缩放) -->
+  <text x="110" y="270" font-size="14" font-weight="bold" fill="{INK}" text-anchor="middle" transform="rotate(-90, 110, 270)">年均里程缩放 (kd)</text>
 
-  <!-- 横坐标轴说明 (年均里程扰动) -->
-  <text x="510" y="445" font-size="14" font-weight="bold" fill="{INK}" text-anchor="middle">年均里程扰动 (Δ Annual Km)</text>
+  <!-- 横坐标轴说明 (实载率偏移) -->
+  <text x="510" y="445" font-size="14" font-weight="bold" fill="{INK}" text-anchor="middle">实载率设定偏移量 (Δl)</text>
 """
     # 绘制热力网格 5x5
     cell_w = 110
@@ -189,26 +189,25 @@ def generate_svg_rq3():
     x_start = 230
     y_start = 110
 
-    for j, km_label in enumerate(kms):
-        svg += f'<text x="{x_start + j * cell_w + cell_w / 2}" y="{y_start - 12}" font-size="12" font-weight="600" fill="{INK}" text-anchor="middle">{km_label}</text>\n'
+    for j, load_label in enumerate(loads):
+        svg += f'<text x="{x_start + j * cell_w + cell_w / 2}" y="{y_start - 12}" font-size="12" font-weight="600" fill="{INK}" text-anchor="middle">{load_label}</text>\n'
 
-    for i, load_label in enumerate(loads):
+    for i, km_label in enumerate(kms):
         y_pos = y_start + i * cell_h
-        svg += f'<text x="{x_start - 15}" y="{y_pos + cell_h / 2 + 5}" font-size="12" font-weight="600" fill="{INK}" text-anchor="end">{load_label}</text>\n'
-        for j, km_label in enumerate(kms):
+        svg += f'<text x="{x_start - 15}" y="{y_pos + cell_h / 2 + 5}" font-size="12" font-weight="600" fill="{INK}" text-anchor="end">{km_label}</text>\n'
+        for j, load_label in enumerate(loads):
             val = grid[i][j]
             x_pos = x_start + j * cell_w
-            # 色阶映射 1.0% -> 8.0% (由浅黄绿过渡到深暖橙)
-            ratio = (val - 1.0) / 7.0
-            # 渐变插值颜色
-            bg_color = f"rgba(192, 124, 42, {0.15 + ratio * 0.75:.2f})"
-            border_color = f"rgba(184, 66, 62, {0.3 + ratio * 0.6:.2f})"
+            # 色阶映射 3.0% -> 30.0%
+            ratio = (val - 3.0) / 27.0
+            bg_color = f"rgba(47, 111, 163, {0.10 + ratio * 0.85:.2f})"
+            border_color = f"rgba(30, 107, 75, {0.3 + ratio * 0.6:.2f})"
             is_base = (i == 2 and j == 2)
             stroke_w = "2.5" if is_base else "1"
 
             svg += f"""
   <rect x="{x_pos}" y="{y_pos}" width="{cell_w - 4}" height="{cell_h - 4}" fill="{bg_color}" stroke="{border_color}" stroke-width="{stroke_w}" rx="4"/>
-  <text x="{x_pos + cell_w / 2}" y="{y_pos + cell_h / 2 + 5}" font-size="13" font-weight="bold" fill="{INK}" text-anchor="middle">+{val:.2f}%</text>
+  <text x="{x_pos + cell_w / 2}" y="{y_pos + cell_h / 2 + 5}" font-size="13" font-weight="bold" fill="{INK}" text-anchor="middle">{val:.2f}%</text>
 """
             if is_base:
                 svg += f'<text x="{x_pos + cell_w / 2}" y="{y_pos + 15}" font-size="9" font-weight="bold" fill="{RED}" text-anchor="middle">★ 基准工况</text>\n'
@@ -216,7 +215,7 @@ def generate_svg_rq3():
     svg += """
   <!-- 底部核心机理发现 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">核心机理：相对误差在整个网格内恒为正偏 (+1.22% ~ +7.80%)，绝无低估风险；满载率对误差灵敏度高于里程，证明基线保守性假设完全成立。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">敏感性分析表明：里程是一阶主导因子（±20% 里程直接转化约 ±20 pp 误差），实载率净效应约 1.3 pp，实地应优先采集里程。</text>
 </svg>"""
     return svg
 
@@ -345,25 +344,25 @@ def build_all_artifacts():
 
     # 图 3 (RQ3 Plotly Heatmap)
     z_grid = [
-        [1.22, 1.89, 2.54, 3.20, 3.85],
-        [2.05, 2.84, 3.55, 4.28, 5.01],
-        [2.88, 3.60, 4.23, 5.12, 5.89],
-        [3.65, 4.45, 5.20, 6.02, 6.82],
-        [4.38, 5.25, 6.10, 7.01, 7.80],
+        [13.47, 15.33, 16.61, 16.98, 17.14],
+        [3.04, 4.75, 6.19, 6.60, 6.78],
+        [8.17, 5.84, 4.23, 3.78, 3.58],
+        [18.98, 16.42, 14.66, 14.16, 13.94],
+        [29.80, 27.01, 25.08, 24.53, 24.30],
     ]
     fig3 = go.Figure(data=go.Heatmap(
         z=z_grid,
-        x=["-20%", "-10%", "基准 (0%)", "+10%", "+20%"],
-        y=["-20%", "-10%", "基准 (0%)", "+10%", "+20%"],
-        colorscale="Viridis",
-        text=[[f"+{v:.2f}%" for v in row] for row in z_grid],
+        x=["-0.30", "-0.15", "0.00 (基准)", "+0.10", "+0.15"],
+        y=["×0.8", "×0.9", "×1.0 (基准)", "×1.1", "×1.2"],
+        colorscale="Blues",
+        text=[[f"{v:.2f}%" for v in row] for row in z_grid],
         texttemplate="%{text}",
-        colorbar=dict(title="相对误差 MAPE (%)"),
+        colorbar=dict(title="MAPE (%)"),
     ))
     fig3.update_layout(
-        title="RQ3: 运营参数（满载率 × 年均里程）扰动敏感性矩阵 (恒定正偏 +1.22%~+7.80%)",
-        xaxis_title="年均里程扰动",
-        yaxis_title="满载率扰动",
+        title="RQ3: 运营参数（年均里程缩放 × 实载率偏移）敏感性矩阵 (3.04%~29.80%, 中位数 14.52%)",
+        xaxis_title="实载率设定偏移量 (Δl)",
+        yaxis_title="年均里程缩放系数 (kd)",
         font=dict(family="Segoe UI, Microsoft YaHei", size=13),
     )
     html3_path = ARTIFACTS_DIR / "fig3_rq3_sensitivity_heatmap.html"
@@ -396,23 +395,23 @@ def build_all_artifacts():
     <div class="header">
       <h1>大创中期答辩科研实证展板 — 物流碳排放与减排决策系统</h1>
       <p class="subtitle">
-        <strong>定位</strong>：国家级/省级大学生创新创业训练计划科研原型成果展板 | <strong>核心原则</strong>：以“研究问题 (RQ) + 实证检验 + 统计显著性”组织答辩链条，杜绝功能堆砌与法定履约夸大。
+        <strong>定位</strong>：大学生创新创业训练计划科研原型成果展板 | <strong>核心原则</strong>：以“研究问题 (RQ) + 实证检验 + 统计显著性”组织答辩链条，杜绝功能堆砌与法定履约夸大。
       </p>
     </div>
 
     <!-- RQ1 -->
     <div class="card">
-      <h2>RQ1: 数据有限条件下活动水平估算法的精度与误差根因溯源</h2>
+      <h2>RQ1: 数据有限条件下活动水平估算法的精度与一致性核验</h2>
       <div>
-        <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 生鲜冷链</span>
-        <span class="stats-badge">全样本加权 MAPE = 4.23%</span>
-        <span class="stats-badge">误差方向: 恒为正偏 (+2.88% ~ +5.20%)</span>
+        <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 区域冷链 (合计 51,990 辆)</span>
+        <span class="stats-badge">等权 MAPE = 4.23% (加权 2.38%)</span>
+        <span class="stats-badge">偏差区间: [+1.66%, +7.27%]</span>
       </div>
       <div class="chart-container">
-        {generate_svg_rq1(["顺丰速运(干支)", "中通快递(纯干)", "京东物流(城配)", "生鲜冷链(重卡)"], ledgers, estimates, errors)}
+        {generate_svg_rq1(["顺丰速运(干支)", "中通快递(纯干)", "京东物流(城配)", "区域冷链(中重)"], ledgers, estimates, errors)}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×满载率惩罚”的活动水平算法平均误差仅 4.23%；且所有场景均呈现稳定的轻微正偏（保守估计），绝不低估排放，具备出色的工程可用性。
+        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×保守偏置”的活动水平算法案例等权平均偏差为 4.23%、加权为 2.38%；且4组场景均呈现稳定的正偏特征（偏保守估计），具备良好的工程实用价值。
       </div>
     </div>
 
@@ -420,7 +419,7 @@ def build_all_artifacts():
     <div class="card">
       <h2>RQ2: 双碳政策法规检索中标题重排机制的有效性与非参数检验</h2>
       <div>
-        <span class="stats-badge">自建评测集: 40 题标准基准 (双盲审校 Kappa=1.0)</span>
+        <span class="stats-badge">自建评测集: 40 题标准基准 (含 4 负例)</span>
         <span class="stats-badge">全量知识库: 37 份法规 (268 Chunks)</span>
         <span class="stats-badge">Wilcoxon 检验: p &lt; 0.001***</span>
       </div>
@@ -428,7 +427,7 @@ def build_all_artifacts():
         {generate_svg_rq2(summary, stats)}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：纯向量语义模型在处理“GB 30510-2024”、“六氟化二碳”、“豁免上限”等高度专业词汇时表现出严重的语义稀疏 (MRR 仅 0.0411)；混合重排机制将 MRR 提升至 0.5036、Recall@10 提升至 75.00%，且在负例拒答（如物流企业不属于全国履约主体）中保持 75% 的高保真度。
+        <strong>实证发现</strong>：默认通用向量模型在处理“GB 30510-2024”、“六氟化二碳”、“豁免上限”等高度专业词汇时表现出明显的语义空间弥散 (MRR 仅 0.0411)；混合重排机制将 MRR 提升至 0.5036、Recall@10 提升至 75.00%，且在负例拒答（如物流企业不属于全国履约主体）中保持 75% 的拒答准确率。
       </div>
     </div>
 
@@ -436,14 +435,14 @@ def build_all_artifacts():
     <div class="card">
       <h2>RQ3: 运营参数扰动下的敏感性矩阵与不确定性边界</h2>
       <div>
-        <span class="stats-badge">扰动网格: 满载率 (-20% ~ +20%) × 里程 (-20% ~ +20%)</span>
-        <span class="stats-badge">误差闭环区间: [+1.22%, +7.80%]</span>
+        <span class="stats-badge">扰动网格: 实载率 (-0.30 ~ +0.15) × 里程 (±20%)</span>
+        <span class="stats-badge">误差扫描区间: [3.04%, 29.80%] (中位数 14.52%)</span>
       </div>
       <div class="chart-container">
         {generate_svg_rq3()}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：在大幅度参数波动下，模型误差始终保持在 +1.22% 至 +7.80% 的可控狭窄区间内，量化并证明了满载率基准值（默认 75%）是主要但完全可控的误差来源。
+        <strong>实证发现</strong>：参数扰动表明年均里程是一阶主导因子（±20% 里程直接转化约 ±20 pp 误差），实载率净效应约 1.3 pp；全网格误差在 3.04% 至 29.80% 之间收敛，量化界定了输入数据不确定时的误差边界。
       </div>
     </div>
   </div>

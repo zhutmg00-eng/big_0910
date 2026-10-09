@@ -333,8 +333,7 @@ def build_manual_pdf(out_path: Path):
     story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("第二章：我们做了什么（六大核心技术研发全景）", styles["DocH1"]))
     story.append(Paragraph(
-        "在中期研发阶段，团队拒绝‘调用通用大模型做简易外壳包装’的低质内卷，"
-        "扎扎实实推进了底层算法公式推导、大规模数据清洗、双盲实验设计与工业级生态插件封装：",
+        "在中期研发阶段，团队扎扎实实推进了底层算法公式推导、数据清洗、对照实验设计与生态插件封装：",
         styles["DocBody"]
     ))
 
@@ -543,7 +542,7 @@ def build_manual_pdf(out_path: Path):
     story.append(Paragraph(
         "在 Node.js 插件通信适配桥中注入 `PYTHONUTF8: '1'` 与 `PYTHONIOENCODING: 'utf-8'`，彻底消除 Windows GBK 管道截断；"
         "配置 30 秒异步执行超时熔断，若子进程超时则自动 `proc.kill()` 并向大模型返回结构化错误说明，彻底杜绝会话挂起；"
-        "将 DSH 生态工具扩充为 6 大工具（包含最新 Scope 2 外购电电网因子与吨公里强度模型），实现全链路工业级高可用。",
+        "将 DSH 生态工具扩充为 6 项工具（包含最新 Scope 2 外购电电网因子与吨公里强度模型），支持微服务与本地降级双模运行。",
         styles["DocBody"]
     ))
 
@@ -561,9 +560,9 @@ def build_manual_pdf(out_path: Path):
         [Paragraph("评估维度 (各占25%权重)", styles["TableHeader"]), Paragraph("专家 A (学术博导)", styles["TableHeader"]), Paragraph("专家 B (企业总监)", styles["TableHeader"]), Paragraph("维度均分", styles["TableHeader"]), Paragraph("同行评价定性诊断结论", styles["TableHeader"])],
         [Paragraph("一、核算模型科学性与误差保守度", styles["TableCellLeft"]), Paragraph("4.96 / 5.0", styles["TableCell"]), Paragraph("4.88 / 5.0", styles["TableCell"]), Paragraph("4.92 / 5.0", styles["TableCell"]), Paragraph("4.23% MAPE 达到工业可用标准，恒定正偏保障了合规安全性。", styles["TableCellLeft"])],
         [Paragraph("二、政策问答检索精度与反事实拒答", styles["TableCellLeft"]), Paragraph("4.86 / 5.0", styles["TableCell"]), Paragraph("4.80 / 5.0", styles["TableCell"]), Paragraph("4.83 / 5.0", styles["TableCell"]), Paragraph("双盲审校 Kappa=1.0，Wilcoxon 检验 p<0.001 极显著，75% 合规拒答。", styles["TableCellLeft"])],
-        [Paragraph("三、减排决策 TCO 经济性与周转量强度", styles["TableCellLeft"]), Paragraph("4.83 / 5.0", styles["TableCell"]), Paragraph("4.86 / 5.0", styles["TableCell"]), Paragraph("4.85 / 5.0", styles["TableCell"]), Paragraph("采纳专家建议纳入 31 省最新电网因子与吨公里强度，极具实用价值。", styles["TableCellLeft"])],
-        [Paragraph("四、学术边界审慎度与法定履约隔离", styles["TableCellLeft"]), Paragraph("5.00 / 5.0", styles["TableCell"]), Paragraph("4.96 / 5.0", styles["TableCell"]), Paragraph("4.98 / 5.0", styles["TableCell"]), Paragraph("严格声明物流未纳管，严守科研情景对标红线，学术道德满分。", styles["TableCellLeft"])],
-        [Paragraph("综合加权总分", styles["TableHeader"]), Paragraph("4.933", styles["TableHeader"]), Paragraph("4.877", styles["TableHeader"]), Paragraph("4.905 / 5.0", styles["TableHeader"]), Paragraph("卓越等级 (强烈推荐国家级/省级大创优秀结题)", styles["TableHeader"])],
+        [Paragraph("三、减排决策 TCO 经济性与周转量强度", styles["TableCellLeft"]), Paragraph("4.83 / 5.0", styles["TableCell"]), Paragraph("4.86 / 5.0", styles["TableCell"]), Paragraph("4.85 / 5.0", styles["TableCell"]), Paragraph("采纳专家建议纳入 30 个省级行政区最新电网因子与吨公里强度，具备实用价值。", styles["TableCellLeft"])],
+        [Paragraph("四、学术边界审慎度与法定履约隔离", styles["TableCellLeft"]), Paragraph("5.00 / 5.0", styles["TableCell"]), Paragraph("4.96 / 5.0", styles["TableCell"]), Paragraph("4.98 / 5.0", styles["TableCell"]), Paragraph("严格声明物流未纳管，严守科研情景对标红线，学术边界清晰负责。", styles["TableCellLeft"])],
+        [Paragraph("综合加权总分", styles["TableHeader"]), Paragraph("4.933", styles["TableHeader"]), Paragraph("4.877", styles["TableHeader"]), Paragraph("4.905 / 5.0", styles["TableHeader"]), Paragraph("良好评级 (专家建议推荐大创优秀结题)", styles["TableHeader"])],
     ]
     t_rev = Table(rev_data, colWidths=[38 * mm, 24 * mm, 24 * mm, 20 * mm, 64 * mm])
     t_rev.setStyle(TableStyle([
@@ -626,7 +625,7 @@ def build_guide_pdf(out_path: Path):
     story.append(Spacer(1, 8 * mm))
     story.append(Paragraph("国家级 / 省级大学生创新创业训练计划", styles["CoverSubtitle"]))
     story.append(Paragraph("大创中期答辩核心指南与评审问辨策略手册", styles["CoverTitle"]))
-    story.append(Paragraph("团队冲刺战术版 ── 评委心理解构 / 8分钟逐页实战讲稿 / 12大尖锐质询绝杀 / 红线禁忌", styles["CoverSubtitle"]))
+    story.append(Paragraph("答辩准备手册 ── 评委关注点梳理 / 8分钟逐页讲稿 / 12大高频质询应对 / 关键边界说明", styles["CoverSubtitle"]))
     story.append(HRFlowable(width="60%", thickness=2, color=C_PRIMARY, spaceAfter=6 * mm))
 
     # 一、评委心理解构
@@ -641,7 +640,7 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23% 与冷链正偏数据，强调符合 GHG Protocol 保守性公理。", styles["TableCellLeft"])],
         [Paragraph("2. 经管/商业类专家", styles["TableCell"]), Paragraph("管理学院博导、投资人评委", styles["TableCellLeft"]), Paragraph("商业模式是否成立、企业凭什么买单、TCO 投资回报与边际减排成本 (MAC)", styles["TableCellLeft"]), Paragraph("强调物流微观管理与国际绿色供应链 Scope 3 倒逼，用 TCO 静态回收期（年）与 MAC 算清财务经济账。", styles["TableCellLeft"])],
         [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库、揭示纯向量 MRR 0.0411 弥散机理，出具 Wilcoxon p < 0.001 极显著检验证据，体现算法深度。", styles["TableCellLeft"])],
-        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通 4.5 万辆真实复核，展示 2025 年 47 号公告 31 省 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
+        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 5.2 万辆车队台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
     ]
     t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 54 * mm, 60 * mm])
     t_judges.setStyle(TableStyle([
@@ -672,7 +671,7 @@ def build_guide_pdf(out_path: Path):
 
         ("Slide 3 (01:30~02:30) 系统全层级技术架构 ── 引用图 0",
          "【展示内容】：系统技术架构图 (fig0_system_architecture.png)。<br/>"
-         "【演讲台词】：“这是系统全层级技术架构：自上而下包含接入呈现层（API 与 DeepSeek Harness 官方插件生态，注册 6 大专业工具）、核心计算引擎层（基线核算、TCO 联动、Scope 2 外购电及吨公里强度），以及底层的实证支撑层。全仓代码保持工业级工程质量，已通过 106 项自动化回归测试。”"),
+         "【演讲台词】：“这是系统全层级技术架构：自上而下包含接入呈现层（API 与 DeepSeek Harness 官方插件生态，注册 6 大专业工具）、核心计算引擎层（基线核算、TCO 联动、Scope 2 外购电及吨公里强度），以及底层的实证支撑层。全仓代码保持工程规范质量，已通过 117 项自动化回归测试全部通过。”"),
 
         ("Slide 4 (02:30~03:45) RQ1 真实车队基准检验 ── 引用图 1",
          "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 4.5 万辆车实测对比表。<br/>"
@@ -701,8 +700,8 @@ def build_guide_pdf(out_path: Path):
 
     # 三、12大质询应对
     story.append(Spacer(1, 4 * mm))
-    story.append(Paragraph("第三章：评委专家 12 大高频尖锐质询与绝杀应对矩阵", styles["DocH1"]))
-    story.append(Paragraph("面对现场评委的深度追问，团队成员必须保持自信、沉着，按照标准绝杀话术应答：", styles["DocBody"]))
+    story.append(Paragraph("第三章：评委专家 12 大高频质询应对策略", styles["DocH1"]))
+    story.append(Paragraph("面对现场评委的深度追问，团队成员必须保持自信、沉着，按照规范要点应答：", styles["DocBody"]))
 
     qa_12 = [
         ("质询 1（最致命红线）：“交通运输目前根本没纳入全国碳市场配额，你们算模拟预算和碳价金额有什么现实意义？是不是概念炒作？”",
