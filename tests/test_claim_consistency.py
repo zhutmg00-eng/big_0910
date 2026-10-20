@@ -83,3 +83,64 @@ def test_case_level_values_match_ledger():
         sign = "+" if err >= 0 else ""
         token = f"{sign}{err}%"
         assert token in paper, f"论文表 4 缺少案例 {case['id']} 的误差 {token}"
+
+
+# ---------- 图表产物：数字必须与台账一致，且不得有早期草稿残留 ----------
+
+STALE_FIGURE_CLAIMS = ("2.88", "5.20", "高稳定性")
+
+
+def test_figure_artifacts_render_ledger_range():
+    """fig1 的结论条必须渲染台账区间；若模板用普通字符串会被原样写出 \u007bERR_LO\u007d。"""
+    svg = _read("docs/artifacts/fig1_rq1_real_fleet_validation.svg")
+    lo, hi = METRICS["mape"]["min_pct"], METRICS["mape"]["max_pct"]
+    assert f"[+{lo}%, +{hi}%]" in svg, (
+        f"fig1 未渲染台账偏差区间 [+{lo}%, +{hi}%]，检查模板是否为 f-string"
+    )
+
+
+def test_figure_artifacts_have_no_unrendered_placeholders():
+    """占位符被原样写出说明该段字符串漏了 f 前缀。"""
+    for rel in (
+        "docs/artifacts/fig1_rq1_real_fleet_validation.svg",
+        "docs/artifacts/fig2_rq2_rag_benchmark_comparison.svg",
+        "docs/artifacts/fig3_rq3_sensitivity_heatmap.svg",
+        "docs/artifacts/all_charts_dashboard.html",
+    ):
+        text = _read(rel)
+        for token in ("{ERR_LO", "{ERR_HI", "{MAPE_EQ", "{MAPE_WT", "{LF_NO_BIAS", "{KB_DOCS"):
+            assert token not in text, f"{rel} 仍含未渲染占位符 {token}"
+
+
+def test_figure_artifacts_have_no_stale_claims():
+    """早期草稿的 2.88%/5.20%/「高稳定性」不得重新出现在图表产物中。"""
+    for rel in (
+        "docs/artifacts/fig1_rq1_real_fleet_validation.svg",
+        "docs/artifacts/fig1_rq1_real_fleet_validation.html",
+        "docs/artifacts/all_charts_dashboard.html",
+    ):
+        text = _read(rel)
+        for stale in STALE_FIGURE_CLAIMS:
+            assert stale not in text, f"{rel} 仍含早期草稿数值/表述 {stale}"
+
+
+def test_dashboard_kb_badge_matches_actual_corpus():
+    """展板上的知识库规模徽标必须来自运行时实测，而不是写死的 37/268 旧快照。"""
+    dashboard = _read("docs/artifacts/all_charts_dashboard.html")
+    assert "37 份法规" not in dashboard, "展板仍使用 v0.4 旧快照的 37 份法规"
+    assert "268 Chunks" not in dashboard, "展板仍使用 v0.4 旧快照的 268 Chunks"
+
+    # 若知识库已建，徽标必须与 PolicyVectorStore.count() 一致
+    try:
+        import sys
+
+        sys.path.insert(0, str(ROOT))
+        from src.rag.vector_store import PolicyVectorStore
+
+        actual = int(PolicyVectorStore().count())
+    except Exception:
+        return  # 未建库时跳过精确比对，仅做旧值守卫
+
+    assert f"{actual} Chunks" in dashboard, (
+        f"展板徽标与实测块数 {actual} 不一致"
+    )

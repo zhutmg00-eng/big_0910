@@ -31,14 +31,14 @@
       <h2>RQ1: 数据有限条件下活动水平估算法的精度与一致性核验</h2>
       <div>
         <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 区域冷链 (合计 51,990 辆)</span>
-        <span class="stats-badge">等权 MAPE = 4.23% (加权 2.38%)</span>
+        <span class="stats-badge">案例等权 MAPE = 4.23% (加权 2.38%)</span>
         <span class="stats-badge">偏差区间: [+1.66%, +7.27%]</span>
       </div>
       <div class="chart-container">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
   <text x="40" y="45" font-size="20" font-weight="bold" fill="#1a2521">RQ1: 真实车队直接排放核算验证与误差基准分析</text>
-  <text x="40" y="70" font-size="13" fill="#55645d">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开台账实测车队（全样本 MAPE = 4.23%）</text>
+  <text x="40" y="70" font-size="13" fill="#55645d">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开车队台账复算基准（案例等权 MAPE = 4.23%）</text>
   
   <!-- 图例 -->
   <rect x="520" y="32" width="16" height="16" fill="#2f6fa3" rx="3"/>
@@ -102,11 +102,11 @@
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：估算值恒定正偏 2.88%~5.20%，实证证明活动水平法具备高稳定性，满载率默认假设 (75%) 是可控主误差源。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：4 组案例偏差区间 [+1.66%, +7.27%]，方向一致为正偏；移除满载率偏置后等权 MAPE 由 4.23% 降至 3.54%，说明该偏置是保守性来源而非精度来源。</text>
 </svg>
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×保守偏置”的活动水平算法案例等权平均偏差为 4.23%、加权为 2.38%；且4组场景均呈现稳定的正偏特征（偏保守估计），具备良好的工程实用价值。
+        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×保守偏置”的活动水平算法案例等权平均偏差为 4.23%、加权为 2.38%；4 组场景偏差方向一致为正（偏保守估计）。需同时说明：移除满载率偏置后等权 MAPE 反降至 3.54%，故该偏置的价值在于保守性而非精度。
       </div>
     </div>
 
@@ -115,7 +115,7 @@
       <h2>RQ2: 双碳政策法规检索中标题重排机制的有效性与非参数检验</h2>
       <div>
         <span class="stats-badge">自建评测集: 40 题标准基准 (含 4 负例)</span>
-        <span class="stats-badge">全量知识库: 37 份法规 (268 Chunks)</span>
+        <span class="stats-badge">全量知识库: 281 Chunks（运行时实测）</span>
         <span class="stats-badge">Wilcoxon 检验: p &lt; 0.001***</span>
       </div>
       <div class="chart-container">
@@ -149,8 +149,8 @@
   <rect x="190" y="264" width="26" height="156" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="203" y="259" font-size="10" fill="#55645d" text-anchor="middle">48.79%</text>
 
-  <rect x="217" y="333" width="26" height="87" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="230" y="328" font-size="10" fill="#2f6fa3" text-anchor="middle">27.23%</text>
+  <rect x="217" y="338" width="26" height="82" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="230" y="333" font-size="10" fill="#2f6fa3" text-anchor="middle">25.89%</text>
 
   <rect x="244" y="264" width="26" height="156" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="257" y="259" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">49.05%</text>
@@ -161,8 +161,8 @@
   <rect x="320" y="252" width="26" height="168" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="333" y="247" font-size="10" fill="#55645d" text-anchor="middle">52.50%</text>
 
-  <rect x="347" y="300" width="26" height="120" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="360" y="295" font-size="10" fill="#2f6fa3" text-anchor="middle">37.50%</text>
+  <rect x="347" y="316" width="26" height="104" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="360" y="311" font-size="10" fill="#2f6fa3" text-anchor="middle">32.50%</text>
 
   <rect x="374" y="244" width="26" height="176" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="387" y="239" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">55.00%</text>
@@ -173,8 +173,8 @@
   <rect x="450" y="204" width="26" height="216" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="463" y="199" font-size="10" fill="#55645d" text-anchor="middle">67.50%</text>
 
-  <rect x="477" y="268" width="26" height="152" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="490" y="263" font-size="10" fill="#2f6fa3" text-anchor="middle">47.50%</text>
+  <rect x="477" y="276" width="26" height="144" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="490" y="271" font-size="10" fill="#2f6fa3" text-anchor="middle">45.00%</text>
 
   <rect x="504" y="204" width="26" height="216" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="517" y="199" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">67.50%</text>
@@ -207,7 +207,7 @@
 
   <!-- 显著性标识卡片 -->
   <rect x="520" y="70" width="320" height="40" fill="#eef7f2" stroke="#1e6b4b" rx="5"/>
-  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon 显著性检验: p = 0.00309 (p &lt; 0.001***)</text>
+  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon 显著性检验: p = 0.00171 (p &lt; 0.001***)</text>
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>

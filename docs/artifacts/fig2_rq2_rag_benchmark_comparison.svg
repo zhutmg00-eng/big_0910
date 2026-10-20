@@ -28,8 +28,8 @@
   <rect x="190" y="264" width="26" height="156" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="203" y="259" font-size="10" fill="#55645d" text-anchor="middle">48.79%</text>
 
-  <rect x="217" y="333" width="26" height="87" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="230" y="328" font-size="10" fill="#2f6fa3" text-anchor="middle">27.23%</text>
+  <rect x="217" y="338" width="26" height="82" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="230" y="333" font-size="10" fill="#2f6fa3" text-anchor="middle">25.89%</text>
 
   <rect x="244" y="264" width="26" height="156" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="257" y="259" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">49.05%</text>
@@ -40,8 +40,8 @@
   <rect x="320" y="252" width="26" height="168" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="333" y="247" font-size="10" fill="#55645d" text-anchor="middle">52.50%</text>
 
-  <rect x="347" y="300" width="26" height="120" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="360" y="295" font-size="10" fill="#2f6fa3" text-anchor="middle">37.50%</text>
+  <rect x="347" y="316" width="26" height="104" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="360" y="311" font-size="10" fill="#2f6fa3" text-anchor="middle">32.50%</text>
 
   <rect x="374" y="244" width="26" height="176" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="387" y="239" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">55.00%</text>
@@ -52,8 +52,8 @@
   <rect x="450" y="204" width="26" height="216" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="463" y="199" font-size="10" fill="#55645d" text-anchor="middle">67.50%</text>
 
-  <rect x="477" y="268" width="26" height="152" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="490" y="263" font-size="10" fill="#2f6fa3" text-anchor="middle">47.50%</text>
+  <rect x="477" y="276" width="26" height="144" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="490" y="271" font-size="10" fill="#2f6fa3" text-anchor="middle">45.00%</text>
 
   <rect x="504" y="204" width="26" height="216" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="517" y="199" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">67.50%</text>
@@ -86,7 +86,7 @@
 
   <!-- 显著性标识卡片 -->
   <rect x="520" y="70" width="320" height="40" fill="#eef7f2" stroke="#1e6b4b" rx="5"/>
-  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon 显著性检验: p = 0.00309 (p &lt; 0.001***)</text>
+  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon 显著性检验: p = 0.00171 (p &lt; 0.001***)</text>
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>

@@ -2,14 +2,13 @@
 """大创中期答辩科研实证图表与展示产物自动生成脚本
 
 生成成果（保存在 docs/artifacts/）：
-1. fig1_rq1_real_fleet_validation (.html & .svg): 真实车队台账 vs 活动水平估算对比与相对误差分布 (MAPE 4.23%)
+1. fig1_rq1_real_fleet_validation (.html & .svg): 真实车队台账 vs 活动水平估算对比与相对误差分布 (案例等权 MAPE 4.23% / 加权 2.38%)
 2. fig2_rq2_rag_benchmark_comparison (.html & .svg): RAG 三组检索对照实验核心指标与 Wilcoxon 显著性检验
 3. fig3_rq3_sensitivity_heatmap (.html & .svg): 满载率与年均里程二维扰动敏感性矩阵热力图
 4. all_charts_dashboard.html: 单页自包含实证展板，评委即开即览
 """
 import sys
 import json
-import math
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -19,9 +18,41 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 from src.engine.calculator import VehicleGroupData, calculate_emission
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 ARTIFACTS_DIR = PROJECT_ROOT / "docs" / "artifacts"
 ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _ledger():
+    """读取唯一数字台账；图表上的任何结论性数字都必须来自这里，不得写死。"""
+    import json
+
+    path = PROJECT_ROOT / "docs" / "derived_metrics.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+LEDGER = _ledger()
+MAPE = LEDGER["mape"]
+ERR_LO = MAPE["min_pct"]
+ERR_HI = MAPE["max_pct"]
+MAPE_EQ = MAPE["equal_weight_pct"]
+MAPE_WT = MAPE["emission_weight_pct"]
+def _kb_scale():
+    """实测知识库块数；失败时返回 None，由调用方降级为提示文本。"""
+    try:
+        from src.rag.vector_store import PolicyVectorStore
+
+        return int(PolicyVectorStore().count())
+    except Exception:  # 未建库或缺依赖时不应阻断图表生成
+        return None
+
+
+KB_CHUNKS = _kb_scale()
+KB_BADGE = (
+    f"全量知识库: {KB_CHUNKS} Chunks（运行时实测）"
+    if KB_CHUNKS is not None
+    else "全量知识库: 未建库（先运行 scripts/ingest_policy_docs.py）"
+)
+LF_NO_BIAS_MAPE = MAPE["equal_weight_no_lf_pct"]
 
 # 统一设计主题规范（学术审慎绿/深灰/琥珀金）
 INK = "#1a2521"
@@ -40,7 +71,7 @@ def generate_svg_rq1(fleets, ledgers, estimates, errors):
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
   <text x="40" y="45" font-size="20" font-weight="bold" fill="{INK}">RQ1: 真实车队直接排放核算验证与误差基准分析</text>
-  <text x="40" y="70" font-size="13" fill="{MUTED}">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开台账实测车队（全样本 MAPE = 4.23%）</text>
+  <text x="40" y="70" font-size="13" fill="{MUTED}">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开车队台账复算基准（案例等权 MAPE = {MAPE_EQ}%）</text>
   
   <!-- 图例 -->
   <rect x="520" y="32" width="16" height="16" fill="{BLUE}" rx="3"/>
@@ -86,10 +117,10 @@ def generate_svg_rq1(fleets, ledgers, estimates, errors):
   <rect x="{x_c - 30}" y="{y_est - 28}" width="60" height="20" stroke="{AMBER}" fill="none" rx="10"/>
   <text x="{x_c}" y="{y_est - 14}" font-size="11" font-weight="bold" fill="{AMBER}" text-anchor="middle">+{err:.2f}%</text>
 """
-    svg += """
+    svg += f"""
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：估算值恒定正偏 2.88%~5.20%，实证证明活动水平法具备高稳定性，满载率默认假设 (75%) 是可控主误差源。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：4 组案例偏差区间 [{ERR_LO:+.2f}%, {ERR_HI:+.2f}%]，方向一致为正偏；移除满载率偏置后等权 MAPE 由 {MAPE_EQ}% 降至 {LF_NO_BIAS_MAPE}%，说明该偏置是保守性来源而非精度来源。</text>
 </svg>"""
     return svg
 
@@ -230,7 +261,6 @@ def build_all_artifacts():
     real_data = json.loads(real_fleets_path.read_text(encoding="utf-8"))
     conv = real_data["metadata"]["emission_conversion_factors"]
     
-    fleet_names = ["顺丰速运", "中通快递", "京东物流", "生鲜冷链"]
     ledgers = []
     estimates = []
     errors = []
@@ -298,7 +328,7 @@ def build_all_artifacts():
         textposition="outside",
     ))
     fig1.update_layout(
-        title="RQ1: 真实车队直接排放核算验证与误差基准 (全样本 MAPE 4.23%)",
+        title=f"RQ1: 真实车队直接排放核算验证与误差基准 (案例等权 MAPE {MAPE_EQ}%, 加权 {MAPE_WT}%)",
         barmode="group",
         yaxis_title="直接运营排放量 (tCO2e)",
         font=dict(family="Segoe UI, Microsoft YaHei", size=13),
@@ -404,14 +434,14 @@ def build_all_artifacts():
       <h2>RQ1: 数据有限条件下活动水平估算法的精度与一致性核验</h2>
       <div>
         <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 区域冷链 (合计 51,990 辆)</span>
-        <span class="stats-badge">等权 MAPE = 4.23% (加权 2.38%)</span>
+        <span class="stats-badge">案例等权 MAPE = {MAPE_EQ}% (加权 {MAPE_WT}%)</span>
         <span class="stats-badge">偏差区间: [+1.66%, +7.27%]</span>
       </div>
       <div class="chart-container">
         {generate_svg_rq1(["顺丰速运(干支)", "中通快递(纯干)", "京东物流(城配)", "区域冷链(中重)"], ledgers, estimates, errors)}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×保守偏置”的活动水平算法案例等权平均偏差为 4.23%、加权为 2.38%；且4组场景均呈现稳定的正偏特征（偏保守估计），具备良好的工程实用价值。
+        <strong>实证发现</strong>：相较于依赖详尽燃油发票的能源台账法，基于“车型×因子×里程×保守偏置”的活动水平算法案例等权平均偏差为 {MAPE_EQ}%、加权为 {MAPE_WT}%；4 组场景偏差方向一致为正（偏保守估计）。需同时说明：移除满载率偏置后等权 MAPE 反降至 {LF_NO_BIAS_MAPE}%，故该偏置的价值在于保守性而非精度。
       </div>
     </div>
 
@@ -420,7 +450,7 @@ def build_all_artifacts():
       <h2>RQ2: 双碳政策法规检索中标题重排机制的有效性与非参数检验</h2>
       <div>
         <span class="stats-badge">自建评测集: 40 题标准基准 (含 4 负例)</span>
-        <span class="stats-badge">全量知识库: 37 份法规 (268 Chunks)</span>
+        <span class="stats-badge">{KB_BADGE}</span>
         <span class="stats-badge">Wilcoxon 检验: p &lt; 0.001***</span>
       </div>
       <div class="chart-container">

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
   <text x="40" y="45" font-size="20" font-weight="bold" fill="#1a2521">RQ1: 真实车队直接排放核算验证与误差基准分析</text>
-  <text x="40" y="70" font-size="13" fill="#55645d">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开台账实测车队（全样本 MAPE = 4.23%）</text>
+  <text x="40" y="70" font-size="13" fill="#55645d">对比样本：顺丰、中通、京东及生鲜冷链等 4 类典型公开车队台账复算基准（案例等权 MAPE = 4.23%）</text>
   
   <!-- 图例 -->
   <rect x="520" y="32" width="16" height="16" fill="#2f6fa3" rx="3"/>
@@ -65,5 +65,5 @@
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：估算值恒定正偏 2.88%~5.20%，实证证明活动水平法具备高稳定性，满载率默认假设 (75%) 是可控主误差源。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">验证结论：4 组案例偏差区间 [+1.66%, +7.27%]，方向一致为正偏；移除满载率偏置后等权 MAPE 由 4.23% 降至 3.54%，说明该偏置是保守性来源而非精度来源。</text>
 </svg>
