@@ -567,14 +567,12 @@ def find_optimal_reduction(
     if has_savings_signal:
         # 先比净节省额，再比减排量打破平局
         scored.sort(key=lambda x: (x[1], x[0].reduction_t), reverse=True)
-        ranking_basis = "carbon_cost_saving"
         comparison.recommendations.append(
             "候选方案按碳价对标的净节省额排序（节省额相同再比减排量），"
             "而不是按「节省额/减排量」的比值——该比值会惩罚减排量大的方案。"
         )
     else:
         scored.sort(key=lambda x: x[0].reduction_t, reverse=True)
-        ranking_basis = "reduction_amount"
         comparison.recommendations.append(
             "基线未超出模拟碳预算，各情景的碳价对标节省额均为 0，"
             "因此按直接运营减排量而非节省额排序。"
