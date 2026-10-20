@@ -98,7 +98,12 @@ def main():
     results.sort()
     worst = max(results)
     n = len(results)
-    median_mape = results[n // 2][0] if n % 2 else (results[n//2-1][0] + results[n//2][0]) / 2
+    raw_median = results[n // 2][0] if n % 2 else (results[n//2-1][0] + results[n//2][0]) / 2
+    # 【口径说明】本脚本自算的 50 格 MAPE 是未截断的原始值（如 14.5145），
+    # 而 docs/derived_metrics.json 存的是逐格保留两位后的值，其中位数是
+    # 14.515 -> 14.52。两者在第 2 位小数上可能差 0.01，属数据粒度差异，
+    # 不是算错；对外引用一律以台账 median_pct 为准。
+    median_mape = round(raw_median, 2)
     over10 = [r for r in results if r[0] > 10.0]
     print(f"全样本 MAPE 区间: {results[0][0]:.2f}% ~ {results[-1][0]:.2f}%")
     print(f"中位数 MAPE: {median_mape:.2f}%  |  超过 10% 的组合: {len(over10)}/{n} ({len(over10)/n*100:.0f}%)")

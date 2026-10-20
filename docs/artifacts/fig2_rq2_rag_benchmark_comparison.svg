@@ -72,7 +72,7 @@
 
   <text x="620" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">Recall@10</text>
 
-  <!-- 负例拒答准确率 分组柱 -->
+  <!-- 负例检索命中率 分组柱 -->
   <rect x="710" y="260" width="26" height="160" fill="#84938b" rx="2" opacity="0.85"/>
   <text x="723" y="255" font-size="10" fill="#55645d" text-anchor="middle">50.00%</text>
 
@@ -82,7 +82,7 @@
   <rect x="764" y="260" width="26" height="160" fill="#1e6b4b" rx="2" opacity="0.95"/>
   <text x="777" y="255" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">50.00%</text>
 
-  <text x="750" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">负例拒答准确率</text>
+  <text x="750" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">负例检索命中率</text>
 
   <!-- 显著性标识卡片 -->
   <rect x="520" y="70" width="320" height="40" fill="#eef7f2" stroke="#1e6b4b" rx="5"/>
@@ -90,5 +90,5 @@
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：纯向量语义在中文法规长尾中发生严重弥散 (MRR 0.0411)，混合重排大幅跃升至 0.5036，显著提升负例防御 (75.00%)。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：同一语料同一中文嵌入下，纯关键词 MRR 0.4879 / 纯向量 0.2589 / 三路加权融合 0.4920；真实增量在 Recall@10（80.0% vs 70.0%），相对纯关键词不显著（Holm 0.961）。</text>
 </svg>

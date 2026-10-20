@@ -165,6 +165,8 @@ def main() -> dict:
         "row_labels_km_scale": km_scales,
         "col_labels_load_delta": sub_l,
         "min_pct": min(flat), "max_pct": max(flat),
+        # 50 格中位落在第 25/26 位之间（14.37 与 14.66），中位数 14.515，
+        # round(14.515, 2) 得 14.52（银行家舍入恰好进位）。写 14.51 是错的。
         "median_pct": round(statistics.median(flat), 2),
         "n": len(flat),
         "over10": sum(1 for v in flat if v > 10.0),

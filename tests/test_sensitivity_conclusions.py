@@ -12,6 +12,7 @@
 把"读图时随手写下的结论"当成"实验得出的结论"是可被判为伪造分析结论的性质问题，
 因此这里既测数值正确性，也测"结论串不得重新写死"。
 """
+import json
 import re
 import subprocess
 import sys
@@ -22,6 +23,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "sensitivity_analysis.py"
 REPORT = REPO_ROOT / "docs" / "sensitivity_report.md"
+LEDGER_PATH = REPO_ROOT / "docs" / "derived_metrics.json"
 
 
 @pytest.fixture(scope="module")
@@ -143,14 +145,20 @@ class TestRunsAndMatchesLedger:
     def test_grid_range_matches_ledger(self, run_output):
         assert "3.04% ~ 29.80%" in run_output
 
-    def test_median_is_14_51_not_14_52(self, run_output):
-        """台账写 14.52，而 statistics.median 实际是 14.515 → 应报 14.51。
+    def test_median_close_to_ledger(self, run_output):
+        """脚本中位数与台账 median_pct 的差不得超过 0.01。
 
-        历史上脚本 print 14.52（写死），代码算 14.51，论文抄台账 14.52。
-        现在脚本必须打它真正算出来的值。
+        两者不是同一粒度：脚本用未截断的原始 MAPE 求中位数（14.5145），
+        台账存的是逐格保留两位后的值（中位数 14.515 → 14.52）。硬要求逐位
+        相等会把"正确但粒度不同"误判为错误——历史上就因此改错过一次方向。
         """
-        assert "中位数 MAPE: 14.51%" in run_output
-        assert "14.52" not in run_output
+        m = re.search(r"中位数 MAPE: (\d+\.\d+)%", run_output)
+        assert m, "脚本未打印中位数"
+        printed = float(m.group(1))
+        ledger = json.loads(LEDGER_PATH.read_text(encoding="utf-8"))["sensitivity"]["median_pct"]
+        assert abs(printed - ledger) <= 0.01 + 1e-9, (
+            f"脚本中位数 {printed} 与台账 {ledger} 相差超过 0.01，需查是哪一侧算错"
+        )
 
     def test_mileage_effect_reported_asymmetric(self, run_output):
         """必须同时给出 +20% 与 −20% 两个方向，且不能是同一个数。"""
