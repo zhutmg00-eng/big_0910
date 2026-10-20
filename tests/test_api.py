@@ -156,3 +156,26 @@ class TestAPI:
             json={"question": question, "carbon_profile": {}},
         )
         assert response.status_code == 422
+
+    def test_kb_health_endpoint_reports_structured_selfcheck(self):
+        """知识库健康自检必须给出结构化结论，而不是一个布尔值。
+
+        背景：collection 名由嵌入模型哈希派生，换模型会静默新建空 collection，
+        旧语料留在磁盘但不再被读到，政策问答从此返回空结果且无任何报错。
+        这个接口是把该故障暴露出来的唯一入口。
+        """
+        response = client.get("/api/kb/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] in {"ok", "empty", "degraded"}
+        for key in ("count", "documents", "embedding_model", "collection_name",
+                    "other_collections", "warning"):
+            assert key in data, f"自检结果缺少字段 {key}"
+        assert isinstance(data["other_collections"], dict)
+        # status 与 count 必须自洽，否则调用方无法据此判断
+        if data["status"] == "empty":
+            assert data["count"] == 0
+            assert data["warning"], "空库必须给出可执行的修复指引"
+        if data["status"] == "ok":
+            assert data["count"] > 0
+            assert data["warning"] == ""

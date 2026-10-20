@@ -364,6 +364,72 @@ class PolicyVectorStore:
             "degrade_reason": self._degrade_reason,
         }
 
+    def health(self) -> Dict:
+        """知识库健康自检：把"看起来能跑但其实是空的"这类静默故障显式化。
+
+        历史故障（2026-10 实测）：collection 名由嵌入模型哈希派生
+        （``carbon_policy_v5_<md5(model)[:8]>``），因此只要换嵌入模型
+        （例如从 chromadb-default 换到 bge-small-zh），
+        ``get_or_create_collection`` 就会**新建一个空 collection**，
+        旧的 268/281 块 collection 仍留在磁盘上但不再被读到——
+        政策问答从此返回空结果，而日志里没有任何报错。
+        本地 data/chroma_db/chroma.sqlite3 里能查到 5 个历史 collection
+        （v2/v3 各 57 块、v4 268 块、v5_3029251b 281 块、v5_a7d89e68 281 块，
+        其中 57 块那份是只有 9 份文档的早期残缺库）。
+
+        Returns:
+            dict，字段含 status（ok/empty/stale）、count、documents、
+            embedding_model、collection_name、other_collections（同库其它
+            collection 名 → 块数）、warning（需要人看的提示，无则空串）。
+        """
+        count = self.count()
+        sources = self.source_hashes() if count else {}
+        out = {
+            "status": "ok",
+            "count": count,
+            "documents": len(sources),
+            "embedding_model": self.embedding_model,
+            "collection_name": self.collection_name,
+            "other_collections": {},
+            "warning": "",
+        }
+        if not self._chroma_ok:
+            out["status"] = "degraded"
+            out["warning"] = f"ChromaDB 不可用（{self._degrade_reason}），当前检索依赖 BM25 缓存。"
+            return out
+
+        # 同库其它 collection：用于提示"你的语料在另一份 collection 里"
+        others: Dict[str, int] = {}
+        try:
+            for col in self.client.list_collections():
+                name = col if isinstance(col, str) else getattr(col, "name", str(col))
+                if name == self.collection_name:
+                    continue
+                try:
+                    others[name] = self.client.get_collection(name).count()
+                except Exception:  # pragma: no cover - 单份损坏不应影响整体自检
+                    others[name] = -1
+        except Exception as exc:  # pragma: no cover
+            logger.debug("列举 collection 失败：%s", exc)
+        out["other_collections"] = others
+
+        if count == 0:
+            out["status"] = "empty"
+            rich = {k: v for k, v in others.items() if v > 0}
+            if rich:
+                biggest = max(rich, key=rich.get)
+                out["warning"] = (
+                    f"当前 collection「{self.collection_name}」为空，但同库存在非空 collection"
+                    f"「{biggest}」（{rich[biggest]} 块）——通常是更换嵌入模型导致 collection 名变化，"
+                    f"旧语料没有被读回。请执行 python scripts/ingest_policy_docs.py 重建。"
+                )
+            else:
+                out["warning"] = (
+                    "知识库为空：政策问答将返回空结果。"
+                    "请执行 python scripts/ingest_policy_docs.py（全新 clone 必须先跑一次）。"
+                )
+        return out
+
     def source_hashes(self) -> Dict[str, str]:
         """已入库文档 → 内容哈希（旧版入库无哈希时为空串，会触发重新入库）。"""
         if self.count() == 0:

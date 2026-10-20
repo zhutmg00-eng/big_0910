@@ -42,6 +42,32 @@ python -m pytest -q
 
 > 国内网络下载模型较慢时，先设置 `$env:HF_ENDPOINT="https://hf-mirror.com"`。
 
+### 冷启动：知识库是运行时产物，不在仓库里
+
+`data/chroma_db/` 被 `.gitignore` 排除，因此 `git clone` 之后**没有**向量库，
+政策问答会返回空结果（计算类功能不受影响）。首次使用必须先跑一次入库：
+
+```powershell
+python scripts/ingest_policy_docs.py --force
+```
+
+- 语料是仓库里的 `data/policy_docs/`（39 份，44 个文件中去掉 5 个非 md 附件），
+  入库结果为 **39 份 / 281 块**；耗时约 13–22 秒（不含首次下载约 90MB 嵌入模型）。
+- 想省掉这一步，可设 `KB_AUTO_INGEST=1`，服务启动时空库会自动入库（见下方配置表）。
+- 不确定库是不是空的，直接查自检接口，不要靠猜：
+
+  ```powershell
+  curl http://localhost:8000/api/kb/health
+  ```
+
+  返回 `status`（`ok` / `empty` / `degraded`）、`count`、`documents`、
+  `embedding_model`、`collection_name`、`other_collections` 与 `warning`。
+  `status=empty` 时 `warning` 会直接写出修复命令。
+
+> ⚠️ 换嵌入模型会换 collection 名（`carbon_policy_v5_<模型哈希>`），
+> 旧库仍在磁盘上但不会被读回，表现为"库突然空了"。
+> `/api/kb/health` 的 `other_collections` 字段就是为了让这种静默失效暴露出来。
+
 启动后端和前端：
 
 ```powershell
@@ -54,7 +80,7 @@ streamlit run src/ui/app.py
 
 - Web：`http://localhost:8501`
 - API 文档：`http://localhost:8000/docs`
-- 健康检查：`http://localhost:8000/api/health`
+- 健康检查：`http://localhost:8000/api/health`（进程存活）／`http://localhost:8000/api/kb/health`（知识库自检）
 
 开发环境不设置 `APP_API_KEY` 时，API 进入无鉴权模式。设置密钥后，前端和请求方都需发送同一 `X-API-Key`。
 
@@ -161,6 +187,7 @@ dsh plugin add ./packages/dsh-plugin-carbon-asset
 | POST | `/api/uncertainty` | 蒙特卡洛排放不确定性分析 | 是 |
 | POST | `/api/ask` | 政策检索与问答（含证据溯源） | 是 |
 | GET | `/api/kb/stats` | 知识库状态 | 是 |
+| GET | `/api/kb/health` | 知识库健康自检（空库/换模型静默失效可检出） | 否 |
 | POST | `/api/kb/ingest` | 导入 `data/policy_docs` 内单份文档 | 是 |
 | POST | `/api/kb/ingest-all` | 批量导入全部政策文档（幂等） | 是 |
 | GET/POST | `/api/tco/*` | 新能源替换 TCO 与回收期 | 是 |
