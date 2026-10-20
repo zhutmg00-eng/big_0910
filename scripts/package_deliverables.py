@@ -11,7 +11,6 @@
 - 目录：output/大创中期成果汇报材料_物流碳决策助手_202610/
 - 压缩包：output/大创中期成果汇报材料_物流碳决策助手_202610.zip
 """
-import os
 import shutil
 import sys
 import zipfile
@@ -247,7 +246,7 @@ def main():
                 zf.write(file_path, arcname)
 
     zip_size_mb = ZIP_PATH.stat().st_size / (1024 * 1024)
-    print(f"🎉 打包完成！")
+    print("🎉 打包完成！")
     print(f"📁 成果文件夹: {PKG_DIR}")
     print(f"📦 成果压缩包: {ZIP_PATH} ({zip_size_mb:.2f} MB)")
     print("=" * 80)

@@ -25,8 +25,10 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-# 预先导入 main，避免 routes_compare 的循环引用
-import src.api.main
+# 预先导入 main，避免 routes_compare 的循环引用。
+# noqa: F401 不能删——这个名字本身没人用，删掉会触发循环 import，
+# tests/test_cli_bridge.py::test_compare_command 立刻失败（实测过）。
+import src.api.main  # noqa: F401
 
 from src.engine.calculator import VehicleGroupData, calculate_emission
 from src.engine.carbon_price import estimate_compliance_cost, load_carbon_price_data
@@ -37,7 +39,7 @@ from src.engine.tco import (
     DEFAULT_TCO_BENCHMARKS,
     TCOEconomicParameters,
     VehicleTCOBenchmark,
-    calculate_fleet_tco,
+    calculate_fleet_tco,  # noqa: F401  保留：作为 TCO 模块的导入契约供下游复用
     calculate_single_vehicle_tco,
     get_tco_benchmark,
 )

@@ -40,7 +40,7 @@ def run_e2e_demo():
     baseline = calculate_emission(fleet)
     print(f"\n年度直接运营排放: {baseline.total_emission_t:,.1f} tCO2e")
     print(f"总车辆数: {baseline.total_vehicles} 辆")
-    print(f"\n分车型排放明细:")
+    print("\n分车型排放明细:")
     print(f"{'车型':<16} {'排放量(tCO2e)':>14} {'占比':>8} {'单辆排放':>10}")
     for vtype, data in baseline.emission_by_type.items():
         print(f"  {vtype:<14} {data['排放量_tCO2']:>10.1f} {data['占比']:>7.1f}% {data['单辆排放_tCO2']:>8.1f}")
@@ -60,7 +60,7 @@ def run_e2e_demo():
     print(f"预算差额:     {gap.gap_t:,.1f} tCO2e")
     print(f"状态:         {gap.gap_status}")
     
-    print(f"\n分车型模拟预算明细:")
+    print("\n分车型模拟预算明细:")
     print(f"{'车型':<16} {'车辆数':>6} {'基准值':>8} {'预算(t)':>10}")
     for vtype, data in gap.quota_by_type.items():
         print(f"  {vtype:<14} {data['车辆数']:>4} {data['基准值_t_per_辆']:>6.0f} {data['模拟预算_t']:>8.1f}")

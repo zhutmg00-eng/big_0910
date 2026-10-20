@@ -29,9 +29,11 @@ jobs:
           path: data/models
           key: models-bge-small-zh-v1.5
       - name: Lint (ruff)
+        # scripts/ 也纳入——此前只查 src tests，scripts 下积了 22 处告警
+        # （13 F541 + 7 F401 + 2 F841）一直没人发现。
         run: |
           python -m pip install ruff
-          ruff check src tests
+          ruff check src tests scripts
       - name: Ingest policy documents
         run: python scripts/ingest_policy_docs.py --force
       - name: Run tests

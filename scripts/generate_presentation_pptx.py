@@ -7,11 +7,10 @@
 4. 杜绝网络浮夸词汇（如绝杀、神级）与 emoji，使用规范学术标号、变量与公式。
 """
 
-import sys
 from pathlib import Path
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 
@@ -1074,10 +1073,10 @@ def create_deck():
     p.font.color.rgb = RGBColor(203, 213, 225)
 
     prs.save(str(OUTPUT_PPTX))
-    print(f"============================================================")
+    print("============================================================")
     print(f"成功生成纯正学术风格、数据来源严谨的 16 页答辩幻灯片: {OUTPUT_PPTX}")
-    print(f"视觉规范：纯白背景 + 学术黛蓝 + 墨绿 + 完备数据来源页码与推导步骤！")
-    print(f"============================================================")
+    print("视觉规范：纯白背景 + 学术黛蓝 + 墨绿 + 完备数据来源页码与推导步骤！")
+    print("============================================================")
 
 if __name__ == "__main__":
     create_deck()

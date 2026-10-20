@@ -36,12 +36,12 @@ def main():
         print(f"[warn] 未安装: {missing}")
 
     lines = [
-        f"# 本文件由 scripts/gen_requirements_lock.py 自动生成，请勿手工编辑。",
+        "# 本文件由 scripts/gen_requirements_lock.py 自动生成，请勿手工编辑。",
         f"# 生成环境：Python {sys.version.split()[0]} ({sys.platform})",
-        f"# 生成依据：以下 19 项直接依赖的版本取自该环境中 importlib.metadata 的实测值。",
-        f"# 验证证据：在该环境执行 `python -m pytest tests -q` 全量通过后生成。",
-        f"# 注意：本文件只锁定直接依赖（requirements.txt 中声明的 19 项），不含传递依赖；",
-        f"#       传递依赖版本随 PyPI 解析结果变化，若需完全可复现请改用 pip freeze 全量清单。",
+        "# 生成依据：以下 19 项直接依赖的版本取自该环境中 importlib.metadata 的实测值。",
+        "# 验证证据：在该环境执行 `python -m pytest tests -q` 全量通过后生成。",
+        "# 注意：本文件只锁定直接依赖（requirements.txt 中声明的 19 项），不含传递依赖；",
+        "#       传递依赖版本随 PyPI 解析结果变化，若需完全可复现请改用 pip freeze 全量清单。",
     ]
     for name in names:
         if _has(name):

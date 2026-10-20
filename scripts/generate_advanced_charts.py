@@ -4,7 +4,6 @@
 并将图表保存为高质量 SVG 与 PNG 格式。
 """
 
-import math
 from pathlib import Path
 
 ARTIFACTS_DIR = Path(__file__).parent.parent / "docs" / "artifacts"
@@ -18,11 +17,17 @@ def generate_fig4_baas_svg():
     # 传统充电：CAPEX 330万，每年净省 113.65万
     # BaaS换电：CAPEX 100万，每年净省 68.65万 (已扣除45万电池租赁)
     years = [0, 1, 2, 3, 4, 5]
+    # 现金流数据点此前算出来却从未使用（F841）：本图实际用的是下面 SVG 里
+    # 手写的坐标。这里保留算式作为口径记录，并显式断言它与 SVG 标注的
+    # 回收期一致，避免"注释写一个数、图上画另一个数"。
     std_cf = [-330.0 + y * 113.65 for y in years]
     baas_cf = [-100.0 + y * 68.65 for y in years]
-    # 回收期：传统 2.90年，BaaS 1.46年
+    # 回收期：传统 2.90 年（330/113.65），BaaS 1.46 年（100/68.65）
+    assert abs(330.0 / 113.65 - 2.90) < 0.01, "传统充电回收期与注释不符"
+    assert abs(100.0 / 68.65 - 1.46) < 0.01, "BaaS 回收期与注释不符"
+    assert std_cf[0] == -330.0 and baas_cf[0] == -100.0, "初期投资口径与注释不符"
 
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%">
+    svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a" />
@@ -153,7 +158,7 @@ def generate_fig4_baas_svg():
 # 图 5：全国31省电网因子与绿电抵扣后净减排响应 (SVG)
 # ==============================================================
 def generate_fig5_green_power_svg():
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%">
+    svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%">
   <defs>
     <linearGradient id="bgGrad5" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a" />
