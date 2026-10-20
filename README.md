@@ -71,6 +71,13 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 ```
 
 生产配置要求显式提供 `APP_API_KEY` 和 `CORS_ORIGINS`，并保持 Streamlit XSRF 防护开启。
+`docker-compose.prod.yml` 用 `${APP_API_KEY:?...}` 做强制校验，缺变量时 compose 直接报错退出，
+不会悄悄以无鉴权状态启动。
+
+> ⚠️ **开发配置不能直接暴露到公网**：`docker-compose.yml` 里 `APP_API_KEY` 的默认值是 `dev-key`，
+> 而 `src/api/main.py:87` 在未设该变量时直接跳过鉴权。也就是说用开发配置加内网穿透把 8000 端口
+> 映射出去，等于把入库接口 `/api/ingest` 和计算接口都公开——任何人都能触发全量重建知识库。
+> 对外演示必须走 `docker-compose.prod.yml`。
 
 ## 环境变量
 
