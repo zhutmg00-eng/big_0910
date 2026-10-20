@@ -363,3 +363,46 @@ def test_defense_docs_test_count_matches_collection():
         assert str(actual) in text, (
             f"{rel} 未出现当前真实测试数 {actual}"
         )
+
+
+# ---------------------------------------------------------------- 车队规模口径
+
+# 覆盖车辆数的历史错写：5.2 万 / 5.3 万 / 4.5 万 / 45,035 都出现过。
+VEHICLE_TOTAL_STALE = (
+    "5.2 万辆", "5.2万辆", "5.3 万辆", "5.3万辆",
+    "4.5 万辆", "4.5万辆", "45,035",
+)
+
+
+def test_public_materials_use_ledger_vehicle_total():
+    """对外材料里的车队规模必须与台账 mape.vehicles_total 逐位一致。
+
+    README 曾写「约 5.3 万辆」，答辩 deck 的口播稿写「5.2 万辆台账核对」，
+    而台账是 51,990。三个数并存时评委只需问一句「到底几辆」。
+    """
+    ledger = json.loads((ROOT / "docs" / "derived_metrics.json").read_text(encoding="utf-8"))
+    total = ledger["mape"]["vehicles_total"]
+    expected = f"{total:,}"
+    for rel in ("README.md", "docs/artifacts/defense_presentation_deck.html"):
+        text = _read_defense(rel)
+        for stale in VEHICLE_TOTAL_STALE:
+            assert stale not in text, (
+                f"{rel} 仍写「{stale}」；覆盖车辆数应为 {expected}"
+            )
+        assert expected in text, f"{rel} 未出现正确的覆盖车辆数 {expected}"
+
+
+def test_public_materials_do_not_claim_refusal_rate():
+    """「100% 合规拒答」已被证伪：检索层没有任何拒答实现。
+
+    实测四道负例题的检索命中率是 2/4，即 50%。允许在撤回台账里提到旧说法，
+    但不允许作为成果陈述出现。
+    """
+    for rel in (
+        "docs/artifacts/defense_presentation_deck.html",
+        "scripts/generate_presentation_pptx.py",
+        "README.md",
+    ):
+        text = _read_defense(rel)
+        for needles in (("100% 拒答",), ("100%拒答",), ("拒答率 100",), ("彻底杜绝法律幻觉",)):
+            _assert_no_unretracted(text, needles, rel, "仍声称存在 100% 拒答能力")
