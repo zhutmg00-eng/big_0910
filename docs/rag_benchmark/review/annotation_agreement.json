@@ -1,0 +1,25 @@
+{
+  "n_items": 40,
+  "n_annotator_a": 40,
+  "n_annotator_b": 40,
+  "fields": {
+    "答案要点判定": {
+      "agreement_rate": 1.0,
+      "cohens_kappa": 1.0,
+      "kappa_is_degenerate": true,
+      "value_distribution_annotator_a": {
+        "✓": 40
+      },
+      "disagreements": []
+    },
+    "适用性标签判定": {
+      "agreement_rate": 1.0,
+      "cohens_kappa": 1.0,
+      "kappa_is_degenerate": true,
+      "value_distribution_annotator_a": {
+        "同意": 40
+      },
+      "disagreements": []
+    }
+  }
+}
