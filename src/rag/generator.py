@@ -130,8 +130,9 @@ def call_llm(
 
     错误处理：
     - API key未配置 → 返回降级提示
-    - 网络超时/限流 → 重试1次
-    - 其他异常 → 返回错误信息
+    - 网络超时/连接中断/限流/5xx → 按异常类型重试1次（指数退避）
+    - 认证失败 → 直接提示，不重试
+    - 其他异常 → 返回降级提示并注明失败类型
     """
     model = model or LLM_MODEL
     temperature = temperature if temperature is not None else LLM_TEMPERATURE
@@ -149,7 +150,9 @@ def call_llm(
 
     client = OpenAI(api_key=api_key, base_url=config["base_url"])
 
-    # 重试逻辑（最多2次）
+    # 重试逻辑（最多2次）。按异常类型判断而非匹配错误文本：连接重置、DNS 失败、
+    # 502/503/504 等消息里并不含 rate/timeout，靠字符串匹配会第一次失败就放弃，
+    # 于是演示时一次网络抖动就直接退化成检索摘录。
     max_retries = 2
     last_error = None
 
@@ -165,27 +168,65 @@ def call_llm(
                 max_tokens=LLM_MAX_TOKENS,
                 timeout=30,  # 30秒超时
             )
-            return response.choices[0].message.content
+            return _extract_completion_text(response)
 
         except Exception as e:
             last_error = e
             error_type = type(e).__name__
 
-            # 限流/超时 → 重试
-            if "rate" in str(e).lower() or "timeout" in str(e).lower():
+            if _is_auth_error(e):
+                return f"⚠️ API认证失败，请检查API key配置: {error_type}"
+
+            # 限流/超时/连接类错误 → 重试
+            if _is_retryable_error(e):
                 if attempt < max_retries - 1:
                     import time
                     time.sleep(2 ** attempt)  # 指数退避
                     continue
 
-            # 认证错误 → 不重试
-            if "auth" in str(e).lower() or "401" in str(e):
-                return f"⚠️ API认证失败，请检查API key配置: {error_type}"
-
             # 其他错误
             break
 
-    return (
-        f"LLM 调用失败（{type(last_error).__name__}），已返回检索式回答。\n\n"
-        f"{fallback_answer or user_prompt[:500]}"
-    )
+    error_name = type(last_error).__name__ if last_error is not None else "未知错误"
+    # 绝不把 user_prompt 拼进返回值：它含内部提示词模板与政策全文，属于内部结构，
+    # 且会被误当成「模型复述的政策内容」。
+    base = fallback_answer or "（未提供检索式回答，请检查 RAG 检索链路）"
+    return f"LLM 调用失败（{error_name}），已返回检索式回答。\n\n{base}"
+
+
+def _extract_completion_text(response) -> str:
+    """从 LLM 响应中取出正文，并显式处理空响应与截断。"""
+    choices = getattr(response, "choices", None)
+    if not choices:
+        raise RuntimeError("LLM 返回空 choices（可能被内容安全策略拦截）")
+    choice = choices[0]
+    content = (getattr(choice.message, "content", None) or "").strip()
+    if not content:
+        raise RuntimeError("LLM 返回空内容")
+    if getattr(choice, "finish_reason", None) == "length":
+        content += "\n\n⚠️ 回答因长度上限被截断，【风险提示】可能不完整，请人工复核。"
+    return content
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    """认证/权限类错误：不重试，直接提示。"""
+    name = type(exc).__name__
+    if "Authentication" in name or "PermissionDenied" in name:
+        return True
+    status = getattr(exc, "status_code", None)
+    if status in (401, 403):
+        return True
+    text = str(exc).lower()
+    return "401" in text or "403" in text or "invalid api key" in text or "unauthorized" in text
+
+
+def _is_retryable_error(exc: Exception) -> bool:
+    """可重试的瞬时错误：超时、连接中断、限流、5xx。"""
+    name = type(exc).__name__
+    if any(k in name for k in ("Timeout", "Connection", "RateLimit", "InternalServer")):
+        return True
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int) and (status == 429 or 500 <= status < 600):
+        return True
+    text = str(exc).lower()
+    return any(k in text for k in ("timed out", "timeout", "rate limit", "connection"))

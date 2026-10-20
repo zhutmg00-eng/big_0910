@@ -335,10 +335,22 @@ def calculate_tco_endpoint(payload: VehicleTCORunRequest, api_key: str = Depends
             maintenance_saving_ratio=spec.maintenance_saving_ratio,
         )
 
+    # 用 is None 判断而非 or：模型层虽是 gt=0，但 or 会把合法的 0.0 静默替换成
+    # 默认值，一旦字段校验放宽就会出现「输入被悄悄改写」的静默错误。
     econ = TCOEconomicParameters(
-        diesel_price_yuan_per_l=payload.diesel_price_yuan_per_l or 7.50,
-        electricity_price_yuan_per_kwh=payload.electricity_price_yuan_per_kwh or 0.80,
-        lifespan_years=payload.lifespan_years or 5,
+        diesel_price_yuan_per_l=(
+            payload.diesel_price_yuan_per_l
+            if payload.diesel_price_yuan_per_l is not None
+            else 7.50
+        ),
+        electricity_price_yuan_per_kwh=(
+            payload.electricity_price_yuan_per_kwh
+            if payload.electricity_price_yuan_per_kwh is not None
+            else 0.80
+        ),
+        lifespan_years=(
+            payload.lifespan_years if payload.lifespan_years is not None else 5
+        ),
     )
 
     res = calculate_single_vehicle_tco(
