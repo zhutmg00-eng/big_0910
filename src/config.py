@@ -83,6 +83,17 @@ RETRIEVAL_TOP_K = 5    # 检索返回数量
 RETRIEVAL_MODE = (os.getenv("RETRIEVAL_MODE") or "rrf3").lower()
 RRF_K = 60             # RRF 常数（Cormack et al. 2009 推荐值，不针对评测集调参）
 RRF_CANDIDATES = 50    # 每路检索器参与融合的候选数
+
+# RRF 各检索路的先验权重。
+# 等权融合（1:1:1）会用一个 Top-1 准确率仅 12.5% 的检索器去稀释 Top-1 准确率
+# 40% 的检索器，实测使 MRR 从 0.488 降到 0.411（见 docs/rag_benchmark）。
+# 权重依据各检索路的 Top-1 命中率（keyword 16/40、bm25 12/40、vector 5/40）设定，
+# 并留有平台容差：w_vector 取 0.05~0.2 之间结果稳定，非在评测集上精调得到。
+RRF_WEIGHTS = {
+    "bm25": float(os.getenv("RRF_WEIGHT_BM25") or 0.6),
+    "vector": float(os.getenv("RRF_WEIGHT_VECTOR") or 0.1),
+    "keyword": float(os.getenv("RRF_WEIGHT_KEYWORD") or 0.8),
+}
 RETRIEVAL_THRESHOLD = 0.7  # 相似度阈值
 LLM_TEMPERATURE = 0.1  # 低温度减少幻觉
 LLM_MAX_TOKENS = 2000  # 最大输出长度

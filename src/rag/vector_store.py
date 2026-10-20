@@ -12,7 +12,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from src.config import CHROMA_DB_DIR, EMBEDDING_MODEL, RETRIEVAL_MODE, RRF_CANDIDATES, RRF_K
+from src.config import (
+    CHROMA_DB_DIR, EMBEDDING_MODEL, RETRIEVAL_MODE, RRF_CANDIDATES, RRF_K, RRF_WEIGHTS,
+)
 from src.rag.bm25 import BM25Index, reciprocal_rank_fusion
 from src.rag.embeddings import get_embedder, resolve_embedding_setting
 from src.rag.reranker import DEFAULT_RERANKER, RERANK_CANDIDATES, RERANKER_MODEL, rerank
@@ -317,8 +319,9 @@ class PolicyVectorStore:
         }
         if mode == "rrf3":
             rankings["keyword"] = [cid for cid, _ in self._rank_lexical(query, n)]
-        fused = reciprocal_rank_fusion(list(rankings.values()), k=RRF_K)[:k]
-        max_possible = len(rankings) / (RRF_K + 1)
+        weights = [RRF_WEIGHTS.get(name, 1.0) for name in rankings]
+        fused = reciprocal_rank_fusion(list(rankings.values()), k=RRF_K, weights=weights)[:k]
+        max_possible = sum(weights) / (RRF_K + 1)
         results = []
         for cid, score in fused:
             hit_by = [name for name, r in rankings.items() if cid in r[:n]]
