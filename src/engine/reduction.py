@@ -344,7 +344,14 @@ def analyze_reduction_scenario(
             tco_analysis_dict = fleet_tco.to_dict()
 
     # 生成建议
-    recommendations = _generate_recommendations(baseline_fleet, changes, reduction_t, reduction_pct, tco_analysis=tco_analysis_dict)
+    recommendations = _generate_recommendations(
+        baseline_fleet,
+        changes,
+        reduction_t,
+        reduction_pct,
+        tco_analysis=tco_analysis_dict,
+        budget_reduction_target=budget_reduction_target,
+    )
 
     return ReductionAnalysis(
         baseline_emission=baseline_emission,
@@ -360,6 +367,7 @@ def analyze_reduction_scenario(
 def compare_scenarios(
     baseline_fleet: List[VehicleGroupData],
     scenarios: List[ReductionScenario],
+    budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
 ) -> ScenarioComparison:
     """
     多情景对比
@@ -367,13 +375,18 @@ def compare_scenarios(
     Args:
         baseline_fleet: 基线车队
         scenarios: 减排情景列表
+        budget_reduction_target: 模拟预算所用的直接运营减排目标。必须与
+            analyze_reduction_scenario 使用同一个值，否则基线与情景的预算
+            口径不一致，差额变化失去意义。
 
     Returns:
         ScenarioComparison: 多情景对比结果
     """
     results = []
     for scenario in scenarios:
-        analysis = analyze_reduction_scenario(baseline_fleet, scenario.changes)
+        analysis = analyze_reduction_scenario(
+            baseline_fleet, scenario.changes, budget_reduction_target=budget_reduction_target
+        )
         analysis.name = scenario.name  # 附加情景名称
         results.append(analysis)
 
@@ -399,7 +412,13 @@ def compare_scenarios(
     # 检查是否有情景能消除模拟碳预算超出量
     baseline = calculate_emission(baseline_fleet)
     baseline_summary = _summarize_fleet(baseline_fleet)
-    baseline_gap = estimate_quota_gap(baseline.total_emission_t, baseline_summary)
+    # 必须与上面各情景使用同一减排目标，否则建议文本里的超出量会和
+    # 情景明细里的差额对不上（同一份报告出现两套预算口径）。
+    baseline_gap = estimate_quota_gap(
+        baseline.total_emission_t,
+        baseline_summary,
+        reduction_target=budget_reduction_target,
+    )
 
     for r in results:
         if r.reduction_t >= baseline_gap.gap_t and baseline_gap.gap_t > 0:
@@ -417,6 +436,7 @@ def compare_scenarios(
 def find_optimal_reduction(
     baseline_fleet: List[VehicleGroupData],
     budget: Optional[float] = None,
+    budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
 ) -> ScenarioComparison:
     """
     在预算约束下寻找最优减排组合
@@ -427,6 +447,7 @@ def find_optimal_reduction(
     Args:
         baseline_fleet: 基线车队
         budget: 预算上限（元），None表示无预算限制
+        budget_reduction_target: 模拟预算减排目标，透传给 compare_scenarios
 
     Returns:
         ScenarioComparison: 最优方案对比结果
@@ -502,7 +523,9 @@ def find_optimal_reduction(
                     ))
 
     # 计算所有情景并筛选
-    comparison = compare_scenarios(baseline_fleet, scenarios)
+    comparison = compare_scenarios(
+        baseline_fleet, scenarios, budget_reduction_target=budget_reduction_target
+    )
 
     # 按碳价对标节省额/直接减排量排序
     scored = []
@@ -542,6 +565,7 @@ def _generate_recommendations(
     reduction_t: float,
     reduction_pct: float,
     tco_analysis: Optional[dict] = None,
+    budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
 ) -> list:
     """
     根据减排分析结果生成具体建议
@@ -551,6 +575,9 @@ def _generate_recommendations(
         changes: 减排措施
         reduction_t: 直接运营减排量 (tCO2e)
         reduction_pct: 减排百分比
+        tco_analysis: TCO 经济账（可选）
+        budget_reduction_target: 模拟预算减排目标，须与调用方一致，
+            否则建议文本中的超出量与情景明细对不上
 
     Returns:
         建议列表
@@ -618,7 +645,11 @@ def _generate_recommendations(
     # 模拟碳预算差额相关建议
     baseline = calculate_emission(baseline_fleet)
     baseline_summary = _summarize_fleet(baseline_fleet)
-    baseline_gap = estimate_quota_gap(baseline.total_emission_t, baseline_summary)
+    baseline_gap = estimate_quota_gap(
+        baseline.total_emission_t,
+        baseline_summary,
+        reduction_target=budget_reduction_target,
+    )
 
     if baseline_gap.gap_t > 0:
         remaining_gap = baseline_gap.gap_t - reduction_t
