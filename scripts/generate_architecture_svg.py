@@ -58,7 +58,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="740" y="235" width="200" height="85" fill="#f8faf9" stroke="{GRID}" rx="6"/>
   <text x="840" y="258" font-size="12" font-weight="bold" fill="{INK}" text-anchor="middle">垂直领域 RAG 检索</text>
-  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">37份法规268块入库定块</text>
+  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">39份政策文件281块入库定块</text>
   <text x="840" y="296" font-size="10" fill="{GREEN}" text-anchor="middle">向量初筛 + 领域词重排</text>
 
   <!-- 连线箭头 2 -->
@@ -84,7 +84,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
   <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">50组扫描：3.04% ~ 29.80%</text>
 
   <!-- 底部规范声明 -->
-  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">工程规范：全仓本地环境运行 | 全量 117 项自动化测试全部通过 | 严格遵循情景模拟与非纳管边界</text>
+  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">工程规范：全仓本地环境运行 | 全量 248 项自动化测试全部通过 | 严格遵循情景模拟与非纳管边界</text>
 </svg>'''
 
 svg_path.write_text(svg, encoding="utf-8")

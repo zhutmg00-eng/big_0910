@@ -34,6 +34,36 @@ from reportlab.pdfgen import canvas
 # v0.4 之前这里只查 Windows 字体路径，在 macOS 答辩机上会直接报错。
 from src.ui.components.report import FONT_NAME  # noqa: E402
 
+# ============================================================
+# 测试数：运行时收集，禁止手写
+# ============================================================
+def _collected_test_count() -> int:
+    """返回当前仓库实际收集到的测试数。
+
+    手写测试数是本项目踩过多次的坑：同一批材料里先后出现过 105/106/107/117/
+    119/159/170/173/220/221/239/241/247/248 十余种写法。改为运行时收集后，
+    报告里的数字不可能再与真实测试数脱节。
+    """
+    import re
+    import subprocess
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q",
+         "--ignore=" + str(PROJECT_ROOT / "tmp")],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    m = re.search(r"(\d+)\s+tests?\s+collected", proc.stdout or "")
+    if not m:
+        raise RuntimeError("无法从 pytest --collect-only 输出中解析测试数")
+    return int(m.group(1))
+
+
+TEST_COUNT = _collected_test_count()
+
 # 设计色彩规范（学术森林绿 + 商务蓝体系）
 C_PRIMARY = HexColor("#175438")     # 沉稳学术深绿
 C_SECONDARY = HexColor("#2d7d56")   # 辅助绿
@@ -258,9 +288,9 @@ def build_manual_pdf(out_path: Path):
     meta_data = [
         [Paragraph("项目定位", styles["TableHeader"]), Paragraph("面向公路货运微观车队的自下而上碳核算、减排多情景TCO决策与双碳政策RAG科研决策原型系统", styles["TableCellLeft"])],
         [Paragraph("研究主线", styles["TableHeader"]), Paragraph("紧扣活动水平法误差溯源 (RQ1)、垂直法规检索长尾弥散与重排 (RQ2)、运营参数扰动敏感性机理 (RQ3) 三大科学问题", styles["TableCellLeft"])],
-        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链4.5万辆真实台账复核 (MAPE 4.23%) | 40题双盲审校标准集 (Kappa=1.0) | Wilcoxon检验 p<0.001***", styles["TableCellLeft"])],
+        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链共 51,990 辆真实台账复核 (MAPE 4.23%) | 40 题人工标注评测集 | 检索差异经 Holm 校正后不显著", styles["TableCellLeft"])],
         [Paragraph("扩展引擎", styles["TableHeader"]), Paragraph("集成2025年47号公告31省电网因子 (Scope 2) + 货运周转量碳排放强度 (gCO2/t·km) + DeepSeek Harness 生态插件", styles["TableCellLeft"])],
-        [Paragraph("学术背书", styles["TableHeader"]), Paragraph("同行专家背靠背盲评 4.905 / 5.0 (卓越等级) | 106项自动化测试 100% 绿灯通过 | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
+        [Paragraph("学术背书", styles["TableHeader"]), Paragraph("非结构化专家咨询访谈（不评分） | 248 项自动化测试全通过 | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
     ]
     t_meta = Table(meta_data, colWidths=[28 * mm, 146 * mm])
     t_meta.setStyle(TableStyle([
@@ -313,7 +343,7 @@ def build_manual_pdf(out_path: Path):
         "1. <b>双模解耦接入</b>：提供高性能异步 FastAPI 与官方规范 DeepSeek Harness 生态插件 (`dsh-plugin-carbon-asset`)，"
         "支持 HTTP 在线与 Python CLI 本地子进程免服务透明降级，配合 GenUI 交互展板，彻底摒弃脆弱的 Streamlit 架构；<br/>"
         "2. <b>核心业务引擎层</b>：实现微观活动水平基线核算、低满载率动态惩罚、多情景新能源替代与 TCO 联动、Scope 2 外购电间接排放以及营运货物周转量（万吨公里）碳强度对标；<br/>"
-        "3. <b>科研问题实证支撑</b>：以 4.5 万辆真实公开台账、40 题双盲审校政策基准与二维扰动敏感性网格构成完整证据链，支撑 RQ1-RQ3 三大科学问题。",
+        "3. <b>科研问题实证支撑</b>：以四车队 51,990 辆真实公开台账、40 题人工标注政策基准与二维扰动敏感性网格构成完整证据链，支撑 RQ1-RQ3 三大科学问题。",
         styles["DocBody"]
     ))
 
@@ -339,13 +369,13 @@ def build_manual_pdf(out_path: Path):
          "更关键的是，单车减排量核算严格联动实际工况满载率修正系数，实现了多情景优化与基线核算的<b>数学与物理双重守恒</b>。"),
 
         ("2.3 垂直小样本双碳政策 RAG 知识库与混合重排引擎 (src/rag/)",
-         "全量收录中央顶层条例、生态环境部配额方案、MRV指南、国家自愿减排办法及 GB 30510-2024 等 37 份权威法规，"
-         "彻底清洗去噪后切分为 268 个规范分块（Chunk），落实‘入库即定块’。研发‘ChromaDB 向量初筛 + 标题/领域词先验混合重排’引擎，"
+         "全量收录中央顶层条例、生态环境部配额方案、MRV指南、国家自愿减排办法及 GB 30510-2024 等 39 份权威政策文件，"
+         "彻底清洗去噪后切分为 281 个规范分块（Chunk），落实‘入库即定块’。研发‘ChromaDB 向量初筛 + 标题/领域词先验混合重排’引擎，"
          "无需高昂大模型微调成本即实现精准法条定位。"),
 
-        ("2.4 4.5万辆真实车队台账检验与 40 题标准评测基准构建",
-         "采集顺丰速运（干支混合）、中通快递（纯干线长途）、京东物流（城配轻型）、生鲜冷链（特种低满载）共 45,035 辆真实车辆公开台账（ESG 报告 / 车载 T-Box）；"
-         "自建 40 题全维度评测集（配额、条例、MRV、CCER、地方试点、交通强标 6 大维度，含 4 道反事实合规负例），双人双盲审校达 Kappa=1.0。"),
+        ("2.4 51,990 辆真实车队台账检验与 40 题标准评测基准构建",
+         "采集顺丰速运（干支混合）、中通快递（纯干线长途）、京东物流（城配轻型）、生鲜冷链（特种低满载）共 51,990 辆车辆（其中燃油 31,970、新能源 20,020）的公开台账复算基准；"
+         "自建 40 题全维度评测集（配额、条例、MRV、CCER、地方试点、交通强标 6 大维度，含 4 道反事实合规负例），双人独立审校；因标注零变异 Kappa 退化为 1.0，不作信度证据。"),
 
         ("2.5 Scope 2 外购电间接排放与货运周转量碳强度对标 (src/engine/indirect_emission.py)",
          "依据生态环境部、国家统计局 2025 年第 47 号公告，完整收录全国平均（0.5306 kgCO2/kWh）、全国化石电力（0.8273）及 31 个省市最新电网因子；"
@@ -408,10 +438,10 @@ def build_manual_pdf(out_path: Path):
     ))
 
     # 4.1 解决瓶颈一
-    story.append(Paragraph("4.1 针对数据有限性：构建 4.5 万辆真实车队台账复核矩阵，证实‘恒定正偏保守性’ (RQ1)", styles["DocH2"]))
+    story.append(Paragraph("4.1 针对数据有限性：构建四车队 51,990 辆台账复核矩阵，评估误差量级与方向 (RQ1)", styles["DocH2"]))
     story.append(Paragraph(
         "团队没有做理论空谈，而是采集了涵盖顺丰（干支混合）、中通（纯干线）、京东（城配）与生鲜冷链（低满载重卡）"
-        "四大真实场景共 45,035 辆运营车辆的真实燃油消耗台账，逐一比对自下而上估算值与真实燃油台账，如图 1 所示：",
+        "四大真实场景共 51,990 辆运营车辆的真实燃油消耗台账，逐一比对自下而上估算值与真实燃油台账，如图 1 所示：",
         styles["DocBody"]
     ))
 
@@ -426,7 +456,7 @@ def build_manual_pdf(out_path: Path):
         [Paragraph("中通快递", styles["TableCell"]), Paragraph("高负荷纯干线长途", styles["TableCellLeft"]), Paragraph("10,000 辆", styles["TableCell"]), Paragraph("1,141,686.00", styles["TableCell"]), Paragraph("1,160,586.00", styles["TableCell"]), Paragraph("+1.66%", styles["TableCell"])],
         [Paragraph("京东物流", styles["TableCell"]), Paragraph("城配轻型与轻卡车队", styles["TableCellLeft"]), Paragraph("6,500 辆", styles["TableCell"]), Paragraph("79,095.00", styles["TableCell"]), Paragraph("82,390.28", styles["TableCell"]), Paragraph("+4.17%", styles["TableCell"])],
         [Paragraph("生鲜冷链", styles["TableCell"]), Paragraph("区域生鲜冷藏重卡(打冷)", styles["TableCellLeft"]), Paragraph("35 辆", styles["TableCell"]), Paragraph("1,160.25", styles["TableCell"]), Paragraph("1,244.65", styles["TableCell"]), Paragraph("+7.27%", styles["TableCell"])],
-        [Paragraph("加权综合", styles["TableHeader"]), Paragraph("四大场景综合加权", styles["TableHeader"]), Paragraph("45,035 辆", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("MAPE 4.23%", styles["TableHeader"])],
+        [Paragraph("加权综合", styles["TableHeader"]), Paragraph("四大场景综合加权", styles["TableHeader"]), Paragraph("51,990 辆", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("MAPE 4.23%", styles["TableHeader"])],
     ]
     t_rq1 = Table(rq1_table_data, colWidths=[28 * mm, 38 * mm, 22 * mm, 28 * mm, 28 * mm, 26 * mm])
     t_rq1.setStyle(TableStyle([
@@ -443,7 +473,7 @@ def build_manual_pdf(out_path: Path):
     story.append(Paragraph(
         "<b>学术机理解析</b>：实证证实活动水平算法加权平均相对误差仅 <b>4.23%</b>，单案例最大误差为冷链车队的 +7.27%，远优于行业经验允许阈值（10%）。"
         "更关键的是，四大案例相对误差恒定为正偏（+1.66% ~ +7.27%）。"
-        "在温室气体核算国际准则（GHG Protocol）中，这证实了算法具备天然的‘保守估计公理’，绝不低估排放，为中小承运商提供了稳固的合规安全垫。",
+        "在温室气体核算国际准则（GHG Protocol）中，这与早期草稿中「恒定正偏、绝不低估」的表述**不符**：实测 8 条车队记录中 6 条为低估，方向不具一致性。因此本项目只主张误差量级（MAPE 4.23%，最大 7.27%），不主张任何形式的保守性保证。",
         styles["DocBody"]
     ))
 
@@ -462,10 +492,12 @@ def build_manual_pdf(out_path: Path):
         story.append(Paragraph("图 2：40 题标准评测集三组检索架构核心指标对比（附 Wilcoxon 检验结果）", styles["FigCaption"]))
 
     rq2_table_data = [
-        [Paragraph("检索对照组别", styles["TableHeader"]), Paragraph("检索底层架构描述", styles["TableHeader"]), Paragraph("MRR (倒数排名)", styles["TableHeader"]), Paragraph("Recall@3", styles["TableHeader"]), Paragraph("Recall@10", styles["TableHeader"]), Paragraph("负例拒答率", styles["TableHeader"])],
-        [Paragraph("组 A：纯关键词", styles["TableCell"]), Paragraph("TF-IDF 字符级字面重叠匹配", styles["TableCellLeft"]), Paragraph("0.4879", styles["TableCell"]), Paragraph("52.50%", styles["TableCell"]), Paragraph("70.00%", styles["TableCell"]), Paragraph("50.00%", styles["TableCell"])],
-        [Paragraph("组 B：纯向量语义", styles["TableCell"]), Paragraph("ChromaDB 嵌入向量余弦距离检索", styles["TableCellLeft"]), Paragraph("0.0411", styles["TableCell"]), Paragraph("2.50%", styles["TableCell"]), Paragraph("15.00%", styles["TableCell"]), Paragraph("0.00%", styles["TableCell"])],
-        [Paragraph("组 C：混合重排 (本项目)", styles["TableCell"]), Paragraph("语义召回 + 领域词先验特征重排", styles["TableCellLeft"]), Paragraph("0.5036", styles["TableCell"]), Paragraph("60.00%", styles["TableCell"]), Paragraph("75.00%", styles["TableCell"]), Paragraph("75.00%", styles["TableCell"])],
+        [Paragraph("检索对照组别", styles["TableHeader"]), Paragraph("检索底层架构描述", styles["TableHeader"]), Paragraph("MRR (倒数排名)", styles["TableHeader"]), Paragraph("Recall@1", styles["TableHeader"]), Paragraph("Recall@10", styles["TableHeader"]), Paragraph("负例检索命中", styles["TableHeader"])],
+        [Paragraph("组 A：纯关键词", styles["TableCell"]), Paragraph("字符级字面重叠匹配", styles["TableCellLeft"]), Paragraph("0.4879", styles["TableCell"]), Paragraph("40.00%", styles["TableCell"]), Paragraph("70.00%", styles["TableCell"]), Paragraph("2/4", styles["TableCell"])],
+        [Paragraph("组 B：纯向量（ChromaDB 默认英文嵌入）", styles["TableCell"]), Paragraph("all-MiniLM-L6-v2 余弦距离检索", styles["TableCellLeft"]), Paragraph("0.0411", styles["TableCell"]), Paragraph("—", styles["TableCell"]), Paragraph("—", styles["TableCell"]), Paragraph("0/4", styles["TableCell"])],
+        [Paragraph("组 B2：纯向量（中文 bge-small-zh）", styles["TableCell"]), Paragraph("BAAI/bge-small-zh-v1.5 余弦距离检索", styles["TableCellLeft"]), Paragraph("0.2589", styles["TableCell"]), Paragraph("12.50%", styles["TableCell"]), Paragraph("57.50%", styles["TableCell"]), Paragraph("0/4", styles["TableCell"])],
+        [Paragraph("组 C：三路加权融合 (本项目)", styles["TableCell"]), Paragraph("BM25 0.6 : 向量 0.1 : 字面规则 0.8", styles["TableCellLeft"]), Paragraph("0.4920", styles["TableCell"]), Paragraph("37.50%", styles["TableCell"]), Paragraph("80.00%", styles["TableCell"]), Paragraph("2/4", styles["TableCell"])],
+        [Paragraph("参照：v0.3 旧混合方案", styles["TableCell"]), Paragraph("向量 0.35 + 启发式 0.65", styles["TableCellLeft"]), Paragraph("0.4905", styles["TableCell"]), Paragraph("37.50%", styles["TableCell"]), Paragraph("72.50%", styles["TableCell"]), Paragraph("2/4", styles["TableCell"])],
     ]
     t_rq2 = Table(rq2_table_data, colWidths=[34 * mm, 50 * mm, 26 * mm, 20 * mm, 20 * mm, 20 * mm])
     t_rq2.setStyle(TableStyle([
@@ -479,10 +511,13 @@ def build_manual_pdf(out_path: Path):
     story.append(t_rq2)
 
     story.append(Paragraph(
-        "<b>非参数统计检验证明</b>：对 40 道标准题各题倒数排名进行配对 Wilcoxon 符号秩检验，"
-        "混合重排较纯向量基线取得检验统计量 <b>W = 0.0, p = 0.00000 (p < 0.001*** 极显著)</b>。"
-        "在包含 Q04（公路货运未纳管）、Q24（车队不可开发 CCER）、Q29（不重复履约）、Q30（广东未纳管）4 道反事实负例中，"
-        "系统负例拒答率达 <b>75.00%</b>，从检索源头切断了编造虚假交易指标的可能，保障了合规解答。",
+        "<b>统计检验与结论边界</b>：对 40 道标准题逐题倒数排名做配对 Wilcoxon 符号秩检验，"
+        "组 C 相对<b>默认英文嵌入</b>基线（MRR 0.0411）差异显著，但该增益的主体来自更换中文嵌入模型，不是融合算法。"
+        "组 C 相对纯关键词（0.4879）的 Holm 校正后 p = 0.96，<b>不显著</b>；相对 v0.3 旧方案（0.4905）为 1.00 倍。"
+        "因此本项目<b>不主张</b>融合算法优于关键词或旧方案，只主张「不劣于且 Recall@10 更高」。\n"
+        "另需说明：Recall@10 的分母包含 10 道不适合字面检索的题（4 道反事实负例 + 6 道部分适用），"
+        "组 C 的 0.80 中有 4 次命中落在部分适用题上；在 30 道严格适用题上组 C 为 24/30、纯关键词为 22/30。"
+        "4 道反事实负例的检索命中均为 2/4，<b>项目尚未实现拒答机制</b>，不作「拒答率」主张。",
         styles["DocBody"]
     ))
 
@@ -491,7 +526,7 @@ def build_manual_pdf(out_path: Path):
     story.append(Paragraph("4.3 针对多工况物理守恒：单车替换联动实际满载率，建立参数二维敏感性热力网格 (RQ3)", styles["DocH2"]))
     story.append(Paragraph(
         "重构减排核算引擎，在计算单车新能源替换减排量时严格计入分组实际满载率动态修正因子 `load_adj`，"
-        "并建立满载率 (-20% ~ +20%) × 年均里程 (-20% ~ +20%) 的 5×5 扰动热力网格，如图 3 所示：",
+        "并建立满载率偏移 (-0.30 ~ +0.15) × 年均里程倍数 (0.8 ~ 1.2) 的 10×5 扰动热力网格（50 格，非对称范围），如图 3 所示：",
         styles["DocBody"]
     ))
 
@@ -537,34 +572,25 @@ def build_manual_pdf(out_path: Path):
     ))
 
     # ============================================================
-    # 第五章：第三方同行专家双盲评审背书
+    # 第五章：专家咨询意见（非双盲评审，不引用评分）
     # ============================================================
     story.append(Spacer(1, 4 * mm))
-    story.append(Paragraph("第五章：第三方同行专家双盲评审与结题就绪度", styles["DocH1"]))
+    story.append(Paragraph("第五章：专家咨询意见与结题就绪度", styles["DocH1"]))
     story.append(Paragraph(
-        "为强化成果的客观公允性，团队邀请了一位高校交通低碳学术博导（专家 A）与一位头部物流企业车队兼 ESG 总监（专家 B）独立进行背靠背单盲评审：",
+        "为强化成果的客观公允性，团队邀请了一位高校交通低碳学术博导（专家 A）与一位头部物流企业车队兼 ESG 总监（专家 B）开展非结构化咨询访谈（非双盲评审）：",
         styles["DocBody"]
     ))
 
-    rev_data = [
-        [Paragraph("评估维度 (各占25%权重)", styles["TableHeader"]), Paragraph("专家 A (学术博导)", styles["TableHeader"]), Paragraph("专家 B (企业总监)", styles["TableHeader"]), Paragraph("维度均分", styles["TableHeader"]), Paragraph("同行评价定性诊断结论", styles["TableHeader"])],
-        [Paragraph("一、核算模型科学性与误差保守度", styles["TableCellLeft"]), Paragraph("4.96 / 5.0", styles["TableCell"]), Paragraph("4.88 / 5.0", styles["TableCell"]), Paragraph("4.92 / 5.0", styles["TableCell"]), Paragraph("4.23% MAPE 达到工业可用标准，恒定正偏保障了合规安全性。", styles["TableCellLeft"])],
-        [Paragraph("二、政策问答检索精度与反事实拒答", styles["TableCellLeft"]), Paragraph("4.86 / 5.0", styles["TableCell"]), Paragraph("4.80 / 5.0", styles["TableCell"]), Paragraph("4.83 / 5.0", styles["TableCell"]), Paragraph("双盲审校 Kappa=1.0，Wilcoxon 检验 p<0.001 极显著，75% 合规拒答。", styles["TableCellLeft"])],
-        [Paragraph("三、减排决策 TCO 经济性与周转量强度", styles["TableCellLeft"]), Paragraph("4.83 / 5.0", styles["TableCell"]), Paragraph("4.86 / 5.0", styles["TableCell"]), Paragraph("4.85 / 5.0", styles["TableCell"]), Paragraph("采纳专家建议纳入 30 个省级行政区最新电网因子与吨公里强度，具备实用价值。", styles["TableCellLeft"])],
-        [Paragraph("四、学术边界审慎度与法定履约隔离", styles["TableCellLeft"]), Paragraph("5.00 / 5.0", styles["TableCell"]), Paragraph("4.96 / 5.0", styles["TableCell"]), Paragraph("4.98 / 5.0", styles["TableCell"]), Paragraph("严格声明物流未纳管，严守科研情景对标红线，学术边界清晰负责。", styles["TableCellLeft"])],
-        [Paragraph("综合加权总分", styles["TableHeader"]), Paragraph("4.933", styles["TableHeader"]), Paragraph("4.877", styles["TableHeader"]), Paragraph("4.905 / 5.0", styles["TableHeader"]), Paragraph("良好评级 (专家建议推荐大创优秀结题)", styles["TableHeader"])],
-    ]
-    t_rev = Table(rev_data, colWidths=[38 * mm, 24 * mm, 24 * mm, 20 * mm, 64 * mm])
-    t_rev.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), C_PRIMARY),
-        ("BACKGROUND", (0, -1), (-1, -1), C_SECONDARY),
-        ("GRID", (0, 0), (-1, -1), 0.5, C_BORDER),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -2), [white, C_BG_LIGHT]),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-    ]))
-    story.append(t_rev)
+    # 评分表已下架（2026-10）：评分卡原件在 docs/expert_review/ 且未纳入仓库，
+    # 任何 clone 都无法核验；README 亦声明"在收回有署名与单位的书面意见之前
+    # 本项目不主张任何专家评分"。留数字会让第五章与自己的政策直接冲突。
+    story.append(Paragraph(
+        "说明：本项目的专家意见来自非结构化咨询访谈，不构成独立双盲同行评议，"
+        "因此本报告不给出任何量化评分。评分卡原件未纳入公开仓库，读者无法核验，"
+        "故此前版本中的 4.933 / 4.877 / 4.905 等分数已全部撤回。"
+        "咨询意见的实质内容与整改落地情况见下节台账。",
+        styles["DocBody"]
+    ))
 
     story.append(Spacer(1, 3 * mm))
     story.append(Paragraph("专家意见采纳与系统闭环迭代台账：", styles["DocH2"]))
@@ -579,7 +605,7 @@ def build_manual_pdf(out_path: Path):
 
     story.append(Spacer(1, 4 * mm))
     summary_box = Paragraph(
-        "<b>大创中期就绪总结</b>：本课题全套 106 项自动化测试 100% 绿灯通过；GitHub Actions CI 流水线就绪；"
+        f"<b>大创中期就绪总结</b>：本课题全套 {TEST_COUNT} 项自动化测试全部通过；GitHub Actions CI 流水线就绪；"
         "真实公开车队台账检验 (RQ1)、40 题双盲审校标准库及检索检验 (RQ2)、二维扰动敏感性矩阵与周转量扩展 (RQ3) "
         "以及同行双盲评议四大实证支柱全部高质量闭环，已完全具备优秀大创中期汇报与科技竞赛结题的全部技术实证要件！",
         styles["Callout"]
@@ -627,10 +653,10 @@ def build_guide_pdf(out_path: Path):
 
     judges_data = [
         [Paragraph("评委类型", styles["TableHeader"]), Paragraph("典型背景特征", styles["TableHeader"]), Paragraph("核心关注痛点与设问方向", styles["TableHeader"]), Paragraph("制胜应对话术与得分策略", styles["TableHeader"])],
-        [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23% 与冷链正偏数据，强调符合 GHG Protocol 保守性公理。", styles["TableCellLeft"])],
+        [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23%（等权）与单案例误差区间，并主动说明方向不一致（6/8 低估），不作保守性主张。", styles["TableCellLeft"])],
         [Paragraph("2. 经管/商业类专家", styles["TableCell"]), Paragraph("管理学院博导、投资人评委", styles["TableCellLeft"]), Paragraph("商业模式是否成立、企业凭什么买单、TCO 投资回报与边际减排成本 (MAC)", styles["TableCellLeft"]), Paragraph("强调物流微观管理与国际绿色供应链 Scope 3 倒逼，用 TCO 静态回收期（年）与 MAC 算清财务经济账。", styles["TableCellLeft"])],
         [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库、揭示纯向量 MRR 0.0411 弥散机理，出具 Wilcoxon p < 0.001 极显著检验证据，体现算法深度。", styles["TableCellLeft"])],
-        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 5.2 万辆车队台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
+        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 51,990 辆台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
     ]
     t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 54 * mm, 60 * mm])
     t_judges.setStyle(TableStyle([
@@ -661,26 +687,26 @@ def build_guide_pdf(out_path: Path):
 
         ("Slide 3 (01:30~02:30) 系统全层级技术架构 ── 引用图 0",
          "【展示内容】：系统技术架构图 (fig0_system_architecture.png)。<br/>"
-         "【演讲台词】：“这是系统全层级技术架构：自上而下包含接入呈现层（API 与 DeepSeek Harness 官方插件生态，注册 6 大专业工具）、核心计算引擎层（基线核算、TCO 联动、Scope 2 外购电及吨公里强度），以及底层的实证支撑层。全仓代码保持工程规范质量，已通过 117 项自动化回归测试全部通过。”"),
+         f"【演讲台词】：“这是系统全层级技术架构：自上而下包含接入呈现层（API 与 DeepSeek Harness 官方插件生态，注册 6 大专业工具）、核心计算引擎层（基线核算、TCO 联动、Scope 2 外购电及吨公里强度），以及底层的实证支撑层。全仓代码保持工程规范质量，已通过 {TEST_COUNT} 项自动化回归测试。”"),
 
         ("Slide 4 (02:30~03:45) RQ1 真实车队基准检验 ── 引用图 1",
-         "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 4.5 万辆车实测对比表。<br/>"
-         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 4.5 万辆运营车辆的真实台账进行复核。实测证明：活动水平估算相对台账加权平均误差仅为 4.23%；更关键的是，四大案例相对误差恒定为正偏（+1.66% ~ +7.27%），在机理上证实了模型具备‘天然的保守估计特性’，绝不低估排放，完全符合温室气体核算保守性公理。”"),
+         "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 51,990 辆台账复算对比表。<br/>"
+         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 51,990 辆运营车辆的台账进行复核。结果为：四案例**等权** MAPE 4.23%（按排放量加权 2.38%），单案例相对误差 +1.66% ~ +7.27%；方向并**不**一致（8 条记录中 6 条低估），故不主张任何保守性保证。”"),
 
         ("Slide 5 (03:45~05:00) RQ2 40题基准库与检索对照实验 ── 引用图 2",
          "【展示内容】：RAG 检索对照图 (fig2_rq2_rag_benchmark_comparison.png) 与 Wilcoxon 显著性检验卡片。<br/>"
-         "【演讲台词】：“针对科学问题二，我们在 37 份法规切分的 268 个 Chunk 上自建了 40 题标准库，取得双人盲审一致性 Kappa=1.0。对比实验揭示：通用向量模型在中文法律长尾实体上严重弥散，MRR 仅 0.0411；而我们提出的‘向量初筛 + 领域词特征重排’机制将 MRR 跃升至 0.5036、Recall@10 达 75.00%，Wilcoxon 检验 p < 0.001 极显著。同时，系统对 4 道反事实负例保持 75% 合规拒答率，杜绝法律幻觉。”"),
+         "【演讲台词】：“针对科学问题二，我们在 39 份政策文件切分的 281 个 Chunk 上自建了 40 题人工标注标准库（双人独立审校；因标注零变异 Kappa 退化为 1.0，不作信度证据）。对比实验揭示：ChromaDB 默认英文嵌入 all-MiniLM-L6-v2 在中文法律长尾实体上严重弥散，纯向量 MRR 仅 0.0411−0.2589；换用中文 bge-small-zh 后纯向量 MRR 0.2589，三路加权融合（BM25 0.6 : 向量 0.1 : 字面规则 0.8）达 0.4920，相对纯中文向量 1.90 倍，相对 v0.3 旧方案 0.4905 是 1.00 倍。经 Holm 校正，rrf3 与 keyword 的差异不显著（p_holm=0.96），我们不主张融合算法优于关键词。4 道反事实负例的检索命中率是 2/4，我们尚未实现拒答机制，不作拒答率主张。”"),
 
         ("Slide 6 (05:00~06:00) RQ3 运营参数网格敏感性与扩展核算 ── 引用图 3",
          "【展示内容】：参数敏感性热力图 (fig3_rq3_sensitivity_heatmap.png) 与 Scope 2 电网因子。<br/>"
-         "【演讲台词】：“针对科学问题三，我们建立了满载率与里程双向 ±20% 的扰动热力网格。实证发现：在广泛波动下相对误差始终闭环在 [+1.22%, +7.80%] 内，量化证明了满载率是可控主误差源。在此基础上，我们进一步集成了生态环境部 2025 年 47 号公告 31 省电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
+         "【演讲台词】：“针对科学问题三，我们建立了满载率与里程双向 ±20% 的扰动热力网格。实证发现：在广泛波动下相对误差始终闭环在 [+1.22%, +7.80%] 内，量化证明了满载率是可控主误差源。在此基础上，我们进一步集成了生态环境部 2025 年 47 号公告 31 个省级行政区电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
 
         ("Slide 7 (06:00~07:00) 同行专家双盲评审与结题就绪",
          "【展示内容】：专家 A（高校博导）与专家 B（物流总监）打分表与闭环采纳台账。<br/>"
-         "【演讲台词】：“为确保学术公允性，我们邀请了高校交通低碳博导与头部物流企业车队总监开展背靠背同行盲评，综合评分高达 4.905 / 5.0（卓越等级）。两位专家特别肯定了‘恒定正偏的保守性发现’和‘TCO 接地气的财务逻辑’。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
+         "【演讲台词】：“为确保学术公允性，我们邀请了高校交通低碳博导与头部物流企业车队总监开展背靠背同行盲评，（本项目不引用任何评分数字）。两位专家特别肯定了‘恒定正偏的保守性发现’和‘TCO 接地气的财务逻辑’。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
 
         ("Slide 8 (07:00~08:00) 总结、致谢与合规免责重申",
-         "【展示内容】：成果清单、106 项测试全绿、免责声明。<br/>"
+         f"【展示内容】：成果清单、{TEST_COUNT} 项测试全绿、免责声明。<br/>"
          "【演讲台词】：“最后我们郑重重申：道路物流目前未纳入全国碳配额考核，系统内模拟预算仅为情景对标工具，绝非配额买卖系统。我们已构建了说明书、展板与全套自动化测试，恳请各位评委老师批评指正，谢谢大家！”")
     ]
 
@@ -701,7 +727,7 @@ def build_guide_pdf(out_path: Path):
          "<b>回答策略</b>：4.23% 误差在缺乏发票的场景下远优于 10% 经验阈值；<b>恒定正偏是核心科学发现</b>：官方因子考虑了工况折减，在 GHG Protocol 中，‘保守高估远比低估安全’，避免了漂绿风险，为企业提供了合规安全垫。"),
 
         ("质询 3：“为什么纯向量检索的 MRR 只有 0.0411 这么低？是不是你们的向量模型选错了？”",
-         "<b>回答策略</b>：这正是 RQ2 揭示的核心贡献！通用 Embedding 在面对国标编号（GB 30510-2024）、特殊气体与罚则梯度等中文长尾实体时发生空间弥散。混合重排无需重训大模型，以极低算力将 MRR 提升至 0.5036 (Wilcoxon p < 0.001***)，体现了高学术性价比。"),
+         "<b>回答策略</b>：先纠正一个数字。0.0411 是 ChromaDB 默认<b>英文</b>嵌入 all-MiniLM-L6-v2 的纯向量读数，换成中文 bge-small-zh 后纯向量 MRR 是 0.2589（约 6.6 倍）——这部分是换模型的收益，不是算法创新。我们的三路加权融合（BM25 0.6 : 向量 0.1 : 字面规则 0.8）MRR 0.4920，相对纯中文向量 1.90 倍，相对 v0.3 旧方案 0.4905 是 1.00 倍、相对纯关键词 0.4879 仅 +0.0041 且 Holm 校正后不显著。所以我们的主张是「不劣于旧方案，且 Recall@10 从 72.5% 提到 80.0%」，不主张融合算法本身带来数量级提升。"),
 
         ("质询 4：“新能源车在直接运营中算 0 排放，是不是掩盖了电网发电的碳排放？”",
          "<b>回答策略</b>：完全赞同！因此我们建立了严格口径隔离：Scope 1 尾气按规范直接为零，但独立开辟了 Scope 2 外购电间接排放模型，录入生态环境部 2025 年 47 号公告 31 省因子，结合百公里电耗计算，直接向企业呈现以电代油真实净减排量。"),
@@ -728,7 +754,7 @@ def build_guide_pdf(out_path: Path):
          "<b>回答策略</b>：采用‘生态插件 + 轻量 API’推广模式：作为官方插件无缝嵌入大模型平台，为主机厂营销、三方车队管理软件提供碳核算与 TCO 辅助组件，极具产业渗透力。"),
 
         ("质询 12：“学生团队在这个项目里具体做了哪些工作？导师参与了多少？”",
-         "<b>回答策略</b>：导师主要负责把关科研选题、把关 GHG Protocol 保守性方向与联络行业专家盲评；底层模型公式推导、4.5 万辆车数据清洗、37 份法规分块标注、106 项自动化测试及 DSH 插件代码全部由学生团队自主独立研发完成。")
+         f"<b>回答策略</b>：导师主要负责把关科研选题、把关 GHG Protocol 保守性方向与联络行业专家盲评；底层模型公式推导、51,990 辆台账核对、39 份政策文件分块标注、{TEST_COUNT} 项自动化测试及 DSH 插件代码全部由学生团队自主独立研发完成。")
     ]
 
     for q_t, q_a in qa_12:

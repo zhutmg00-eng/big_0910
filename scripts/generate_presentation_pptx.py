@@ -871,14 +871,14 @@ def create_deck():
     p.space_after = Pt(4)
 
     p = tf_l14.add_paragraph()
-    p.text = "量化评分：4.92 / 5.0 分  (咨询综合评级：优秀)"
+    p.text = "意见性质：非结构化咨询访谈（未评分）"
     p.font.size = Pt(11)
     p.font.bold = True
     p.font.color.rgb = COLOR_SECONDARY
     p.space_after = Pt(8)
 
     p = tf_l14.add_paragraph()
-    p.text = "【核心学术评语】：\n“课题组展现了良好的学术素养。5.2 万辆真实车队的实证复核与恒定正偏保守性发现具备工程参考价值；参数扰动分析充分，非参数统计检验规范，研究边界声明清醒负责。”"
+    p.text = "【核心学术评语】：\n“课题组展现了良好的学术素养。四车队 51,990 辆的实证复核与误差量级分析具备工程参考价值；参数扰动分析充分，非参数统计检验规范，研究边界声明清醒负责。”"
     p.font.size = Pt(9.5)
     p.font.color.rgb = COLOR_TEXT_MAIN
     p.space_after = Pt(10)
@@ -904,7 +904,7 @@ def create_deck():
     p.space_after = Pt(4)
 
     p = tf_r14.add_paragraph()
-    p.text = "量化评分：4.89 / 5.0 分  (产业综合评级：优秀)"
+    p.text = "意见性质：非结构化咨询访谈（未评分）"
     p.font.size = Pt(11)
     p.font.bold = True
     p.font.color.rgb = COLOR_ACCENT
@@ -947,7 +947,7 @@ def create_deck():
 
     team_data = [
         ("陈铭浩 (项目负责人 / 本科生)", "负责系统顶层架构、TCO 决策方程推导与 BaaS 模式构建；主笔学术说明书与答辩汇报。"),
-        ("张可为 (算法负责人 / 本科生)", "负责活动水平计算引擎、5.2万辆车队台账采集核对、敏感性分析与非参数统计检验。"),
+        ("张可为 (算法负责人 / 本科生)", "负责活动水平计算引擎、51,990 辆车队台账采集核对、敏感性分析与非参数统计检验。"),
         ("王逸贤 (工程负责人 / 本科生)", "负责 39 份政策文件切分与 40 题评测集构建、三路融合检索算法、Cordis 插件与回归测试。"),
         ("汪晓霞 教授 (指导教师)", "把脉双碳战略方向、指导核算边界合规、协调外部评审资源与学术指导。")
     ]

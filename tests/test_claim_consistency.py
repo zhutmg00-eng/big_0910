@@ -406,3 +406,56 @@ def test_public_materials_do_not_claim_refusal_rate():
         text = _read_defense(rel)
         for needles in (("100% 拒答",), ("100%拒答",), ("拒答率 100",), ("彻底杜绝法律幻觉",)):
             _assert_no_unretracted(text, needles, rel, "仍声称存在 100% 拒答能力")
+
+
+# ---------------------------------------------------------------- 生成器文本口径
+
+# 旧口径仓库不只在 html 里，更在生成 html/pdf/pptx 的脚本里。只守 html 等于守门不守源。
+GENERATOR_SCRIPTS = (
+    "scripts/generate_presentation_pptx.py",
+    "scripts/build_defense_pdfs.py",
+    "scripts/generate_architecture_svg.py",
+    "scripts/package_deliverables.py",
+    "scripts/generate_midterm_artifacts.py",
+)
+
+
+def test_generators_do_not_contain_stale_test_counts():
+    """生成器里的测试数必须是运行时收集到的数量，不能手写旧值。
+
+    线上真实事故：build_defense_pdfs.py 同一文件里同时写着 106 项与 117 项，
+    package_deliverables.py 写 117 项，而实际是 248 项。
+    """
+    actual = _collected_test_count()
+    stale = [n for n in (105, 106, 107, 117, 119, 159, 170, 173, 220, 221, 239, 241, 247) if n != actual]
+    for rel in GENERATOR_SCRIPTS:
+        text = _read_defense(rel)
+        for n in stale:
+            for pat in (f"{n} 项", f"{n}项"):
+                assert pat not in text, f"{rel} 仍写「{pat}」，实际收集数为 {actual}"
+
+
+def test_generators_do_not_claim_conservatism_axiom():
+    """「保守性公理 / 绝不低估」已被实测证伪（8 条记录中 6 条低估），不得再作结论陈述。"""
+    for rel in GENERATOR_SCRIPTS:
+        text = _read_defense(rel)
+        _assert_no_unretracted(
+            text,
+            ("保守性公理", "保守估计公理", "绝不低估"),
+            rel,
+            "仍把已被证伪的「保守性公理/绝不低估」当结论陈述",
+        )
+
+
+def test_generators_do_not_quote_expert_scores():
+    """专家评分卡未入库、README 声明不主张任何评分，生成器不得再印分数。"""
+    for rel in GENERATOR_SCRIPTS + ("docs/artifacts/defense_presentation_deck.html",):
+        text = _read_defense(rel)
+        for score in ("4.905", "4.933", "4.877", "4.92 / 5.0", "4.89 / 5.0"):
+            if score in text:
+                # 允许出现在撤回说明里
+                idx = text.find(score)
+                window = text[max(0, idx - 120): idx + 120]
+                assert "撤回" in window or "此前版本" in window, (
+                    f"{rel} 仍把专家评分 {score} 当作成果引用（窗口内无撤回说明）"
+                )
