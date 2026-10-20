@@ -90,7 +90,10 @@ class TCOEconomicParameters:
     lifespan_years: int = 5  # 车辆运营评估周期 N（年）
     is_baas_mode: bool = False  # 是否启用换电车电分离 (BaaS, Battery as a Service) 模式
     baas_chassis_discount_wan: float = 0.0  # 剥离动力电池后的单车购置立减金额（万元/车，默认重卡20万，其他按比例）
-    baas_annual_battery_rental_yuan: float = 0.0  # 单车年电池租赁费（元/年/车，重卡约4.5万/年）
+    # 单车年电池租赁费（元/年/车）。填 0 表示"未指定"，此时按车型回落内置档位：
+    # 重卡 45,000 / 中型 22,000 / 轻型 12,000 / 其它 5,000（见 calculate_single_vehicle_tco）。
+    # 显式填正数则完全覆盖内置档位——论文表 6 的轻卡 0.97 年即取 13,500，高于轻型默认档 12.5%。
+    baas_annual_battery_rental_yuan: float = 0.0
 
 
 @dataclass

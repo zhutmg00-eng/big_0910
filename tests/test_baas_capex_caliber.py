@@ -197,3 +197,60 @@ class TestBaasCapexNote:
         note = payload["by_vehicle_type"][HEAVY]["baas_capex_note"]
         assert note, "to_dict 必须把 baas_capex_note 透出给前端"
         assert "代数恒等式" in note
+
+
+# ---------------------------------------------------------------- 论文表 6 可复现性
+
+# 论文 6.3.2 表 6 的完整参数假设。此前版本只给了回收期、没给电价与电池租金，
+# 导致任何人都无法复算，也无法判断 0.97 年是否与引擎默认档一致。
+PAPER_LIGHT_PARAMS = TCOEconomicParameters(
+    diesel_price_yuan_per_l=7.50,
+    electricity_price_yuan_per_kwh=0.80,  # 论文披露值；引擎默认同为 0.80
+    is_baas_mode=True,
+    baas_annual_battery_rental_yuan=13500.0,  # 论文披露值，高于轻型内置档 12,000
+)
+
+
+def test_paper_table6_light_truck_row_is_reproducible():
+    """论文表 6 BaaS 行：1.00 万初始增量 / 1.03 万年结余 / 0.97 年回收期。"""
+    r = calculate_single_vehicle_tco(
+        "轻型柴油货车",
+        replace_count=1,
+        annual_km=35000,
+        annual_co2_reduction_t=0.0,
+        econ_params=PAPER_LIGHT_PARAMS,
+    )
+    assert r.delta_capex_total_yuan == pytest.approx(10000.0, abs=1.0)
+    assert r.annual_opex_saving_total_yuan == pytest.approx(10300.0, abs=1.0)
+    assert r.payback_period_years == pytest.approx(0.97, abs=0.01)
+
+
+def test_paper_table6_buyout_row_is_reproducible():
+    """论文表 6 买断行：6.80 万初始增量 / 2.38 万年结余 / 2.86 年回收期。"""
+    import dataclasses
+
+    params = dataclasses.replace(PAPER_LIGHT_PARAMS, is_baas_mode=False)
+    r = calculate_single_vehicle_tco(
+        "轻型柴油货车",
+        replace_count=1,
+        annual_km=35000,
+        annual_co2_reduction_t=0.0,
+        econ_params=params,
+    )
+    assert r.delta_capex_total_yuan == pytest.approx(68000.0, abs=1.0)
+    assert r.annual_opex_saving_total_yuan == pytest.approx(23800.0, abs=1.0)
+    assert r.payback_period_years == pytest.approx(2.86, abs=0.01)
+
+
+def test_paper_discloses_rental_is_above_builtin_default():
+    """论文必须披露 1.35 万租金高于轻型内置档 12,000，否则读者会误以为是默认值。"""
+    import dataclasses
+
+    default_rent = dataclasses.replace(PAPER_LIGHT_PARAMS, baas_annual_battery_rental_yuan=0.0)
+    r_default = calculate_single_vehicle_tco(
+        "轻型柴油货车", replace_count=1, annual_km=35000, annual_co2_reduction_t=0.0,
+        econ_params=default_rent,
+    )
+    # 内置档 12,000 时回收期更短，说明 13,500 是一个更保守的选择，而不是笔误
+    assert r_default.payback_period_years < 0.97
+    assert r_default.payback_period_years == pytest.approx(0.85, abs=0.01)
