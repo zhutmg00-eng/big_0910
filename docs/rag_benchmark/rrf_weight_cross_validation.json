@@ -1,0 +1,268 @@
+{
+  "dataset_size": 40,
+  "kb_chunks": 281,
+  "kb_documents": 39,
+  "embedding_model": "fastembed:BAAI/bge-small-zh-v1.5",
+  "folds": 5,
+  "grid": {
+    "bm25": [
+      0.3,
+      0.6,
+      1.0
+    ],
+    "vector": [
+      0.05,
+      0.1,
+      0.2
+    ],
+    "keyword": [
+      0.4,
+      0.8,
+      1.2
+    ]
+  },
+  "default_weights": {
+    "bm25": 0.6,
+    "vector": 0.1,
+    "keyword": 0.8
+  },
+  "full_set": {
+    "MRR_equal_weights": 0.4112,
+    "MRR_default_weights": 0.492
+  },
+  "fold_records": [
+    {
+      "fold": 1,
+      "best_weights_on_train": {
+        "bm25": 1.0,
+        "vector": 0.1,
+        "keyword": 0.4
+      },
+      "train_MRR": 0.5362,
+      "holdout_MRR_tuned": 0.25,
+      "holdout_MRR_equal": 0.2679,
+      "holdout_MRR_default_weights": 0.3264,
+      "top5_grid": [
+        {
+          "MRR": 0.5362,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.5354,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.5334,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.5334,
+          "bm25": 0.6,
+          "vector": 0.1,
+          "keyword": 0.8
+        },
+        {
+          "MRR": 0.5282,
+          "bm25": 0.6,
+          "vector": 0.05,
+          "keyword": 0.8
+        }
+      ]
+    },
+    {
+      "fold": 2,
+      "best_weights_on_train": {
+        "bm25": 0.3,
+        "vector": 0.05,
+        "keyword": 0.4
+      },
+      "train_MRR": 0.4613,
+      "holdout_MRR_tuned": 0.6146,
+      "holdout_MRR_equal": 0.4536,
+      "holdout_MRR_default_weights": 0.6146,
+      "top5_grid": [
+        {
+          "MRR": 0.4613,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.4613,
+          "bm25": 0.6,
+          "vector": 0.1,
+          "keyword": 0.8
+        },
+        {
+          "MRR": 0.4608,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4606,
+          "bm25": 0.3,
+          "vector": 0.2,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.46,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 0.8
+        }
+      ]
+    },
+    {
+      "fold": 3,
+      "best_weights_on_train": {
+        "bm25": 1.0,
+        "vector": 0.1,
+        "keyword": 1.2
+      },
+      "train_MRR": 0.4764,
+      "holdout_MRR_tuned": 0.5625,
+      "holdout_MRR_equal": 0.4688,
+      "holdout_MRR_default_weights": 0.5625,
+      "top5_grid": [
+        {
+          "MRR": 0.4764,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4743,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.4743,
+          "bm25": 0.6,
+          "vector": 0.1,
+          "keyword": 0.8
+        },
+        {
+          "MRR": 0.4734,
+          "bm25": 1.0,
+          "vector": 0.05,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4722,
+          "bm25": 0.3,
+          "vector": 0.1,
+          "keyword": 1.2
+        }
+      ]
+    },
+    {
+      "fold": 4,
+      "best_weights_on_train": {
+        "bm25": 1.0,
+        "vector": 0.1,
+        "keyword": 1.2
+      },
+      "train_MRR": 0.5053,
+      "holdout_MRR_tuned": 0.4469,
+      "holdout_MRR_equal": 0.325,
+      "holdout_MRR_default_weights": 0.4469,
+      "top5_grid": [
+        {
+          "MRR": 0.5053,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.5032,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 0.4
+        },
+        {
+          "MRR": 0.5032,
+          "bm25": 0.6,
+          "vector": 0.1,
+          "keyword": 0.8
+        },
+        {
+          "MRR": 0.4985,
+          "bm25": 0.6,
+          "vector": 0.05,
+          "keyword": 0.8
+        },
+        {
+          "MRR": 0.4975,
+          "bm25": 1.0,
+          "vector": 0.05,
+          "keyword": 1.2
+        }
+      ]
+    },
+    {
+      "fold": 5,
+      "best_weights_on_train": {
+        "bm25": 0.3,
+        "vector": 0.1,
+        "keyword": 1.2
+      },
+      "train_MRR": 0.493,
+      "holdout_MRR_tuned": 0.4688,
+      "holdout_MRR_equal": 0.5406,
+      "holdout_MRR_default_weights": 0.5095,
+      "top5_grid": [
+        {
+          "MRR": 0.493,
+          "bm25": 0.3,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4909,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4902,
+          "bm25": 1.0,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4899,
+          "bm25": 0.6,
+          "vector": 0.1,
+          "keyword": 1.2
+        },
+        {
+          "MRR": 0.4876,
+          "bm25": 0.3,
+          "vector": 0.05,
+          "keyword": 0.4
+        }
+      ]
+    }
+  ],
+  "cv_mean": {
+    "holdout_tuned": 0.4686,
+    "holdout_equal": 0.4112,
+    "holdout_default_weights": 0.492
+  },
+  "tuned_beats_equal_folds": 3,
+  "vector_weight_chosen_per_fold": [
+    0.1,
+    0.05,
+    0.1,
+    0.1,
+    0.1
+  ]
+}

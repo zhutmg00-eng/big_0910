@@ -160,6 +160,7 @@ def summarize(records: List[Dict]) -> Dict:
 
 
 def evaluate_retrieval(embedding_ablation: bool = False):
+    from src.config import RRF_WEIGHTS
     from src.rag.vector_store import PolicyVectorStore
 
     dataset: List[Dict] = json.loads(DATASET_PATH.read_text(encoding="utf-8"))
@@ -217,6 +218,8 @@ def evaluate_retrieval(embedding_ablation: bool = False):
             "total_documents": stats["total_documents"],
             "embedding_model": stats["embedding_model"],
             "default_mode": "rrf3",
+            # 融合权重必须随结果一起存档：权重一变，rrf3 的指标就不可比
+            "rrf_weights": dict(RRF_WEIGHTS),
             "bootstrap_resamples": 2000,
             "multiple_comparison": "Holm-Bonferroni",
             # 知识库指纹：评测结论只对这份语料成立，知识库增删文档后必须重测
@@ -299,6 +302,7 @@ def write_markdown_report(payload: Dict):
 
 > 评测集：双人背靠背独立审校 40 题金标基准 · 知识库 {meta['total_documents']} 份政策文件 / {meta['total_chunks']} 个分块
 > 嵌入模型：`{meta['embedding_model']}` · 统一 top-10 · Bootstrap {meta['bootstrap_resamples']} 次 · 多重比较 {meta['multiple_comparison']} 校正
+> 三路 RRF 权重：BM25 {meta['rrf_weights']['bm25']} · 向量 {meta['rrf_weights']['vector']} · 字面规则 {meta['rrf_weights']['keyword']}（交叉验证见 `rrf_weight_cross_validation.md`）
 > 复现命令：`python scripts/ingest_policy_docs.py --force && python scripts/evaluate_rag_benchmark.py --embedding-ablation`
 
 ## 一、各检索方案指标
@@ -320,8 +324,8 @@ def write_markdown_report(payload: Dict):
 ## 五、结论与局限
 
 1. **v0.3 纯向量组指标极低的根因是嵌入模型选错**：ChromaDB 默认的 all-MiniLM-L6-v2 是英文模型。换成中文 bge-small-zh 后纯向量 MRR 明显提升（见第三节），说明问题不在“向量检索不适合政策文本”。
-2. **默认方案改为三路 RRF（F 组）**：BM25（jieba 分词）、中文稠密向量、v0.3 字面规则三路检索按名次融合（RRF，k=60，原论文推荐值，**没有在评测集上调参**）。F 组 Recall@10 在全部方案中最高，Recall@5 与最好方案持平，并且比 E 组（只用 BM25+向量）有显著提升（Holm 校正后 p<0.05）。
-3. **如实交代的负面结果**：① 两路 RRF（E 组）的 MRR 不如 BM25 单路，原因是稠密向量对“情景描述型”长问题仍然偏弱，融合时拖低了排序；② v0.3 字面规则里有几条针对主题写的加权规则，存在对评测集过拟合的风险，所以 v0.4 只把它当作融合中的一路信号，不再让它主导打分；③ 交叉编码器精排在 CPU 上每题约 9 秒，指标反而下降，所以默认关闭。
+2. **默认方案改为三路 RRF（F 组）**：BM25（jieba 分词）、中文稠密向量、v0.3 字面规则三路检索按名次融合（RRF，k=60，原论文推荐值）。三路权重为 BM25 {meta['rrf_weights']['bm25']} : 向量 {meta['rrf_weights']['vector']} : 字面规则 {meta['rrf_weights']['keyword']}，不是等权——等权融合的 MRR 只有 0.4112，低于它要取代的 v0.3 方案，是在同一评测集上做权重诊断时才发现的（该数字与权重调优同源，不作独立证据）。权重稳健性用 5 折交叉验证单独检查：折内独立选出的向量权重全部落在 0.05–0.2，见 `rrf_weight_cross_validation.md`。F 组 Recall@10 在全部方案中最高。
+3. **如实交代的负面结果**：① 两路 RRF（E 组）的 MRR 不如 BM25 单路，原因是稠密向量对“情景描述型”长问题仍然偏弱，融合时拖低了排序；② v0.3 字面规则里有几条针对主题写的加权规则，存在对评测集过拟合的风险，所以 v0.4 只把它当作融合中的一路信号，不再让它主导打分；③ 交叉编码器精排在 CPU 上每题约 9 秒，指标反而下降，所以默认关闭；④ 三路 RRF 相对 v0.3 与 BM25 的差距经 Holm 校正后均不显著，只能说“不劣于”，不能说“显著更好”。
 4. **局限**：评测集只有 40 题，置信区间较宽，多数两两差异经多重比较校正后不显著。下一步计划把评测集扩到 100 题以上，按“单一事实型 / 情景推理型”分层评测，并加入生成质量评测（忠实度、引用准确率）。
 """
     OUT_MD.write_text(content, encoding="utf-8")
