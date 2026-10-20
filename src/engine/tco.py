@@ -256,7 +256,10 @@ def calculate_single_vehicle_tco(
         * spec.electricity_consumption_per_100km
         * params.electricity_price_yuan_per_kwh
     )
-    single_annual_energy_saving = max(0.0, single_annual_fuel_cost - single_annual_elec_cost)
+    # 能耗节省可以为负：高电价下电车电费可能高于油费，此时真实结论是「更费钱」。
+    # 早期用 max(0.0, ...) 截断会把负的能耗差悄悄抹平，只剩维保节省托底，
+    # 于是明细里电费>油费、汇总里却仍报「省钱」，回收期被系统性低估。
+    single_annual_energy_saving = single_annual_fuel_cost - single_annual_elec_cost
 
     # 4. 单车年维保与电池租赁成本计算
     single_annual_maint_saving = (
@@ -328,6 +331,59 @@ def calculate_single_vehicle_tco(
     )
 
 
+def _merge_same_type_tco(
+    prev: Optional[SingleVehicleTCOResult], new: SingleVehicleTCOResult
+) -> SingleVehicleTCOResult:
+    """把同一车型的多条替换记录合并成一条，量级与顶层车队合计保持一致。
+
+    仅累加可加的金额与吨数；回收期、MAC 按合并后的现金流重算，
+    避免把两条记录的比率简单相加。
+    """
+    if prev is None:
+        return new
+
+    replace_count = prev.replace_count + new.replace_count
+    delta_capex = prev.delta_capex_total_yuan + new.delta_capex_total_yuan
+    annual_energy = prev.annual_energy_saving_total_yuan + new.annual_energy_saving_total_yuan
+    annual_maint = prev.annual_maintenance_saving_total_yuan + new.annual_maintenance_saving_total_yuan
+    annual_opex = prev.annual_opex_saving_total_yuan + new.annual_opex_saving_total_yuan
+    annual_co2 = prev.annual_co2_reduction_t + new.annual_co2_reduction_t
+    lifespan_co2 = prev.lifespan_co2_reduction_t + new.lifespan_co2_reduction_t
+    lifespan_net = prev.lifespan_net_savings_yuan + new.lifespan_net_savings_yuan
+
+    payback = delta_capex / annual_opex if annual_opex > 0 else None
+    # 与 calculate_single_vehicle_tco 同口径：PV(ΔOPEX) = 全周期净节省 + ΔCAPEX
+    pv_opex = lifespan_net + delta_capex
+    mac = (delta_capex - pv_opex) / lifespan_co2 if lifespan_co2 > 0 else None
+
+    yearly = [
+        -delta_capex + year * annual_opex for year in range(len(new.yearly_cumulative_cashflow_yuan))
+    ]
+    yearly[0] = -delta_capex
+
+    return SingleVehicleTCOResult(
+        target_vehicle_type=new.target_vehicle_type,
+        replace_count=replace_count,
+        annual_km=new.annual_km,
+        delta_capex_total_yuan=delta_capex,
+        delta_capex_per_vehicle_yuan=(
+            (prev.delta_capex_per_vehicle_yuan * prev.replace_count
+             + new.delta_capex_per_vehicle_yuan * new.replace_count) / replace_count
+        ),
+        annual_fuel_cost_per_vehicle_yuan=new.annual_fuel_cost_per_vehicle_yuan,
+        annual_elec_cost_per_vehicle_yuan=new.annual_elec_cost_per_vehicle_yuan,
+        annual_energy_saving_total_yuan=annual_energy,
+        annual_maintenance_saving_total_yuan=annual_maint,
+        annual_opex_saving_total_yuan=annual_opex,
+        payback_period_years=payback,
+        mac_yuan_per_tco2e=mac,
+        annual_co2_reduction_t=annual_co2,
+        lifespan_co2_reduction_t=lifespan_co2,
+        lifespan_net_savings_yuan=lifespan_net,
+        yearly_cumulative_cashflow_yuan=yearly,
+    )
+
+
 def calculate_fleet_tco(
     replacements: List[Dict[str, Any]],
     econ_params: Optional[TCOEconomicParameters] = None,
@@ -370,7 +426,9 @@ def calculate_fleet_tco(
             annual_co2_reduction_t=co2_red,
             econ_params=params,
         )
-        by_type[vtype] = res
+        # 同一车型可能有多条记录（不同里程/满载率）。直接赋值会让后一条覆盖前一条，
+        # 使 by_vehicle_type 只保留部分车辆，而顶层合计却是全量，同响应内自相矛盾。
+        by_type[vtype] = _merge_same_type_tco(by_type.get(vtype), res)
         total_replace += rcount
         total_delta_capex += res.delta_capex_total_yuan
         total_annual_opex += res.annual_opex_saving_total_yuan
