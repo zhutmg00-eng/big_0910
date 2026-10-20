@@ -1,13 +1,27 @@
-"""生成升级版的前沿研究实证可视化图表：
-1. fig4_baas_tco_comparison: 传统充电 vs 换电车电分离 (BaaS) 模式下重卡与轻卡的 TCO 投资回收期与累计净现金流曲线对比
-2. fig5_grid_scope2_green_power: 全国31省电网排放因子梯度与不同绿电/绿证抵扣比例下的净减排量敏感性响应
-并将图表保存为高质量 SVG 与 PNG 格式。
+"""【已被取代·仅作历史留存】早期手绘 SVG 图表脚本。
+
+⚠️ 本脚本不再产出论文与答辩所用的图，请勿直接运行覆盖产物：
+此前它写出的 fig4_baas_tco_comparison.svg / fig5_grid_scope2_green_power.svg
+与 scripts/render_academic_figures.py 的输出路径完全相同，而后者的版本才是
+commit 在仓库里的正式图（matplotlib 生成、数字全部取自 docs/derived_metrics.json）。
+两版数据口径不一致，例如：
+- 本脚本图 5 标注"全国 31 省"，而 docs/derived_metrics.json 的 grid.n_provinces = 30，
+  论文图注写的是"30 个省级行政区"；
+- 本脚本图 5 的省份因子与抵扣示意是硬编码常量，不随引擎数据更新。
+因此直接运行本脚本会把论文正文引用的图替换成口径错误的旧图（实测已发生过一次）。
+
+正式出图脚本：python scripts/render_academic_figures.py
+保留本文件只为追溯早期视觉方案，产物名一律带 _legacy 后缀。
 """
 
 from pathlib import Path
 
 ARTIFACTS_DIR = Path(__file__).parent.parent / "docs" / "artifacts"
 ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# 图 4 / 图 5 的正式产物由 render_academic_figures.py 生成；这里改写带
+# _legacy 后缀的文件名，避免静默覆盖论文引用的图。
+_LEGACY_SUFFIX = "_legacy"
 
 # ==============================================================
 # 图 4：BaaS 换电 vs 传统充电模式 TCO 现金流对比 (SVG)
@@ -150,9 +164,9 @@ def generate_fig4_baas_svg():
   </g>
 </svg>'''
     
-    out_svg = ARTIFACTS_DIR / "fig4_baas_tco_comparison.svg"
+    out_svg = ARTIFACTS_DIR / f"fig4_baas_tco_comparison{_LEGACY_SUFFIX}.svg"
     out_svg.write_text(svg, encoding="utf-8")
-    print(f"Generated: {out_svg}")
+    print(f"Generated (legacy, 非论文引用): {out_svg}")
 
 # ==============================================================
 # 图 5：全国31省电网因子与绿电抵扣后净减排响应 (SVG)
@@ -307,9 +321,9 @@ def generate_fig5_green_power_svg():
   </g>
 </svg>'''
 
-    out_svg = ARTIFACTS_DIR / "fig5_grid_scope2_green_power.svg"
+    out_svg = ARTIFACTS_DIR / f"fig5_grid_scope2_green_power{_LEGACY_SUFFIX}.svg"
     out_svg.write_text(svg, encoding="utf-8")
-    print(f"Generated: {out_svg}")
+    print(f"Generated (legacy, 非论文引用): {out_svg}")
 
 if __name__ == "__main__":
     generate_fig4_baas_svg()
