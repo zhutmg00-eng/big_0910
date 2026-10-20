@@ -288,7 +288,7 @@ def create_deck():
         {
             "rq": "科学问题一 (RQ1) · 核算精度与误差特性",
             "question": "在仅掌握宏观活动数据条件下，自下而上活动水平法的估算精度与系统误差方向如何？",
-            "origin": "【数据与问题来源】：针对中小物流缺乏发票台账痛点，采用蔡博峰2021分省排放因子与GB 30510标准，对比顺丰/中通等4家企业披露的真实燃油消耗台账。",
+            "origin": "【数据与问题来源】：针对中小物流缺乏发票台账痛点，采用蔡博峰2021分省排放因子与GB 30510标准，对比顺丰/中通等4家企业公开披露的燃油消耗量台账（碳排基准值由本项目按统一因子复算，非企业原始披露排放值）。",
             "finding": "【实证推导结论】：加权 MAPE 为 4.23%；全样本相对误差恒定呈现 [+1.66%, +7.27%] 的微幅正偏。依《GHG Protocol》审慎保守性准则，正偏高估避免了低估漂绿合规风险，形成上限安全垫。",
             "color": COLOR_PRIMARY
         },
@@ -512,7 +512,7 @@ def create_deck():
             p.alignment = PP_ALIGN.CENTER if c_idx in (0, 2) else PP_ALIGN.LEFT
             p.font.color.rgb = COLOR_TEXT_MAIN
 
-    add_footnote(s6, "全部数据源文件存储于 data/raw/real_fleets/sources_and_methodology.md，评委可随时查验企业披露原件")
+    add_footnote(s6, "全部数据源文件与字段语义声明存储于 data/raw/real_fleets/sources_and_methodology.md 与 benchmark_fleets.json，燃料消耗量可回溯至公开披露，碳排基准值为本项目复算")
 
     # ==========================================================================
     # Slide 7: RQ1 实证复核计算结果与保守正偏机理（图 1 检验图）

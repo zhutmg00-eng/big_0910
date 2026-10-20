@@ -112,13 +112,14 @@ def main() -> dict:
             "e_model_tco2": e_model,
             "e_model_no_lf_tco2": e_nolf,
             "e_fuel_tco2": e_fuel,
-            "e_reported_tco2": b["reported_scope1_tco2e"],
+            "e_reported_tco2": b["derived_baseline_from_ledger_tco2e"],
             "rel_err_pct": round((e_model - e_fuel) / e_fuel * 100, 2),
             "rel_err_no_lf_pct": round((e_nolf - e_fuel) / e_fuel * 100, 2),
             "load_factor_contribution_tco2": round(e_model - e_nolf, 2),
             "turnover_wan_tkm": round(tkm / 10000.0, 1),
             "intensity_g_per_tkm": round(e_model * 100 / (tkm / 10000.0), 2),
-            "reported_scope1_tco2": b["reported_scope1_tco2e"],
+            # 该值由燃料量×因子复算得到，非企业原始披露值；字段名沿用历史 key 以保持下游兼容
+            "reported_scope1_tco2": b["derived_baseline_from_ledger_tco2e"],
         })
 
     errs = [abs(c["rel_err_pct"]) for c in cases]

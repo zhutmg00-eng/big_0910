@@ -99,7 +99,7 @@ def run_benchmark_verification():
         source = b["source_document"]
         fleet_raw = b["fleet_input"]
         ledger = b["real_energy_ledger"]
-        e_reported = b.get("reported_scope1_tco2e")
+        e_reported = b.get("derived_baseline_from_ledger_tco2e")
 
         # 1. 构造模型输入并计算
         fleet_data = [
@@ -129,7 +129,7 @@ def run_benchmark_verification():
         # 5. 纯电动耗电对应间接排放（参考信息）
         elec_kwh = ledger.get("electricity_kwh", 0)
         e_elec_indirect = round(
-            elec_kwh * conv.get("grid_electricity_kg_co2_per_kwh", 0.5703) / 1000.0,
+            elec_kwh * conv.get("official_national_grid_kg_co2_per_kwh", 0.5306) / 1000.0,
             2,
         )
 
@@ -159,7 +159,7 @@ def run_benchmark_verification():
         print(f"  * 模型测算直接排放 (E_model):    {e_model:,.2f} tCO2e")
         print(f"  * 真实燃料台账核算 (E_fuel):     {e_fuel:,.2f} tCO2e")
         if e_reported is not None:
-            print(f"  * 企业官方报告披露 (E_reported): {e_reported:,.2f} tCO2e")
+            print(f"  * 按披露燃料量复算的基准 (E_baseline): {e_reported:,.2f} tCO2e（非企业原始披露值）")
         print(f"  * 相对误差 (Relative Error):     {rel_error:+.2f}%  (绝对偏差: {abs_diff:+,.2f} tCO2e)")
         print(f"  * 满载率修正影响:                {load_adj_impact:+,.2f} tCO2e (未修正基线: {e_unadjusted:,.2f} tCO2e)")
         if elec_kwh > 0:

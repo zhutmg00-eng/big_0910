@@ -51,13 +51,43 @@ def test_benchmark_structure(benchmark_data):
         "source_document",
         "fleet_input",
         "real_energy_ledger",
-        "reported_scope1_tco2e",
+        "derived_baseline_from_ledger_tco2e",
     ]
     for b in benchmarks:
         for field in required_fields:
             assert field in b, f"案例 {b.get('benchmark_id')} 缺少字段 {field}"
         assert len(b["fleet_input"]) > 0
-        assert b["reported_scope1_tco2e"] > 0
+        assert b["derived_baseline_from_ledger_tco2e"] > 0
+
+
+def test_metadata_declares_field_semantics(benchmark_data):
+    """字段语义必须显式声明为「复算值」，防止被当成企业原始披露值引用。"""
+    meta = benchmark_data["metadata"]
+    assert "field_semantics" in meta, "metadata 必须包含 field_semantics 声明"
+    semantics = " ".join(str(v) for v in meta["field_semantics"].values())
+    assert "非企业原始披露值" in semantics, "必须显式声明该字段不是企业原始披露值"
+
+
+def test_reported_scope1_label_not_used_for_values(benchmark_data):
+    """禁止重新引入被误读为「企业披露值」的字段名。"""
+    for b in benchmark_data["benchmarks"]:
+        assert "reported_scope1_tco2e" not in b, (
+            f"案例 {b['benchmark_id']} 仍使用 reported_scope1_tco2e，会被误读为企业披露值"
+        )
+
+
+def test_grid_factor_single_source_of_truth(benchmark_data):
+    """电网因子必须与引擎中的官方全国平均值一致，禁止两套并存。"""
+    from src.engine.indirect_emission import GRID_EMISSION_FACTORS
+
+    conv = benchmark_data["metadata"]["emission_conversion_factors"]
+    official = conv["official_national_grid_kg_co2_per_kwh"]
+    assert official == GRID_EMISSION_FACTORS["全国平均"], (
+        f"数据集官方电网因子 {official} 与引擎 {GRID_EMISSION_FACTORS['全国平均']} 不一致"
+    )
+    assert conv["grid_electricity_kg_co2_per_kwh"] != official, (
+        "历史沿用值应与官方值明确区分，不应相同"
+    )
 
 
 def test_all_fleet_vehicle_types_supported(benchmark_data):

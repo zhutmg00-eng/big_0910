@@ -2,13 +2,21 @@
   "metadata": {
     "version": "1.0.0",
     "updated_at": "2026-08-26",
-    "description": "基于上市物流企业公开ESG报告与行业智库实测的真实车队基准数据集",
-    "purpose": "用于对比活动水平测算法(Model)与企业能源台账法(Fuel-based)的碳排放核算误差",
+    "description": "基于上市物流企业公开ESG报告与行业智库实测构造的车队级能源台账数据集（燃料消耗量与活动参数取自公开披露，碳排基准值按本文件列出的因子复算）",
+    "purpose": "用于对比活动水平测算法(Model)与燃料台账复算法(Ledger-recomputed)的碳排放核算差异",
+    "field_semantics": {
+      "reported_scope1_tco2e": "【重要·非企业原始披露值】本字段为课题组按各案 real_energy_ledger 的燃料消耗量乘以下方 emission_conversion_factors 复算所得，并非从企业报告中摘录。已核验：Case 1/2/4 与「燃料量×因子」逐位吻合，其中 Case 1/2/4 的企业报告实际披露值课题组未能获取原文页码，故不以「企业披露值」对外表述；Case 3 的 79,800 为构造时直接给定、与按因子复算的 79,095 不一致（差 +0.89%），属已知的内部不一致，保留原值以维持既有实验记录的连续性，但在论文、报告与答辩材料中一律表述为「按披露燃料量复算的基准值」。",
+      "real_energy_ledger": "燃料/电力消耗量，取自企业 ESG 报告或行业白皮书披露的总量（见各案 source_document）。",
+      "fleet_input": "车型构成与年均里程、实载率，为课题组按公开统计口径锚定与假设设定（来源分级见 sources_and_methodology.md 附录 A.2），设定过程不以对齐燃料台账为目标。"
+    },
     "emission_conversion_factors": {
       "diesel_kg_co2_per_liter": 2.730,
       "gasoline_kg_co2_per_liter": 2.310,
       "lng_kg_co2_per_kg": 2.690,
-      "grid_electricity_kg_co2_per_kwh": 0.5703
+      "grid_electricity_kg_co2_per_kwh": 0.5703,
+      "grid_electricity_note": "本字段 0.5703 为早期草稿沿用值，仅用于维持历史记录的数值连续性，不得作为电网因子引用；官方 2023 年全国电力平均因子见下一字段。",
+      "official_national_grid_kg_co2_per_kwh": 0.5306,
+      "official_national_grid_source": "生态环境部《2023年电力排放因子》全国平均值，与 src/engine/indirect_emission.py 中 GRID_EMISSION_FACTORS['全国平均'] 一致"
     }
   },
   "benchmarks": [
@@ -52,7 +60,7 @@
         "lng_kg": 0,
         "electricity_kwh": 67200000
       },
-      "reported_scope1_tco2e": 460005.0,
+      "derived_baseline_from_ledger_tco2e": 460005.0,
       "notes": "顺丰自营及核心承运车队，纳入纯电动车超1.2万辆；汽油消耗主要为零散外包末端骑手未计入自营车队直接核算。"
     },
     {
@@ -83,7 +91,7 @@
         "lng_kg": 0,
         "electricity_kwh": 18500000
       },
-      "reported_scope1_tco2e": 1141686.0,
+      "derived_baseline_from_ledger_tco2e": 1141686.0,
       "notes": "中通核心优势为集约化甩挂运输，单车年均行驶里程超13万公里，百公里综合柴油单耗优化至约28.5L/100km。"
     },
     {
@@ -126,7 +134,7 @@
         "lng_kg": 10800000,
         "electricity_kwh": 48000000
       },
-      "reported_scope1_tco2e": 79800.0,
+      "derived_baseline_from_ledger_tco2e": 79800.0,
       "notes": "京东物流自营车队深度推行新能源化，投用纯电动厢式车与氢能重卡，直接化石燃料排放量大幅压降。"
     },
     {
@@ -163,7 +171,7 @@
         "lng_kg": 0,
         "electricity_kwh": 120000
       },
-      "reported_scope1_tco2e": 1160.25,
+      "derived_baseline_from_ledger_tco2e": 1160.25,
       "notes": "典型中小车队场景，多频次短途冷链与商超配送，空驶率高（满载率<60%），制冷机组使百公里油耗偏高。"
     }
   ]
