@@ -293,6 +293,12 @@ def _render_inventory_result(result: dict) -> None:
             },
         ]
     st.table(cost_rows)
+    if cost.get("is_fallback_price"):
+        st.warning(
+            f"⚠️ 碳价数据不可用，当前使用{cost.get('碳价数据来源', '模拟参考价')}。"
+            "该结果不能作为实测碳价结论引用，请先恢复 data/raw/carbon_price_history.csv。"
+        )
+    st.caption(f"碳价数据来源：{cost.get('碳价数据来源', '未标注')}")
     notice("口径提示", cost.get("备注", result.get("methodology_note", "科研情景估算，仅供方案比较。")), amber=True)
 
 

@@ -35,6 +35,11 @@ def load_carbon_price_data(csv_path: str = None) -> Any:
         return None
 
 
+def carbon_price_data_available(csv_path: str = None) -> bool:
+    """碳价原始数据是否可用（供 UI/API 区分“真实统计”与“模拟参考价”）。"""
+    return load_carbon_price_data(csv_path) is not None
+
+
 WINDOW_DAYS = 90
 
 
@@ -47,6 +52,8 @@ def price_window_stats(df, days: int = WINDOW_DAYS, real_only: bool = True) -> d
       若按“末 90 行”取窗，实际覆盖约 90 周（1.7 年），会把 2024—2025 年的低价混入，
       这正是旧版 78.67 与 90.72 两个“近90日均价”打架的根源；
     - 返回观测点数 ``n_obs``，样本少时由前端提示“仅 n 个真实成交点”。
+    - ``current`` 与 mean/min/max 同源于窗口内观测点，不取全序列末行：末行可能是插值，
+      若混用会出现“参考价落在区间之外”的自相矛盾（该页明确声明插值不参与统计）。
     """
     if df is None or df.empty:
         return {}
@@ -61,7 +68,8 @@ def price_window_stats(df, days: int = WINDOW_DAYS, real_only: bool = True) -> d
         win = data.tail(1)
     prices = win["收盘价"]
     return {
-        "current": round(float(df["收盘价"].iloc[-1]), 2),
+        # 与 mean/min/max 同源：窗口内最后一个观测点，避免与区间口径打架
+        "current": round(float(prices.iloc[-1]), 2),
         "mean": round(float(prices.mean()), 2),
         "max": round(float(prices.max()), 2),
         "min": round(float(prices.min()), 2),
@@ -104,18 +112,22 @@ def estimate_compliance_cost(gap_t: float, price_df=None) -> dict:
     Returns:
         dict: 成本估算结果
     """
-    # 如果没有真实数据，使用模拟参考价
-    if price_df is None or (pd is not None and price_df.empty):
+    # 如果没有真实数据，使用模拟参考价。回退必须在返回结果里显式标注，
+    # 否则接口输出的数字与真实统计无法区分（会被当作实测结论引用）。
+    is_fallback = price_df is None or (pd is not None and price_df.empty)
+    if is_fallback:
         # 模拟参考价（基于2024-2025年全国碳市场大致区间）
         current_price = 70.0  # 元/吨
         avg_price = 68.0
         min_price = 55.0
         max_price = 85.0
         volatility = 8.5
+        data_source = "模拟参考价（碳价原始数据不可用，非实测统计）"
     else:
         w = price_window_stats(price_df)
         current_price, avg_price = w["current"], w["mean"]
         min_price, max_price, volatility = w["min"], w["max"], w["cv_pct"]
+        data_source = f"{w['basis']}（{w['window_start']}—{w['window_end']}，{w['n_obs']} 个观测点）"
 
     if gap_t <= 0:
         judgement = "基本平衡" if abs(gap_t) < 1e-9 else "低于模拟碳预算"
@@ -125,6 +137,8 @@ def estimate_compliance_cost(gap_t: float, price_df=None) -> dict:
             "潜在价值_low": round(abs(gap_t) * min_price, 2),
             "潜在价值_high": round(abs(gap_t) * max_price, 2),
             "参考碳价_元每吨": current_price,
+            "碳价数据来源": data_source,
+            "is_fallback_price": is_fallback,
             "备注": "仅按全国碳市场价格估算潜在价值，不代表可交易配额或实际收益",
         }
 
@@ -137,5 +151,7 @@ def estimate_compliance_cost(gap_t: float, price_df=None) -> dict:
         "情景成本_参考价": round(gap_t * current_price, 2),
         "情景成本区间_low": round(gap_t * min_price, 2),
         "情景成本区间_high": round(gap_t * max_price, 2),
+        "碳价数据来源": data_source,
+        "is_fallback_price": is_fallback,
         "备注": "科研情景估算，不代表物流企业当前存在碳市场履约义务",
     }
