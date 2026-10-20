@@ -225,11 +225,14 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
    - 双人背靠背独立审校与一致性报告（`docs/rag_benchmark/review/`；两位审读者判定完全一致，
      但类别分布不平衡，Kappa 不作为公信力证据）。
    - 金标 chunk 在 v0.4 快照（37 份文档 / 268 块）上定块，固化于 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`；
-     v0.4.1 知识库扩至 39 份 / 281 块后完整重跑，两版结果并列保存（结果文件记录 `kb_fingerprint`）。
+     v0.4.1 知识库扩至 39 份 / 281 块后完整重跑，v0.4 快照结果保存在 `archive_kb37_268_results.json`，
+     两份结果文件都记录 `kb_fingerprint` 与 `rrf_weights`，语料或权重一变指标就不可比。
    - 6 组检索方案对照 + 配对 Wilcoxon 检验（Holm 校正）+ Bootstrap 95% CI。当前知识库上默认三路 RRF：
-     Recall@10 80.0%、MRR 0.411 [0.300, 0.531]；纯向量 Recall@10 57.5%；英文默认嵌入纯向量 Recall@10 15%（消融）。
-     三路 RRF 的优势在召回（Top-10 覆盖），MRR 与字面启发式、BM25 无显著差异，详见
-     `docs/rag_benchmark/rag_retrieval_experiment_report.md`。
+     Recall@10 80.0%、MRR 0.492 [0.367, 0.618]；纯向量 Recall@10 57.5%；英文默认嵌入纯向量 Recall@10 15%（消融）。
+     三路 RRF 的优势在召回（Top-10 覆盖，各组最高），MRR 与字面启发式、BM25 的差距经 Holm 校正后不显著，
+     只能说“不劣于”而不能说“显著更好”。三路融合权重为 BM25 0.6 : 向量 0.1 : 字面规则 0.8——等权融合的
+     MRR 只有 0.411，低于它要取代的 v0.3 方案，权重稳健性用 5 折交叉验证单独检查
+     （`docs/rag_benchmark/rrf_weight_cross_validation.md`）。详见 `docs/rag_benchmark/rag_retrieval_experiment_report.md`。
 3. **Scope 2 外购电间接排放与运输周转量核算**：
    - 依据生态环境部、国家统计局《关于发布 2023 年电力二氧化碳排放因子的公告》（2025 年第 47 号）
      收录全国、区域（7 个）与省级（30 个）电网排放因子。
