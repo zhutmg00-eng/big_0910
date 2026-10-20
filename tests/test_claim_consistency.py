@@ -144,3 +144,93 @@ def test_dashboard_kb_badge_matches_actual_corpus():
     assert f"{actual} Chunks" in dashboard, (
         f"展板徽标与实测块数 {actual} 不一致"
     )
+
+
+# ---------------------------------------------------------------------------
+# RAG 指标守卫（2026-10 补）
+#
+# 历史问题：答辩材料曾写"MRR 从 0.0411 提升至 0.8171（提升近 20 倍）"。
+# 实测追查表明 0.8171 根本不是任何方案的 MRR，而是
+# docs/rag_benchmark/rag_retrieval_experiment_results.json 里
+# detailed_results.hybrid[36] 这一道题在 hybrid 模式下的 ndcg10
+# （0.8175295903539445）。同时 0.0411 是 ChromaDB 默认【英文】嵌入
+# all-MiniLM-L6-v2 的纯向量 MRR，与中文 bge 不是同一实验设置。
+# 下面的测试把这个错误口径钉死，防止答辩材料再次漂移。
+# ---------------------------------------------------------------------------
+RAG_RESULTS = json.loads(
+    (ROOT / "docs" / "rag_benchmark" / "rag_retrieval_experiment_results.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+# 答辩类材料：这些文件是直接对外讲述的，数字必须与实测一致
+DEFENSE_DOCS = (
+    "docs/大创中期答辩核心指南与评审问辨应对.md",
+    "docs/国家级优秀大创答辩逐字稿与尖锐质询策略_升级版.md",
+    "docs/大创中期答辩幻灯片视觉与内容全景设计图解.md",
+)
+
+
+def test_rag_defense_docs_do_not_quote_single_query_ndcg_as_mrr():
+    """0.8171 是单题 nDCG，不得作为方案 MRR 出现在答辩材料里。"""
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        assert "0.8171" not in text, (
+            f"{rel} 仍把 0.8171 当作 MRR 引用；该值是 detailed_results.hybrid[36] "
+            "的单题 nDCG，不是任何方案的 MRR"
+        )
+
+
+def test_rag_defense_docs_do_not_claim_20x_improvement():
+    """20 倍提升的说法已被证伪：与自身旧方案比是 1.00 倍。"""
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        for stale in ("近 20 倍", "近20倍", "提升20倍", "提升 20 倍"):
+            assert stale not in text, f"{rel} 仍声称检索指标提升 20 倍"
+
+
+def test_rag_defense_docs_use_measured_mrr_values():
+    """答辩材料引用的 MRR 必须能在实验结果的 summary_metrics 里找到。"""
+    summary = RAG_RESULTS["summary_metrics"]
+    measured = {round(v["MRR"], 4) for v in summary.values()}
+    # 英文嵌入基线（all-MiniLM-L6-v2）来自 archive_kb37_268_results.json 的 ablation，
+    # 属于另一实验设置，但它是合法读数，允许被引用（必须注明出处）。
+    archive = json.loads(
+        (ROOT / "docs" / "rag_benchmark" / "archive_kb37_268_results.json").read_text(encoding="utf-8")
+    )
+    for setting in archive["embedding_ablation"].values():
+        for metrics in setting.values():
+            measured.add(round(metrics["MRR"], 4))
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        for token in re.findall(r"MRR[^0-9]{0,12}(0\.\d{4})", text):
+            assert float(token) in measured, (
+                f"{rel} 引用了实测结果中不存在的 MRR {token}；实测集合为 {sorted(measured)}"
+            )
+
+
+def test_rag_defense_docs_do_not_use_stale_kb_size():
+    """旧快照 37 份/268 块不得再作为当前知识库规模出现。"""
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        assert "37 份法规" not in text, f"{rel} 仍使用旧知识库规模 37 份法规"
+        assert "37份法规" not in text, f"{rel} 仍使用旧知识库规模 37 份法规"
+        assert "268 个 Chunk" not in text and "268 Chunk" not in text, (
+            f"{rel} 仍使用旧切片数 268"
+        )
+
+
+def test_defense_docs_do_not_claim_fabricated_vehicle_total():
+    """45,035 辆无法由任何车辆子集推出，已被论文更正为覆盖 51,990 辆。"""
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        assert "45,035" not in text, f"{rel} 仍使用无法复算的车辆数 45,035"
+
+
+def test_defense_docs_test_count_matches_collection():
+    """答辩材料写的测试数必须是当前真实收集数，不能是旧值。"""
+    for rel in DEFENSE_DOCS:
+        text = _read(rel)
+        for stale in ("107 项", "107项", "119 项", "159 项", "170 项"):
+            assert stale not in text, f"{rel} 仍声称 {stale} 测试（实际为 173）"
+        assert "173" in text, f"{rel} 未出现当前真实测试数 173"
