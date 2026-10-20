@@ -102,14 +102,18 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 > ⚠️ **开发配置不能直接暴露到公网**：`docker-compose.yml` 里 `APP_API_KEY` 的默认值是 `dev-key`，
 > 而 `src/api/main.py:87` 在未设该变量时直接跳过鉴权。也就是说用开发配置加内网穿透把 8000 端口
-> 映射出去，等于把入库接口 `/api/ingest` 和计算接口都公开——任何人都能触发全量重建知识库。
+> 映射出去，等于把入库接口 `/api/kb/ingest`、`/api/kb/ingest-all` 和计算接口都公开——任何人都能触发全量重建知识库。
 > 对外演示必须走 `docker-compose.prod.yml`。
+>
+> 想知道当前进程到底处于哪种状态，查 `GET /api/health` 的 `security` 字段：
+> `protected`（已配真实密钥）/ `open_dev`（未配置）/ `placeholder_key`（填了 `your-api-key-here`
+> 之类的占位值，效果等同未鉴权）。启动日志也会以 WARNING 级别打印同一条结论。
 
 ## 环境变量
 
 | 变量 | 用途 | 默认值 |
 |---|---|---|
-| `APP_API_KEY` | FastAPI 与 Streamlit 间的共享密钥 | 空，开发模式不鉴权 |
+| `APP_API_KEY` | FastAPI 与 Streamlit 间的共享密钥 | 空，开发模式不鉴权；占位值同样视为未配置 |
 | `API_BASE_URL` | Streamlit 调用的后端地址 | `http://localhost:8000` |
 | `CORS_ORIGINS` | 允许的浏览器来源，逗号分隔 | 本地地址 |
 | `LLM_MODEL` | 政策分析模型 | `deepseek-chat` |
@@ -297,8 +301,8 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 | 范围 | 命令 | 用例数 | 结果 |
 |---|---|---|:---:|
-| `tests/` 目录 | `python -m pytest tests -q` | 220 | 全部通过 |
-| 全仓（含 `scripts/` 内的集成测试） | `python -m pytest -q` | 221 | 全部通过、0 失败 |
+| `tests/` 目录 | `python -m pytest tests -q` | 247 | 全部通过 |
+| 全仓（含 `scripts/` 内的集成测试） | `python -m pytest -q` | 248 | 全部通过、0 失败 |
 
 > 不要在文档里手工维护「测试数」作为卖点：该数字随每次提交变化，且历史上出现过
 > 107 / 119 / 159 / 170 / 173 五种互相冲突的写法。需要引用时一律执行上表命令取实测值。

@@ -32,6 +32,11 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """启动时可选自动建库（KB_AUTO_INGEST=1），首次部署无需手动执行入库脚本。"""
+    _posture = build_security_posture()
+    if not _posture["auth_required"]:
+        # 用 warning 级别而不是 info：无鉴权上线是被明确禁止的部署形态，
+        # 默认日志级别下也必须看得见。
+        logger.warning("安全自检：%s", _posture["warning"])
     if os.getenv("KB_AUTO_INGEST", "0") == "1":
         try:
             from src.config import POLICY_DOCS_DIR
@@ -88,6 +93,59 @@ API_KEY = os.getenv("APP_API_KEY", "")  # 不设则为开发模式（不鉴权�
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
+# 常见占位值：直接照抄 .env.example 就会得到这些。它们不是密钥，
+# 但若被当成密钥通过「已配置」判断，服务会进入"看起来受保护、实际人人可过"的状态。
+_PLACEHOLDER_KEYS = frozenset({
+    "your-api-key-here",
+    "changeme",
+    "change-me",
+    "sk-xxx",
+    "xxx",
+    "dev-key",
+    "test",
+    "placeholder",
+})
+
+
+def build_security_posture(api_key: str | None = None) -> dict:
+    """把「当前是否在无鉴权状态下运行」变成可查询的事实。
+
+    未设 APP_API_KEY 时全部端点（含 POST /api/kb/ingest-all 这类会重建知识库的
+    写操作）都无需凭证即可调用。这个行为本身是为了本地开发方便，但它是隐性的：
+    运维只看到 200，看不出自己正裸奔。README 里写了警告，程序里却没有任何出口
+    能自证状态，所以这里给出结构化自检，并由 /api/health 与启动日志输出。
+
+    占位值（your-api-key-here 等）与未设置同等对待：照抄 .env.example 是常见做法，
+    此时若判为"已配置"，鉴权等于用一个公开字符串把关，比不设更危险。
+    """
+    key = API_KEY if api_key is None else api_key
+    normalized = (key or "").strip()
+    if normalized.lower() in _PLACEHOLDER_KEYS:
+        return {
+            "auth_required": False,
+            "mode": "placeholder_key",
+            "warning": (
+                f"APP_API_KEY 的值是占位符「{normalized}」，不是真实密钥。实际效果等同于未鉴权："
+                "任何人照抄 .env.example 即可通过校验。请生成随机密钥后重新启动。"
+            ),
+        }
+    if normalized:
+        return {
+            "auth_required": True,
+            "mode": "protected",
+            "warning": "",
+        }
+    return {
+        "auth_required": False,
+        "mode": "open_dev",
+        "warning": (
+            "APP_API_KEY 未设置：所有端点（含会重建知识库的 POST /api/kb/ingest-all）"
+            "当前无需凭证即可调用。仅供本机开发；对外演示请改用 docker-compose.prod.yml "
+            "或显式设置 APP_API_KEY。"
+        ),
+    }
+
+
 async def verify_api_key(api_key: str = Security(api_key_header)):
     """验证API Key（如果配置了APP_API_KEY则强制校验，否则开发模式跳过）"""
     if API_KEY:  # 生产模式：需要校验
@@ -135,7 +193,7 @@ class CarbonResult(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "version": APP_VERSION}
+    return {"status": "ok", "version": APP_VERSION, "security": build_security_posture()}
 
 
 @app.get("/api/kb/health")
