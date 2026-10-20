@@ -186,11 +186,16 @@ def calculate_carbon(fleet_input: FleetInput, api_key: str = Depends(verify_api_
         baseline.total_emission_t,
         fleet_summary,
         reduction_target=fleet_input.scenario_reduction_target,
+        fleet_groups=fleet,
     )
 
     # 4. 加载碳价数据 → 估算成本
     price_df = load_carbon_price_data()
     cost = estimate_compliance_cost(gap.gap_t, price_df)
+
+    budget_scope_note = "科研原型估算，不是法定配额或履约依据"
+    if gap.caliber_note:
+        budget_scope_note = f"{budget_scope_note}；{gap.caliber_note}"
 
     return CarbonResult(
         company_name=fleet_input.company_name,
@@ -203,7 +208,8 @@ def calculate_carbon(fleet_input: FleetInput, api_key: str = Depends(verify_api_
             "状态": gap.gap_status,
             "分车型预算": gap.quota_by_type,
             "情景减排目标": gap.reduction_target,
-            "口径说明": "科研原型估算，不是法定配额或履约依据",
+            "活动水平偏离_pct": gap.activity_mismatch_pct,
+            "口径说明": budget_scope_note,
         },
         scenario_cost=cost,
         methodology_note=(

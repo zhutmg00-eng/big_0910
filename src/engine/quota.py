@@ -6,6 +6,12 @@
 
 B 仅用于科研原型的减排情景对标，不是法定碳配额。物流运输行业目前
 未纳入全国碳市场配额管理，因此差额不代表履约义务或可交易资产。
+
+口径提示（重要）：B 使用的是 CSV 中的**参考年均里程** d_reference，
+而 E 使用的是用户填报的**实际里程**。两者不同源，因此当实际里程偏离
+参考里程时，Gap 中会混入“活动水平差异”而不只是减排目标差异——
+例如顺丰真实车队重卡实际 105000 km/年、参考值 80000 km/年，差额会被
+高估约 1.5 倍。``quota_caliber_note()`` 提供相同的口径说明供 UI 展示。
 """
 from dataclasses import dataclass
 
@@ -55,12 +61,54 @@ class QuotaGapResult:
     gap_status: str            # "超出预算" | "低于预算" | "基本平衡"
     quota_by_type: dict        # 分车型模拟预算明细
     reduction_target: float    # 项目设定的直接运营减排目标
+    # 活动水平口径诊断（见模块 docstring）：预算按参考里程、排放按实际里程，
+    # 两者偏离时差额会混入活动水平差异。默认不启用，旧调用方行为不变。
+    activity_mismatch_pct: float = 0.0   # 加权平均（实际里程/参考里程 - 1）×100
+    caliber_note: str = ""               # 面向用户的口径说明，空表示口径一致
+
+
+def compute_activity_mismatch(fleet_groups) -> tuple[float, str]:
+    """比较车队实际里程与 CSV 参考里程，返回加权偏离百分比与口径说明。
+
+    Args:
+        fleet_groups: VehicleGroup 序列（需含 vehicle_type / count / annual_km）
+
+    Returns:
+        (mismatch_pct, note)。mismatch_pct 为按活动量（车公里）加权的
+        (实际总里程 - 参考总里程) / 参考总里程；note 为空串表示偏差可忽略。
+    """
+    factors = get_all_factors()
+    weighted_actual = 0.0
+    weighted_reference = 0.0
+    worst = None
+    for g in fleet_groups or []:
+        ref = (factors.get(g.vehicle_type) or {}).get("avg_annual_km")
+        if not ref or ref <= 0:
+            continue
+        weighted_actual += g.annual_km * g.count
+        weighted_reference += ref * g.count
+        dev = (g.annual_km - ref) / ref
+        if worst is None or abs(dev) > abs(worst[1]):
+            worst = (g.vehicle_type, dev, g.annual_km, ref)
+    if weighted_reference <= 0:
+        return 0.0, ""
+    pct = round((weighted_actual / weighted_reference - 1) * 100, 1)
+    if abs(pct) < 5.0:
+        return pct, ""
+    note = (
+        f"本车队的填报年均里程与政策基准参考里程整体相差 {pct:+.1f}%"
+        f"（最大偏差：{worst[0]} 实际 {worst[2]:,.0f} km/年 vs 参考 {worst[3]:,.0f} km/年）。"
+        "模拟碳预算按参考里程计算、排放按填报里程计算，"
+        "因此差额中同时包含活动水平差异与减排目标差异，不宜直接解读为纯减排责任。"
+    )
+    return pct, note
 
 
 def estimate_quota_gap(
     emission_total: float,
     fleet_summary: dict,
     reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
+    fleet_groups=None,
 ) -> QuotaGapResult:
     """
     估算企业直接运营排放与模拟碳预算的差额。
@@ -69,6 +117,8 @@ def estimate_quota_gap(
         emission_total: 企业年度直接运营排放基线 (tCO2e)
         fleet_summary: 各车型车辆数 {"重型柴油货车": 50, "中型柴油货车": 30, ...}
         reduction_target: 相对参考活动排放的项目情景减排比例
+        fleet_groups: 可选，VehicleGroup 序列。传入后启用活动水平口径诊断，
+            在 actual/reference 里程偏离超过 5% 时填充 caliber_note。
 
     Returns:
         QuotaGapResult: 模拟碳预算差额结果
@@ -101,6 +151,10 @@ def estimate_quota_gap(
     else:
         status = "低于预算"
 
+    mismatch_pct, caliber_note = (0.0, "")
+    if fleet_groups:
+        mismatch_pct, caliber_note = compute_activity_mismatch(fleet_groups)
+
     return QuotaGapResult(
         total_quota_t=round(total_quota, 2),
         total_emission_t=round(emission_total, 2),
@@ -108,4 +162,6 @@ def estimate_quota_gap(
         gap_status=status,
         quota_by_type=quota_by_type,
         reduction_target=reduction_target,
+        activity_mismatch_pct=mismatch_pct,
+        caliber_note=caliber_note,
     )
