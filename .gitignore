@@ -17,7 +17,12 @@ build/
 # 数据文件（不提交原始数据，但保留研究成果JSON）
 data/raw/*.csv
 data/processed/
-data/policy_docs/
+data/policy_docs/*
+# 例外：知识库语料必须随仓库分发。缺这两份会导致全新 clone 只能建出
+# 37 份/268 块的残缺知识库（且都是交通领域最相关的两份），
+# 与 README/论文声明的 39 份/281 块不符。新增语料请同步登记在这里。
+!data/policy_docs/GB20997-2024_轻型商用车辆燃料消耗量限值_实施公告.md
+!data/policy_docs/推动新能源重卡规模化应用实施方案_2026.md
 data/chroma_db/
 data/models/
 data/reports/*.pdf
