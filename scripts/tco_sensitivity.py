@@ -32,7 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.engine.calculator import calculate_load_adjustment  # noqa: E402
-from src.engine.reduction import REPLACEMENT_MAP  # noqa: E402
+from src.engine.reduction import _replacement_co2_factor  # noqa: E402
 from src.engine.tco import (  # noqa: E402
     TCOEconomicParameters,
     calculate_single_vehicle_tco,
@@ -62,7 +62,8 @@ VEHICLES = {
 
 def annual_reduction(vt: str, count: int, km: float, lf: float) -> float:
     """与 src/engine/reduction.py 同口径的年直接减排量 (tCO2e)。"""
-    ef_old = REPLACEMENT_MAP.get(vt, (None, 0.877))[1]
+    # 复用引擎的权威取值，避免此处副本与 REPLACEMENT_MAP 一同过期
+    ef_old = _replacement_co2_factor(vt)
     return count * km * ef_old * calculate_load_adjustment(lf) / 1000.0
 
 

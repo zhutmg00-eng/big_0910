@@ -15,6 +15,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from src.engine.calculator import VehicleGroupData, calculate_emission, calculate_load_adjustment
+from src.engine.emission_factors import get_all_factors
 from src.engine.quota import DEFAULT_SCENARIO_REDUCTION_TARGET, estimate_quota_gap
 from src.engine.carbon_price import estimate_compliance_cost, load_carbon_price_data
 from src.engine.tco import calculate_fleet_tco
@@ -92,12 +93,30 @@ class ScenarioComparison:
 
 # 车型替换映射：{原车型: (替换车型, 单车减排量_kg_per_km)}
 # 单车减排量 = (原排放因子 - 新排放因子) kg/km
+# 仅供展示与向后兼容；实际计算减排量时以 _replacement_co2_factor() 从权威
+# 排放因子表取值，避免此处硬编码与 emission_factors.csv 修订后脱钩。
 REPLACEMENT_MAP = {
     "重型柴油货车": ("新能源物流车", 0.877),      # 0.877 - 0.0 = 0.877
     "中型柴油货车": ("新能源物流车", 0.508),       # 0.508 - 0.0 = 0.508
     "轻型柴油货车": ("新能源物流车", 0.374),       # 0.374 - 0.0 = 0.374
     "微型汽油货车": ("新能源物流车", 0.216),       # 0.216 - 0.0 = 0.216
 }
+
+
+def _replacement_co2_factor(vehicle_type: str) -> float:
+    """替换为新能源后被替换掉的直接运营排放因子 (kg/km)。
+
+    以 emission_factors 的权威值为准，而不是 REPLACEMENT_MAP 里的硬编码：
+    早期写法 `.get(vtype, (None, 0.877))` 会让任何不在映射表中的车型
+    （例如 LNG 重型货车）静默按 0.877 计算，导致 TCO 的减碳分母与减排账
+    不一致——实测 LNG 重卡同一情景下 TCO 报 1403.2 t 而减排账报 1152.0 t。
+    新能源车自身因子为 0，故减排量即原车型因子。
+    """
+    factors = get_all_factors()
+    factor = factors.get(vehicle_type)
+    if factor is None:
+        raise ValueError(f"车型没有排放因子，无法计算替换减排量: {vehicle_type}")
+    return float(factor["co2_kg_per_km"])
 
 # 各车型年均里程参考（用于计算减排量）
 AVG_ANNUAL_KM = {
@@ -330,7 +349,7 @@ def analyze_reduction_scenario(
             replace_num = min(remaining_to_replace, g.count)
             remaining_to_replace -= replace_num
             if replace_num > 0:
-                ef_old = REPLACEMENT_MAP.get(g.vehicle_type, (None, 0.877))[1]
+                ef_old = _replacement_co2_factor(g.vehicle_type)
                 load_adj = calculate_load_adjustment(g.load_factor)
                 co2_red = (replace_num * g.annual_km * ef_old * load_adj) / 1000.0
                 tco_replacements.append({

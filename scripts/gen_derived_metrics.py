@@ -259,8 +259,10 @@ def main() -> dict:
 
     # ---------- F. TCO ----------
     def tco_case(vehicle_type, count, km, load_factor, label, params):
-        from src.engine.reduction import REPLACEMENT_MAP
-        ef_old = REPLACEMENT_MAP.get(vehicle_type, (None, 0.877))[1]
+        # 用权威排放因子而非 REPLACEMENT_MAP 硬编码，避免因子表修订后
+        # 论文指标与实际模型脱钩（旧写法对未知车型静默回退 0.877）。
+        from src.engine.reduction import _replacement_co2_factor
+        ef_old = _replacement_co2_factor(vehicle_type)
         annual_red = count * km * ef_old * calculate_load_adjustment(load_factor) / 1000.0
         r = calculate_single_vehicle_tco(vehicle_type, count, km, annual_red, econ_params=params)
         return {
