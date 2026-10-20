@@ -546,15 +546,39 @@ def find_optimal_reduction(
         baseline_fleet, scenarios, budget_reduction_target=budget_reduction_target
     )
 
-    # 按碳价对标节省额/直接减排量排序
-    scored = []
-    for r in comparison.scenarios:
-        savings = r.cost_savings.get("节省_元", 0)
-        reduction = r.reduction_t
-        cost_efficiency = savings / reduction if reduction > 0 else 0
-        scored.append((r, cost_efficiency))
+    # 排序键：碳价对标的净节省额。
+    #
+    # 早期用「节省_元 / 减排量」作为性价比，有两个失真：
+    #   1) 基线未超预算时所有「节省_元」为 0，比值恒 0，sort 退化成按插入
+    #      顺序取第一个，既非减排最大也非性价比最高；
+    #   2) 该比值在经济学上是反的：节省额本身与减排量正相关，相除等于惩罚
+    #      减排量大的方案。实测某组合减排 179.88 t 省 5578.68 元（比值 31.0）
+    #      反而压过减排 701.6 t 省 6286.58 元（比值 8.96）的方案。
+    # 碳价对标节省额是把减排量折算成钱，直接按金额排序既单调又可比：
+    # 减排越多省越多，同等减排时省得多的优先。
+    MIN_MEANINGFUL_REDUCTION_PCT = 0.05  # 低于 0.05% 视为无实质减排
+    candidates = [
+        r for r in comparison.scenarios if r.reduction_pct >= MIN_MEANINGFUL_REDUCTION_PCT
+    ] or list(comparison.scenarios)
 
-    scored.sort(key=lambda x: x[1], reverse=True)
+    scored = [(r, r.cost_savings.get("节省_元") or 0.0) for r in candidates]
+    has_savings_signal = any(v > 0 for _, v in scored)
+
+    if has_savings_signal:
+        # 先比净节省额，再比减排量打破平局
+        scored.sort(key=lambda x: (x[1], x[0].reduction_t), reverse=True)
+        ranking_basis = "carbon_cost_saving"
+        comparison.recommendations.append(
+            "候选方案按碳价对标的净节省额排序（节省额相同再比减排量），"
+            "而不是按「节省额/减排量」的比值——该比值会惩罚减排量大的方案。"
+        )
+    else:
+        scored.sort(key=lambda x: x[0].reduction_t, reverse=True)
+        ranking_basis = "reduction_amount"
+        comparison.recommendations.append(
+            "基线未超出模拟碳预算，各情景的碳价对标节省额均为 0，"
+            "因此按直接运营减排量而非节省额排序。"
+        )
 
     # 如果有预算，选择性价比最高且在预算内的方案
     if budget is not None and scored:
@@ -565,7 +589,7 @@ def find_optimal_reduction(
             f"当前缺少车辆购置和运营成本数据，未使用 {budget} 元预算做可行性筛选。"
         )
     else:
-        # 无预算限制，选择减排量最大的
+        # 无预算限制，在有效候选中选择排序首位
         if scored:
             best = scored[0][0]
             comparison.scenarios = sorted([best], key=lambda x: x.reduction_pct, reverse=True)

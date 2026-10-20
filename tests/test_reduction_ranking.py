@@ -1,0 +1,69 @@
+"""减排情景排序与候选筛选。
+
+锁定「最优方案」的语义：系统给出的推荐必须是净节省额最大的方案，
+不能因为减排量小、比值大就被排在前面。
+"""
+from __future__ import annotations
+
+from src.engine.calculator import VehicleGroupData
+from src.engine.reduction import analyze_reduction_scenario, find_optimal_reduction
+
+
+FLEET_MIXED = [
+    VehicleGroupData("重型柴油货车", 10, 80000, 0.85),
+    VehicleGroupData("轻型柴油货车", 1, 10000, 0.5),
+]
+FLEET_HEAVY = [VehicleGroupData("重型柴油货车", 50, 80000, 0.85)]
+
+
+def test_recommendation_is_not_a_near_zero_reduction():
+    """满载率微调只减排 0.02%，不能因「性价比」比值大而成为推荐方案。"""
+    result = find_optimal_reduction(FLEET_MIXED)
+    assert result.scenarios, "应至少返回一个候选方案"
+    best = result.scenarios[0]
+    assert best.reduction_pct >= 0.05, (
+        f"推荐方案减排比例仅 {best.reduction_pct:.4f}%，属于无实质减排"
+    )
+
+
+def test_recommendation_matches_max_net_saving():
+    """推荐方案的净节省额应为全部候选中的最大值。"""
+    result = find_optimal_reduction(FLEET_MIXED)
+    best = result.scenarios[0]
+    best_saving = best.cost_savings.get("节省_元") or 0.0
+
+    # 逐个单措施复算，确认没有更高节省额的方案被漏掉
+    candidates = {
+        "替换全部重卡为新能源": {"替换为新能源物流车": 10},
+        "全部重卡换 LNG": {"重型货车更换LNG": 10},
+    }
+    for label, changes in candidates.items():
+        single = analyze_reduction_scenario(FLEET_MIXED, changes)
+        saving = single.cost_savings.get("节省_元") or 0.0
+        assert best_saving >= saving - 1e-6, (
+            f"推荐方案节省 {best_saving:.2f} 元，低于「{label}」的 {saving:.2f} 元"
+        )
+
+
+def test_replacement_beats_partial_combination_for_pure_fleet():
+    """单一柴油车队应推荐全量替换，而不是减排更少的局部组合。"""
+    result = find_optimal_reduction(FLEET_HEAVY)
+    best = result.scenarios[0]
+    assert "替换为新能源" in best.name, f"预期全量替换方案，实际推荐：{best.name}"
+    assert best.reduction_pct > 90, f"全量替换应减排 90% 以上，实际 {best.reduction_pct:.2f}%"
+
+
+def test_ranking_basis_reported_when_no_budget_overrun():
+    """无可比节省额时必须说明排序依据，不能让读者以为在按性价比排序。"""
+    result = find_optimal_reduction(FLEET_HEAVY)
+    notes = " ".join(result.recommendations)
+    has_explicit_basis = ("节省额" in notes) or ("减排量" in notes)
+    assert has_explicit_basis, "推荐说明未交代排序依据"
+
+
+def test_budget_mode_labels_candidate_not_optimal():
+    """给出预算时不能把结果称作「最优方案」，因为预算未真正参与筛选。"""
+    result = find_optimal_reduction(FLEET_MIXED, budget=1_000_000)
+    assert result.scenarios
+    name = result.scenarios[0].name
+    assert "最优方案" not in name, f"预算模式下不应自称最优方案：{name}"
