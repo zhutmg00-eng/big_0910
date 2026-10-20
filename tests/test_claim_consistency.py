@@ -459,3 +459,27 @@ def test_generators_do_not_quote_expert_scores():
                 assert "撤回" in window or "此前版本" in window, (
                     f"{rel} 仍把专家评分 {score} 当作成果引用（窗口内无撤回说明）"
                 )
+
+
+def test_deck_does_not_mix_incompatible_baas_paybacks():
+    """BaaS 重卡回收期在两套电价下分别是 1.04 年与 1.48 年，不得并列出现而不交代电价口径。
+
+    线上真实事故：Slide 3 结论写 1.04 年、Slide 11 推导写 1.46 年，讲稿还专门
+    引导评委追问 1.46，两页并看会当场暴露口径不一致。
+    """
+    rel = "docs/artifacts/defense_presentation_deck.html"
+    text = _read_defense(rel)
+    for value in ("1.04", "1.48", "1.46"):
+        for m in re.finditer(re.escape(value), text):
+            window = text[max(0, m.start() - 400): m.start() + 400]
+            assert ("电价" in window) or ("口径" in window) or ("假设" in window), (
+                f"{rel} 出现回收期 {value} 年但上下文未交代电价/口径假设"
+            )
+
+
+def test_deck_does_not_call_capex_ratio_a_sensitivity_finding():
+    """「降幅 70%」是代数恒等式，不能与敏感性分析并列陈述。"""
+    rel = "docs/artifacts/defense_presentation_deck.html"
+    text = _read_defense(rel)
+    if "69.7%" in text or "降幅 70%" in text:
+        assert "代数恒等式" in text, f"{rel} 引用垫资降幅却未声明其为代数恒等式"
