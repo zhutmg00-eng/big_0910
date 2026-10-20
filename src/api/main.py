@@ -23,7 +23,7 @@ from src.models.policy import PolicyAnswer, PolicyQuestion
 from src.models.tco import VehicleTCORunRequest
 from src.models.uncertainty import UncertaintyRequest
 
-APP_VERSION = "0.4.0"
+APP_VERSION = "0.4.2"
 logger = logging.getLogger("carbon_api")
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(name)s %(message)s")

@@ -114,4 +114,15 @@ def test_uncertainty_endpoint_validates_input():
 
 
 def test_health_reports_new_version():
-    assert client.get("/api/health").json()["version"] == "0.4.0"
+    """健康检查返回的版本必须与 src.api.main.APP_VERSION 一致（单一事实源）。"""
+    from src.api.main import APP_VERSION
+
+    assert client.get("/api/health").json()["version"] == APP_VERSION
+
+
+def test_app_version_not_stale_placeholder():
+    """防止版本号回退到 0.4.0 这类已过期的占位值。"""
+    from src.api.main import APP_VERSION
+
+    major, minor, patch = (int(x) for x in APP_VERSION.split("."))
+    assert (major, minor, patch) >= (0, 4, 2), f"APP_VERSION 仍为过期值 {APP_VERSION}"

@@ -115,9 +115,9 @@ def test_rag_pipeline():
     print(f"\n  用户问题: {query}")
     print(f"  检索结果: {len(results)} 个chunk")
     print(f"  Prompt长度: {len(user_prompt)} 字符")
-    print(f"\n  --- System Prompt (前200字) ---")
+    print("\n  --- System Prompt (前200字) ---")
     print(f"  {SYSTEM_PROMPT[:200]}...")
-    print(f"\n  --- User Prompt (前500字) ---")
+    print("\n  --- User Prompt (前500字) ---")
     print(f"  {user_prompt[:500]}...")
 
     # === 5. 无 LLM 降级回答 ===
