@@ -12,7 +12,6 @@ import os
 import sys
 import shutil
 from pathlib import Path
-from datetime import datetime
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -21,28 +20,19 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm, cm
-from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.units import mm
+from reportlab.lib.colors import HexColor, white
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, KeepTogether, HRFlowable, Image
+    PageBreak, HRFlowable, Image
 )
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.pdfgen import canvas
 
-# 注册中文字体
-FONT_NAME = "ChinaFont"
-for p in ["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simsun.ttc", "C:/Windows/Fonts/simhei.ttf"]:
-    if os.path.exists(p):
-        try:
-            pdfmetrics.registerFont(TTFont("ChinaFont", p))
-            FONT_NAME = "ChinaFont"
-            break
-        except Exception:
-            pass
+# 注册中文字体：复用报告模块的跨平台查找（Windows / macOS / Linux，最后以内置 CID 宋体兜底）。
+# v0.4 之前这里只查 Windows 字体路径，在 macOS 答辩机上会直接报错。
+from src.ui.components.report import FONT_NAME  # noqa: E402
 
 # 设计色彩规范（学术森林绿 + 商务蓝体系）
 C_PRIMARY = HexColor("#175438")     # 沉稳学术深绿

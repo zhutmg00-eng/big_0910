@@ -167,7 +167,6 @@ def handle_policy(payload: dict) -> dict:
 
 
 def handle_compare(payload: dict) -> dict:
-    import asyncio
     from src.api.routes_compare import CompareFleetInput, CompareRequest, compare_enterprises
 
     companies_raw = payload.get("companies", [])
@@ -181,7 +180,7 @@ def handle_compare(payload: dict) -> dict:
             for c in companies_raw
         ]
     )
-    resp = asyncio.run(compare_enterprises(req))
+    resp = compare_enterprises(req)
     return resp.model_dump()
 
 

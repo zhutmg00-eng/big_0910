@@ -19,6 +19,7 @@ data/raw/*.csv
 data/processed/
 data/policy_docs/
 data/chroma_db/
+data/models/
 data/reports/*.pdf
 
 # 保留数据搜索成果

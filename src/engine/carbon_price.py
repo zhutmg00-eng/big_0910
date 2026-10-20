@@ -3,12 +3,13 @@
 成本计算公式：
     Cost = max(Gap, 0) × P_current
     成本区间: [Gap × P_min(90d), Gap × P_max(90d)]
+    90d 窗口统一由 price_window_stats() 计算（近 90 个自然日、仅真实成交点）。
 """
 try:
     import pandas as pd
 except ImportError:
     pd = None
-from typing import Optional, Any
+from typing import Any
 
 
 def load_carbon_price_data(csv_path: str = None) -> Any:
@@ -34,26 +35,58 @@ def load_carbon_price_data(csv_path: str = None) -> Any:
         return None
 
 
-def calculate_price_stats(df) -> dict:
-    """
-    计算碳价统计指标
+WINDOW_DAYS = 90
 
-    Args:
-        df: 碳价历史数据，需包含'收盘价'列
 
-    Returns:
-        dict: 统计指标
+def price_window_stats(df, days: int = WINDOW_DAYS, real_only: bool = True) -> dict:
+    """碳价窗口统计——全项目唯一口径（UI、API、情景成本、derived_metrics 都调用它）。
+
+    口径说明（v0.4.1 统一）：
+    - 窗口 = 序列最后一个日期往前 ``days`` 个**自然日**；
+    - 默认只用 ``数据来源 == 真实数据`` 的观测点。原始序列为周频且 73% 为插值，
+      若按“末 90 行”取窗，实际覆盖约 90 周（1.7 年），会把 2024—2025 年的低价混入，
+      这正是旧版 78.67 与 90.72 两个“近90日均价”打架的根源；
+    - 返回观测点数 ``n_obs``，样本少时由前端提示“仅 n 个真实成交点”。
     """
     if df is None or df.empty:
         return {}
-
-    recent = df[df["日期"] >= df["日期"].max() - pd.Timedelta(days=90)]
+    data = df
+    if real_only and "数据来源" in df.columns:
+        real = df[df["数据来源"] == "真实数据"]
+        if not real.empty:
+            data = real
+    cutoff = df["日期"].max() - pd.Timedelta(days=days)
+    win = data[data["日期"] >= cutoff]
+    if win.empty:
+        win = data.tail(1)
+    prices = win["收盘价"]
     return {
-        "当前价": round(df["收盘价"].iloc[-1], 2),
-        "近90日均价": round(recent["收盘价"].mean(), 2),
-        "近90日最高": round(recent["收盘价"].max(), 2),
-        "近90日最低": round(recent["收盘价"].min(), 2),
-        "波动率(%)": round(recent["收盘价"].pct_change().std() * 100, 2),
+        "current": round(float(df["收盘价"].iloc[-1]), 2),
+        "mean": round(float(prices.mean()), 2),
+        "max": round(float(prices.max()), 2),
+        "min": round(float(prices.min()), 2),
+        # 观测点间隔不规则，只给价格水平的变异系数，不再伪装成“日波动率”
+        "cv_pct": round(float(prices.std(ddof=1) / prices.mean() * 100), 2) if len(prices) > 1 else 0.0,
+        "n_obs": int(len(win)),
+        "window_start": str(win["日期"].min().date()),
+        "window_end": str(win["日期"].max().date()),
+        "basis": f"近{days}个自然日·{'仅真实成交' if real_only else '含插值'}",
+    }
+
+
+def calculate_price_stats(df) -> dict:
+    """碳价统计指标（中文键，供 UI 与报告使用）。"""
+    w = price_window_stats(df)
+    if not w:
+        return {}
+    return {
+        "当前价": w["current"],
+        "近90日均价": w["mean"],
+        "近90日最高": w["max"],
+        "近90日最低": w["min"],
+        "价格离散度CV(%)": w["cv_pct"],
+        "观测点数": w["n_obs"],
+        "统计口径": w["basis"],
     }
 
 
@@ -80,12 +113,9 @@ def estimate_compliance_cost(gap_t: float, price_df=None) -> dict:
         max_price = 85.0
         volatility = 8.5
     else:
-        recent = price_df["收盘价"].tail(90)
-        current_price = round(recent.iloc[-1], 2)
-        avg_price = round(recent.mean(), 2)
-        min_price = round(recent.min(), 2)
-        max_price = round(recent.max(), 2)
-        volatility = round(recent.pct_change().std() * 100, 2)
+        w = price_window_stats(price_df)
+        current_price, avg_price = w["current"], w["mean"]
+        min_price, max_price, volatility = w["min"], w["max"], w["cv_pct"]
 
     if gap_t <= 0:
         judgement = "基本平衡" if abs(gap_t) < 1e-9 else "低于模拟碳预算"
@@ -103,7 +133,7 @@ def estimate_compliance_cost(gap_t: float, price_df=None) -> dict:
         "预算差额_t": round(gap_t, 2),
         "当前碳价_元每吨": current_price,
         "近90日均价_元每吨": avg_price,
-        "碳价波动率": f"{volatility}%",
+        "碳价离散度CV": f"{volatility}%",
         "情景成本_参考价": round(gap_t * current_price, 2),
         "情景成本区间_low": round(gap_t * min_price, 2),
         "情景成本区间_high": round(gap_t * max_price, 2),

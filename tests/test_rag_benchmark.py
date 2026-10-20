@@ -1,5 +1,7 @@
 """RAG 政策问答基准评测持续集成与回归测试"""
 import json
+import os
+
 import pytest
 from pathlib import Path
 from src.rag.vector_store import PolicyVectorStore
@@ -8,6 +10,16 @@ from scripts.evaluate_rag_benchmark import calculate_mrr, wilcoxon_signed_rank
 PROJECT_ROOT = Path(__file__).parent.parent
 GOLD_DATASET_PATH = PROJECT_ROOT / "docs" / "rag_benchmark" / "rag_benchmark_gold_dataset.json"
 
+def _kb_ids_or_skip(vs) -> set:
+    """知识库为空时：本地跳过；CI（RAG_BENCH_REQUIRED=1）直接失败，防止回归测试被静默跳过。"""
+    if vs.count() == 0 or not vs.get_stats()["mode"] == "chromadb":
+        msg = "向量知识库未初始化或处于降级模式，请先运行 python scripts/ingest_policy_docs.py"
+        if os.getenv("RAG_BENCH_REQUIRED") == "1":
+            pytest.fail(msg)
+        pytest.skip(msg)
+    return set(vs._corpus()["ids"])
+
+
 def test_gold_dataset_integrity():
     """验证基准数据集 40 题完整性与 gold_chunk_ids 有效性"""
     assert GOLD_DATASET_PATH.exists(), f"未找到金标评测集: {GOLD_DATASET_PATH}"
@@ -15,10 +27,7 @@ def test_gold_dataset_integrity():
     assert len(dataset) == 40, f"评测题目数应为40，实际为: {len(dataset)}"
 
     vs = PolicyVectorStore()
-    if not hasattr(vs, "collection") or vs.collection is None or vs.collection.count() == 0:
-        pytest.skip("向量知识库未初始化，请先运行 scripts/ingest_policy_docs.py")
-    all_chunks = vs.collection.get(include=["metadatas"])
-    existing_chunk_ids = set(all_chunks["ids"])
+    existing_chunk_ids = _kb_ids_or_skip(vs)
     assert len(existing_chunk_ids) >= 268, f"政策库 chunk 数不足: {len(existing_chunk_ids)}"
 
     for item in dataset:
@@ -33,8 +42,7 @@ def test_hybrid_retrieval_benchmark_performance():
     """验证混合重排检索在标准基准集上的核心性能门槛 (MRR >= 0.45, Recall@10 >= 0.70)"""
     dataset = json.loads(GOLD_DATASET_PATH.read_text(encoding="utf-8"))
     vs = PolicyVectorStore()
-    if not hasattr(vs, "collection") or vs.collection is None or vs.collection.count() == 0:
-        pytest.skip("向量知识库未初始化，请先运行 scripts/ingest_policy_docs.py")
+    _kb_ids_or_skip(vs)
 
     ranks = []
     hits10 = 0

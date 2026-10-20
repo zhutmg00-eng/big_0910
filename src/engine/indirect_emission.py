@@ -9,8 +9,8 @@
 2. 交通运输部《交通运输碳达峰实施方案》营运货运周转量碳强度指标 (gCO2/t·km)
 """
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Union
-from src.engine.calculator import VehicleGroupData, calculate_load_adjustment
+from typing import List, Dict, Optional
+from src.engine.calculator import VehicleGroupData
 
 # ============================================================
 # 1. 2023年官方电网二氧化碳排放因子库 (kgCO2/kWh)

@@ -1,6 +1,6 @@
 fastapi>=0.110
 uvicorn[standard]>=0.29
-streamlit>=1.28
+streamlit>=1.51  # width="stretch" 需要 1.51+，低版本会出现黄色弃用警告
 plotly>=5.0
 reportlab>=4.0
 openai>=1.0
@@ -8,6 +8,8 @@ pandas>=2.0
 numpy>=1.24
 pydantic>=2.0
 chromadb>=0.5
+jieba>=0.42          # 中文分词（BM25 稀疏检索）
+fastembed>=0.4       # ONNX 本地中文嵌入 bge-small-zh（无需 PyTorch）
 python-dotenv>=1.0
 requests>=2.31
 beautifulsoup4>=4.12

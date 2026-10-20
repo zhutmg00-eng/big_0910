@@ -60,4 +60,5 @@ htmlcov/
 
 # Data (large files, mounted as volumes in Docker)
 data/chroma_db/
+data/models/
 data/processed/

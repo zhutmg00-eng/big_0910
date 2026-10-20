@@ -61,7 +61,7 @@ class CompareResponse(BaseModel):
 # ============================================================
 
 @router.post("/compare", response_model=CompareResponse)
-async def compare_enterprises(
+def compare_enterprises(
     request: CompareRequest,
     api_key: str = Depends(verify_api_key),
 ):

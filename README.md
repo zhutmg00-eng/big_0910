@@ -12,10 +12,14 @@
 
 ## 当前功能
 
+> v0.4（2026-10 中期优化）新增：中文 BGE 嵌入 + jieba BM25 + RRF 多路融合检索、蒙特卡洛排放不确定性分析、证据溯源展示、「方法与验证」页、ruff+覆盖率 CI。详见 `docs/优化说明_v0.4.md`。
+
 - 车队直接运营排放核算，支持 6 类内置车型及 CSV 扩展
+- 蒙特卡洛不确定性分析（IPCC 2006 Approach 2）：P5/P50/P95 区间与方差贡献排序
 - 模拟碳预算差额与碳价对标情景
 - 新能源替代、满载率提升和组合减排情景
-- ChromaDB 语义召回与中文标题/关键词混合重排
+- 三路检索融合：jieba 分词 BM25 + 中文稠密向量（bge-small-zh，ONNX 本地推理）+ 字面规则，RRF 倒数排名融合；可选交叉编码器精排
+- 回答附带可溯源证据（来源文件、分块 ID、命中检索器、原文摘录）
 - PDF、DOCX、HTML、Markdown、TXT 政策文档解析与网页噪声清洗
 - 无 LLM 密钥时的可追溯检索式回答
 - FastAPI、Streamlit、PDF 报告、多企业对比和 Docker Compose 部署
@@ -32,8 +36,11 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 Copy-Item .env.example .env
+python scripts/ingest_policy_docs.py --force   # 首次建库（会自动下载约 90MB 中文嵌入模型）
 python -m pytest -q
 ```
+
+> 国内网络下载模型较慢时，先设置 `$env:HF_ENDPOINT="https://hf-mirror.com"`。
 
 启动后端和前端：
 
@@ -77,9 +84,13 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 | `DASHSCOPE_API_KEY` | 通义千问密钥，可选 | 空 |
 | `ZHIPU_API_KEY` | 智谱密钥，可选 | 空 |
 | `OPENAI_API_KEY` | OpenAI LLM 或 Embedding 密钥，可选 | 空 |
-| `EMBEDDING_MODEL` | Chroma 嵌入函数 | `chromadb-default` |
+| `EMBEDDING_MODEL` | 嵌入模型 | `auto`（= `fastembed:BAAI/bge-small-zh-v1.5`） |
+| `RETRIEVAL_MODE` | 检索模式 | `rrf3` |
+| `RERANKER_MODEL` | 交叉编码器精排模型，留空关闭 | 空 |
+| `KB_AUTO_INGEST` | 启动时知识库为空则自动入库 | `0`（Compose 中为 `1`） |
+| `HF_ENDPOINT` | 模型下载镜像 | 官方 |
 
-`EMBEDDING_MODEL` 可设为 `chromadb-default`、`openai:text-embedding-3-small`、`bge-local` 或 `sentence-transformers:<model>`。OpenAI 模式必须同时设置 `OPENAI_API_KEY`。
+`EMBEDDING_MODEL` 可设为 `auto`、`fastembed:<model>`、`chromadb-default`（英文模型，仅作对照）、`openai:text-embedding-3-small` 或 `sentence-transformers:<model>`。
 
 ## 项目结构
 
@@ -100,7 +111,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 │   ├── engine/                 # 排放、预算、碳价和减排引擎
 │   ├── models/                 # Pydantic 输入模型
 │   ├── rag/                    # 解析、混合检索与生成
-├── tests/                      # 106 项自动化测试（含真实基准验证、RAG基准回归、Scope2及PDF文书生成）
+├── tests/                      # 自动化测试（pytest -q 查看实际数量）
 ├── packages/
 │   └── dsh-plugin-carbon-asset/ # DeepSeek Harness 官方生态插件
 ├── Dockerfile
@@ -140,9 +151,12 @@ dsh plugin add ./packages/dsh-plugin-carbon-asset
 | GET | `/api/vehicle-types` | 支持车型和排放因子 | 是 |
 | POST | `/api/calculate` | 直接运营排放、模拟预算和情景成本 | 是 |
 | POST | `/api/compare` | 多企业情景对比 | 是 |
-| POST | `/api/ask` | 政策检索与问答 | 是 |
+| POST | `/api/uncertainty` | 蒙特卡洛排放不确定性分析 | 是 |
+| POST | `/api/ask` | 政策检索与问答（含证据溯源） | 是 |
 | GET | `/api/kb/stats` | 知识库状态 | 是 |
-| POST | `/api/kb/ingest` | 导入 `data/policy_docs` 内文档 | 是 |
+| POST | `/api/kb/ingest` | 导入 `data/policy_docs` 内单份文档 | 是 |
+| POST | `/api/kb/ingest-all` | 批量导入全部政策文档（幂等） | 是 |
+| GET/POST | `/api/tco/*` | 新能源替换 TCO 与回收期 | 是 |
 
 无效车辆数、里程、满载率、企业名、空车队和未知车型统一返回 `422`。
 
@@ -192,7 +206,7 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 - 构建 4 组真实车队基准案例：顺丰控股、中通快递、京东物流（2023 年 ESG/可持续发展报告披露）与 G7易流《公路货运碳账本》/智慧货运中心实测冷链车队，覆盖干支综合、长途甩挂、绿色仓配、冷链城配 4 类业务场景，合计约 5.3 万辆规模，来源全部可公开复核。
   - 数据与出处：`data/raw/real_fleets/`（benchmark_fleets.csv/json + sources_and_methodology.md）
-- 活动水平估算法 vs 企业能源台账法对照验证：`scripts/verify_real_fleets.py`，全样本 MAPE 4.23%（单样本 +3.84%/+1.66%/+4.17%/+7.27%）。
+- 活动水平估算法 vs 企业能源台账法对照验证：`scripts/verify_real_fleets.py`，4 家大型车队标定点误差（等权 MAPE）4.23%，单样本 +3.84%/+1.66%/+4.17%/+7.27%；敏感性网格（50 组输入偏差）误差中位 14.52%、最坏 29.80%。去掉 LF 保守偏置后标定点误差为 3.54%。这是“标定点 + 误差包络 + 适用边界”，不是通用准确率。
   - 报告：`docs/real_fleet_validation_report.md`（含误差根因分析）
   - 敏感性：`docs/sensitivity_report.md` 与 `scripts/sensitivity_analysis.py`（满载率/里程扰动下误差方向恒为正偏，量化了满载率假设这一主要误差来源）
   - 自动化测试：`tests/test_real_fleet_benchmarks.py`
@@ -201,7 +215,7 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 1. **实证车队基准检验（支撑 RQ1/RQ3）**：
    - 4 组公开车队数据集（顺丰、中通、京东、区域冷链实测，合计 51,990 辆）与核算方法学。
-   - 自动化对比活动水平估算法与能源台账法：案例等权 MAPE 4.23%、按排放量加权 2.38%
+   - 自动化对比活动水平估算法与能源台账法：标定点误差：案例等权 MAPE 4.23%、按排放量加权 2.38%（n=4，误差包络见 docs/sensitivity_report.md）
      （`docs/real_fleet_validation_report.md`、`docs/derived_metrics.json`）。
    - 活动参数与披露能耗的一致性核验（等效燃料量比值 + 反推百公里油耗，
      `scripts/check_fleet_ledger_consistency.py`）。
@@ -210,10 +224,12 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
    - 自建 40 题双碳法规与绿色交通基准题库（含金标答案、官方文件溯源与负例拒答设计）。
    - 双人背靠背独立审校与一致性报告（`docs/rag_benchmark/review/`；两位审读者判定完全一致，
      但类别分布不平衡，Kappa 不作为公信力证据）。
-   - 全量 37 份核心法规文档（268 个 Chunk）入库即定块映射，固化 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`。
-   - 纯关键词 vs 纯向量 vs 混合重排 三组检索对照实验与 Wilcoxon 符号秩检验
-     （MRR 0.5036、Source-Hit@3 80.0%、Recall@10 75.0%；与纯关键词检索无显著差异 $p=0.398$，
-     `docs/rag_benchmark/rag_retrieval_experiment_report.md`）。
+   - 金标 chunk 在 v0.4 快照（37 份文档 / 268 块）上定块，固化于 `docs/rag_benchmark/rag_benchmark_gold_dataset.json`；
+     v0.4.1 知识库扩至 39 份 / 281 块后完整重跑，两版结果并列保存（结果文件记录 `kb_fingerprint`）。
+   - 6 组检索方案对照 + 配对 Wilcoxon 检验（Holm 校正）+ Bootstrap 95% CI。当前知识库上默认三路 RRF：
+     Recall@10 80.0%、MRR 0.411 [0.300, 0.531]；纯向量 Recall@10 57.5%；英文默认嵌入纯向量 Recall@10 15%（消融）。
+     三路 RRF 的优势在召回（Top-10 覆盖），MRR 与字面启发式、BM25 无显著差异，详见
+     `docs/rag_benchmark/rag_retrieval_experiment_report.md`。
 3. **Scope 2 外购电间接排放与运输周转量核算**：
    - 依据生态环境部、国家统计局《关于发布 2023 年电力二氧化碳排放因子的公告》（2025 年第 47 号）
      收录全国、区域（7 个）与省级（30 个）电网排放因子。
@@ -221,7 +237,7 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
      （重卡 0.5847、轻卡 1.0686 kgCO₂/kWh）。
    - 支持货物周转量（万吨公里）核算及营运运输碳排放强度（gCO₂/(t·km)）对标
      （`src/engine/indirect_emission.py`）。
-4. **专家咨询评审记录**：
+4. **专家咨询评审记录**（⚠️ 下列 `docs/expert_review/` 材料目前不在仓库中，答辩前需补交原件或删除本段）：
    - 制定涵盖科学性、检索保真度、落地性与免责审慎度四个维度的量化量表
      （`docs/expert_review/评审指标规范与量化评分量表.md`）。
    - 两位受邀专家（高校交通能源方向教师、物流企业 ESG 负责人）背靠背独立评分，
@@ -231,7 +247,7 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 ### 自动化测试与 CI 流水线
 
-- 本地运行 `python -m pytest`：**117 项自动化测试全部通过**。
+- 本地运行 `python -m pytest -q`（v0.4.1 在完整知识库 + 完整依赖下实测见下方“测试基线”；知识库为空时 2 项 RAG 基准测试会 skip，CI 中设置 `RAG_BENCH_REQUIRED=1` 改为失败）。
 - GitHub Actions 流水线（`.github/workflows/ci.yml`）：集成系统字体、依赖安装、政策定块入库及全量测试自动执行。
 
 ## 许可

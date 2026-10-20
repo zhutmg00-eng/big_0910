@@ -1,5 +1,4 @@
 """多企业对比 API 测试"""
-import pytest
 import sys
 from pathlib import Path
 

@@ -4,16 +4,14 @@
 """
 import os
 from datetime import datetime
-from pathlib import Path
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm, cm
-from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.colors import HexColor, white
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, KeepTogether, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, PageBreak, HRFlowable
 )
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -34,8 +32,11 @@ _FONT_PATHS = [
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
     "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
     "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/System/Library/Fonts/PingFang.ttc",
+    "/Library/Fonts/Arial Unicode.ttf",
 ]
+# 注意：v0.3 列表末尾的 DejaVuSans 不含中文字形，在 Linux/Docker 中会被"成功"注册，
+# 导致 PDF 中文全部变成方框。v0.4 删除该项，并以 reportlab 内置 CID 字体兜底。
 
 
 def _register_chinese_font():
@@ -46,20 +47,39 @@ def _register_chinese_font():
         if os.path.exists(fpath):
             try:
                 # 注册字体名
-                pdfmetrics.registerFont(TTFont("ChinaFont", fpath))
+                if fpath.lower().endswith(".ttc"):
+                    pdfmetrics.registerFont(TTFont("ChinaFont", fpath, subfontIndex=0))
+                else:
+                    pdfmetrics.registerFont(TTFont("ChinaFont", fpath))
                 FONT_NAME = "ChinaFont"
                 FONT_REGISTERED = True
                 return
             except Exception:
                 continue
 
-    # 字体注册失败，记录标记
+    # 兜底：Adobe-GB1 CID 字体（reportlab 内置，无需任何字体文件，跨平台可用）
+    try:
+        from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+
+        pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
+        FONT_NAME = "STSong-Light"
+        FONT_REGISTERED = True
+        return
+    except Exception:
+        pass
     FONT_NAME = "Helvetica"
     FONT_REGISTERED = False
 
 
 # 初始化注册
 _register_chinese_font()
+if FONT_REGISTERED:
+    # 中文字体没有独立粗体/斜体文件：把 <b>/<i> 映射回同一字体，避免 reportlab 报
+    # “Can't map determine family/bold/italic”。
+    from reportlab.lib.fonts import addMapping
+    for _bold in (0, 1):
+        for _italic in (0, 1):
+            addMapping(FONT_NAME, _bold, _italic, FONT_NAME)
 
 # ============================================================
 # 样式定义
@@ -468,7 +488,7 @@ def generate_carbon_report(
         cost_table_data.append(["预算差额", f"{_fmt_number(compliance_cost.get('预算差额_t', gap_t))} tCO2e"])
         cost_table_data.append(["当前碳价", f"{_fmt_number(compliance_cost.get('当前碳价_元每吨', 0))} 元/tCO2e"])
         cost_table_data.append(["近90日均价", f"{_fmt_number(compliance_cost.get('近90日均价_元每吨', 0))} 元/tCO2e"])
-        cost_table_data.append(["碳价波动率", compliance_cost.get("碳价波动率", "-")])
+        cost_table_data.append(["碳价离散度(CV)", compliance_cost.get("碳价离散度CV", "-")])
         cost_table_data.append(["情景成本（参考价）", f"{_fmt_number(compliance_cost.get('情景成本_参考价', 0), 0)} 元"])
         cost_table_data.append(["情景成本区间",
                                 f"{_fmt_number(compliance_cost.get('情景成本区间_low', 0), 0)} ~ "

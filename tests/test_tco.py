@@ -5,7 +5,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pytest
 from fastapi.testclient import TestClient
 
 from src.api.main import app
@@ -14,10 +13,8 @@ from src.engine.reduction import analyze_reduction_scenario
 from src.engine.tco import (
     DEFAULT_TCO_BENCHMARKS,
     TCOEconomicParameters,
-    VehicleTCOBenchmark,
     calculate_fleet_tco,
     calculate_single_vehicle_tco,
-    get_tco_benchmark,
 )
 
 client = TestClient(app)

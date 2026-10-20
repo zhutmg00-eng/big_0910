@@ -44,11 +44,47 @@ _NAVIGATION_LINE = re.compile(
 )
 
 
+_CJK = r"\u3400-\u9fff\uf900-\ufaff"
+_CJK_PUNCT = "，、；：（）《》“”‘’—…"
+_SENTENCE_END = "。！？；：”）》"
+_PUA_OR_BAD = re.compile(r"[\ue000-\uf8ff\ufffd\u25a1\u22a0\uf06c]")
+_CJK_GAP = re.compile(rf"(?<=[{_CJK}{_CJK_PUNCT}])[ \t\u3000]+(?=[{_CJK}{_CJK_PUNCT}])")
+_HEADING_START = re.compile(r"^(?:第[一二三四五六七八九十百零\d]+[章节条款部分]|[一二三四五六七八九十]+、|（[一二三四五六七八九十\d]+）|\d+[.、．])")
+
+
+def join_cjk_wrapped_lines(text: str) -> str:
+    """修复 PDF 版式换行：把中文句子中间被硬换行/空格拆开的地方重新拼接。
+
+    PDF 抽取会在每个排版行末插入换行，后续再被替换为空格时就会出现
+    “规 模化”“制修 订”这种断词，既影响 BM25 分词，也影响演示观感。
+    规则：上一行不以句末标点结尾、下一行不是新条款编号时，两行直接相连。
+    """
+    text = _PUA_OR_BAD.sub("", text)
+    out: list[str] = []
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if not line:
+            if out and out[-1] != "":
+                out.append("")
+            continue
+        if (
+            out and out[-1]
+            and re.search(rf"[{_CJK}{_CJK_PUNCT}A-Za-z0-9]$", out[-1])
+            and out[-1][-1] not in _SENTENCE_END
+            and re.match(rf"[{_CJK}{_CJK_PUNCT}]", line)
+            and not _HEADING_START.match(line)
+        ):
+            out[-1] += line
+        else:
+            out.append(line)
+    return _CJK_GAP.sub("", "\n".join(out))
+
+
 def parse_pdf(file_path: Path) -> str:
-    """解析PDF文档为纯文本"""
+    """解析PDF文档为纯文本（含中文断行修复）"""
     with fitz.open(file_path) as doc:
         text_parts = [page.get_text() for page in doc]
-    return "\n".join(text_parts)
+    return join_cjk_wrapped_lines("\n".join(text_parts))
 
 
 def parse_docx(file_path: Path) -> str:

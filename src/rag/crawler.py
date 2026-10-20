@@ -5,7 +5,7 @@
 """
 import requests
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List
 import time
 
 # 重点政策来源

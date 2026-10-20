@@ -12,14 +12,33 @@ from src.ui.navigation import navigate_to
 from src.ui.theme import empty_state, notice, page_header
 
 
+RETRIEVER_LABELS = {"bm25": "BM25", "vector": "语义向量", "keyword": "字面规则", "rerank": "精排"}
+
+
+def _render_sources(sources: list, latency_ms: float | None = None) -> None:
+    """展示可溯源的证据段落：来源文件、分块 ID、命中检索器与原文摘录。"""
+    if not sources:
+        return
+    title = f"证据溯源 · {len(sources)} 条" + (f" · {latency_ms:.0f} ms" if latency_ms else "")
+    with st.expander(title):
+        for i, src in enumerate(sources, 1):
+            tags = " · ".join(RETRIEVER_LABELS.get(r, r) for r in src.get("retrievers", []))
+            rel = src.get("relevance")
+            st.markdown(
+                f"**[{i}] {src.get('source', '未知来源')}**"
+                + (f"（{src['date']}）" if src.get("date") else "")
+                + (f"  \n`{src.get('chunk_id', '')}`" if src.get("chunk_id") else "")
+                + (f" · 命中：{tags}" if tags else "")
+                + (f" · 相关度 {rel:.2f}" if isinstance(rel, (int, float)) else "")
+            )
+            if src.get("excerpt"):
+                st.caption(src["excerpt"])
+
+
 def _render_message(message: dict) -> None:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        sources = message.get("sources", [])
-        if sources:
-            with st.expander("查看参考来源"):
-                for source in sources:
-                    st.write(f"{source.get('source', '未知来源')} · {source.get('date', '日期未知')}")
+        _render_sources(message.get("sources", []), message.get("latency_ms"))
 
 
 def render_policy_advisor() -> None:
@@ -76,12 +95,10 @@ def render_policy_advisor() -> None:
                 answer = result.get("answer", "未检索到可用回答。")
                 sources = result.get("retrieved_sources", [])
                 st.markdown(answer)
-                if sources:
-                    with st.expander("查看参考来源"):
-                        for source in sources:
-                            st.write(f"{source.get('source', '未知来源')} · {source.get('date', '日期未知')}")
+                _render_sources(sources, result.get("latency_ms"))
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": answer, "sources": sources}
+                    {"role": "assistant", "content": answer, "sources": sources,
+                     "latency_ms": result.get("latency_ms")}
                 )
             except requests.RequestException as exc:
                 st.error(f"无法连接政策检索服务（{API_BASE_URL}）：{exc}")

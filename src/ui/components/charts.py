@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import plotly.graph_objects as go
 
@@ -114,6 +114,31 @@ def plot_reduction_comparison(baseline: float, scenario: float) -> go.Figure:
     fig.update_layout(xaxis_title="tCO2e", showlegend=False, margin=dict(l=20, r=90, t=58, b=40))
     fig.update_xaxes(showgrid=True, gridcolor=GRID, rangemode="tozero")
     fig.update_yaxes(autorange="reversed")
+    return fig
+
+
+def plot_carbon_price_history(df) -> go.Figure:
+    """碳价序列：真实成交点（实心）与插值点（空心浅色）分开绘制。"""
+    real = df[df["数据来源"] == "真实数据"]
+    interp = df[df["数据来源"] != "真实数据"]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df["日期"], y=df["收盘价"], mode="lines", name="趋势线（含插值）",
+        line=dict(color=GRAY, width=1, dash="dot"), hoverinfo="skip",
+    ))
+    fig.add_trace(go.Scatter(
+        x=interp["日期"], y=interp["收盘价"], mode="markers", name=f"插值点 · {len(interp)}",
+        marker=dict(color="rgba(0,0,0,0)", size=5, line=dict(color=AMBER, width=1)),
+        hovertemplate="%{x|%Y-%m-%d}<br>插值 %{y:.2f} 元<extra></extra>",
+    ))
+    fig.add_trace(go.Scatter(
+        x=real["日期"], y=real["收盘价"], mode="markers", name=f"真实成交 · {len(real)}",
+        marker=dict(color=GREEN, size=7),
+        hovertemplate="%{x|%Y-%m-%d}<br>真实 %{y:.2f} 元<extra></extra>",
+    ))
+    _apply_layout(fig, title="全国碳市场收盘价（真实 vs 插值）", height=340)
+    fig.update_layout(yaxis_title="元/tCO2e",
+                      legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left", x=0))
     return fig
 
 
@@ -354,4 +379,59 @@ def plot_tco_cost_breakdown(
         margin=dict(l=35, r=20, t=75, b=40),
     )
     fig.update_yaxes(showgrid=True, gridcolor=GRID)
+    return fig
+
+
+def plot_uncertainty_histogram(hist: dict, point: float, p5: float, p95: float) -> go.Figure:
+    """蒙特卡洛抽样分布直方图，标注点估计与 90% 区间。"""
+    fig = go.Figure(go.Bar(
+        x=hist.get("bin_centers", []), y=hist.get("counts", []),
+        marker_color=TEAL, opacity=0.85, name="抽样频数",
+        hovertemplate="%{x:,.0f} tCO2e<br>频数 %{y}<extra></extra>",
+    ))
+    fig.add_vrect(x0=p5, x1=p95, fillcolor=GREEN, opacity=0.08, line_width=0)
+    fig.add_vline(x=point, line=dict(color=AMBER, width=2, dash="dash"),
+                  annotation_text=f"点估计 {point:,.0f}", annotation_position="top right")
+    _apply_layout(fig, title="排放量概率分布（阴影为 90% 区间）", height=360)
+    fig.update_xaxes(title="年度直接运营排放 (tCO2e)", gridcolor=GRID)
+    fig.update_yaxes(title="频数", gridcolor=GRID)
+    fig.update_layout(showlegend=False, bargap=0.05)
+    return fig
+
+
+def plot_uncertainty_contributions(contrib: dict, top: int = 8) -> go.Figure:
+    """方差贡献（Spearman ρ² 归一化）横向条形图。"""
+    items = list(contrib.items())[:top][::-1]
+    fig = go.Figure(go.Bar(
+        x=[v * 100 for _, v in items], y=[k for k, _ in items], orientation="h",
+        marker_color=[AMBER if k.startswith("排放因子") else GREEN for k, _ in items],
+        text=[f"{v:.0%}" for _, v in items], textposition="outside",
+        hovertemplate="%{y}: %{x:.1f}%<extra></extra>",
+    ))
+    _apply_layout(fig, title="不确定性来源贡献（先改进哪项数据）", height=360)
+    fig.update_xaxes(title="方差贡献 (%)", gridcolor=GRID, range=[0, max([v * 100 for _, v in items] + [10]) * 1.25])
+    fig.update_yaxes(automargin=True)
+    return fig
+
+
+def plot_rag_benchmark(summary: dict, labels: dict) -> go.Figure:
+    """RAG 各检索方案 MRR（含 95% CI 误差线）与 Recall@10。"""
+    modes = list(summary.keys())
+    names = [labels.get(m, m) for m in modes]
+    mrr = [summary[m]["MRR"] for m in modes]
+    err_hi = [summary[m].get("MRR_CI95", [v, v])[1] - v for m, v in zip(modes, mrr)]
+    err_lo = [v - summary[m].get("MRR_CI95", [v, v])[0] for m, v in zip(modes, mrr)]
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=names, y=mrr, name="MRR", marker_color=GREEN,
+        error_y=dict(type="data", array=err_hi, arrayminus=err_lo, color=INK, thickness=1.2),
+        text=[f"{v:.3f}" for v in mrr], textposition="inside", insidetextanchor="start",
+    ))
+    fig.add_trace(go.Scatter(
+        x=names, y=[summary[m]["Recall@10"] for m in modes], name="Recall@10",
+        mode="lines+markers", line=dict(color=AMBER, width=2), marker=dict(size=9),
+    ))
+    _apply_layout(fig, title="检索方案对照（40 题金标集，误差线为 95% Bootstrap CI）", height=420)
+    fig.update_yaxes(range=[0, 1], gridcolor=GRID, tickformat=".0%")
+    fig.update_layout(legend=dict(orientation="h", y=-0.18))
     return fig

@@ -78,7 +78,7 @@ def run_e2e_demo():
         print(f"预算差额: {cost['预算差额_t']:,.1f} tCO2e")
         print(f"当前碳价: {cost['当前碳价_元每吨']} 元/吨")
         print(f"近90日均价: {cost.get('近90日均价_元每吨', 'N/A')} 元/吨")
-        print(f"碳价波动率: {cost.get('碳价波动率', 'N/A')}")
+        print(f"碳价离散度CV: {cost.get('碳价离散度CV', 'N/A')}")
         print(f"\n情景成本: {cost['情景成本_参考价']:,.0f} 元")
         print(f"成本区间: {cost['情景成本区间_low']:,.0f} ~ {cost['情景成本区间_high']:,.0f} 元")
     elif "预算结余_t" in cost:

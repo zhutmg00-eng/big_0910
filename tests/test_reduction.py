@@ -9,7 +9,6 @@ from src.engine.calculator import VehicleGroupData, calculate_emission
 from src.engine.quota import estimate_quota_gap
 from src.engine.reduction import (
     ReductionScenario,
-    ReductionAnalysis,
     _build_scenario_fleet,
     _summarize_fleet,
     analyze_reduction_scenario,

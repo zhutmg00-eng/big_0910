@@ -1,0 +1,11 @@
+# 代码规范检查（CI 中执行：ruff check src tests）
+line-length = 120
+target-version = "py310"
+
+[lint]
+select = ["E9", "F", "B006", "B008"]
+ignore = ["B008"]  # FastAPI Depends()/Security() 默认参数是官方用法
+
+[lint.per-file-ignores]
+"tests/*" = ["E402"]
+"**/__init__.py" = ["F401", "F403"]

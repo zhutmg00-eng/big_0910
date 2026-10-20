@@ -22,8 +22,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends fonts-wqy-zenhei
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt pytest-cov
+      - name: Cache embedding models
+        uses: actions/cache@v4
+        with:
+          path: data/models
+          key: models-bge-small-zh-v1.5
+      - name: Lint (ruff)
+        run: |
+          python -m pip install ruff
+          ruff check src tests
       - name: Ingest policy documents
-        run: python scripts/ingest_policy_docs.py
+        run: python scripts/ingest_policy_docs.py --force
       - name: Run tests
-        run: python -m pytest -q
+        env:
+          RAG_BENCH_REQUIRED: "1"
+        run: python -m pytest -q --cov=src --cov-report=term-missing:skip-covered
+      - name: RAG benchmark regression
+        run: python scripts/evaluate_rag_benchmark.py

@@ -1,0 +1,12 @@
+{
+  "base_mode": "rrf3",
+  "candidates": 20,
+  "model": "BAAI/bge-reranker-base",
+  "max_chars": 300,
+  "MRR": 0.3645,
+  "Recall@1": 0.225,
+  "Recall@10": 0.7,
+  "sec_per_query": 9.1,
+  "hardware": "2 vCPU 无 GPU",
+  "conclusion": "精排后指标反而低于不精排的 rrf3（MRR 0.433），原因可能是段落被截断后丢掉了关键条款，而且 base 模型对长段落中文法规的区分度有限。因此精排默认关闭，通过环境变量 RERANKER_MODEL 开启，留作 GPU 环境下的扩展实验。"
+}

@@ -27,6 +27,9 @@ class RetrievedSource(BaseModel):
     source: str = Field(..., description="来源文件名")
     date: str = Field("", description="发布日期")
     relevance: Optional[float] = Field(None, description="相关度")
+    chunk_id: str = Field("", description="知识库分块 ID（可溯源到原文）")
+    excerpt: str = Field("", description="命中段落摘录")
+    retrievers: list[str] = Field(default_factory=list, description="命中该段落的检索器")
 
 
 class PolicyAnswer(BaseModel):
@@ -34,3 +37,4 @@ class PolicyAnswer(BaseModel):
     question: str
     retrieved_sources: list[RetrievedSource]
     answer: str
+    latency_ms: Optional[float] = Field(None, description="检索+生成耗时（毫秒）")

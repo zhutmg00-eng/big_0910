@@ -6,10 +6,24 @@ import requests
 import streamlit as st
 
 from src.ui.api_client import API_BASE_URL, api_post, show_api_error
-from src.ui.components.charts import plot_emission_pie, plot_quota_comparison
+from src.ui.components.charts import (
+    plot_emission_pie,
+    plot_quota_comparison,
+    plot_uncertainty_contributions,
+    plot_uncertainty_histogram,
+)
 from src.ui.navigation import navigate_to
 from src.ui.theme import empty_state, notice, page_header
 
+
+# 演示用示例车队：干线 + 城配混合结构，便于答辩现场一键复现完整流程
+SAMPLE_FLEET = [
+    {"vehicle_type": "重型柴油货车", "count": 40, "annual_km": 100000, "load_factor": 0.62},
+    {"vehicle_type": "LNG重型货车", "count": 15, "annual_km": 90000, "load_factor": 0.70},
+    {"vehicle_type": "中型柴油货车", "count": 30, "annual_km": 50000, "load_factor": 0.68},
+    {"vehicle_type": "轻型柴油货车", "count": 60, "annual_km": 35000, "load_factor": 0.55},
+    {"vehicle_type": "新能源物流车", "count": 25, "annual_km": 30000, "load_factor": 0.60},
+]
 
 VEHICLE_TYPES = [
     "重型柴油货车",
@@ -129,6 +143,12 @@ def render_inventory() -> None:
         load_factor_pct = c4.slider("平均满载率", 0, 100, 75, 5, format="%d%%")
         add_vehicle = st.form_submit_button("添加到车队", type="primary")
 
+    if not st.session_state.fleet_data:
+        if st.button("载入示例车队（5 类车型 · 170 辆）", help="用于演示完整流程，可随后修改或删除"):
+            st.session_state.fleet_data = [dict(x) for x in SAMPLE_FLEET]
+            st.session_state.company_name = "示例物流公司"
+            st.rerun()
+
     if add_vehicle:
         st.session_state.fleet_data.append(
             {
@@ -141,6 +161,7 @@ def render_inventory() -> None:
         st.session_state.pop("carbon_result", None)
         st.session_state.pop("reduction_result", None)
         st.session_state.pop("report_path", None)
+        st.session_state.pop("uncertainty_result", None)
         st.rerun()
 
     fleet = st.session_state.fleet_data
@@ -169,6 +190,7 @@ def render_inventory() -> None:
             st.session_state.pop("carbon_result", None)
             st.session_state.pop("reduction_result", None)
             st.session_state.pop("report_path", None)
+            st.session_state.pop("uncertainty_result", None)
             st.rerun()
 
         if st.button("计算排放基线", type="primary", width="stretch"):
@@ -245,6 +267,8 @@ def _render_inventory_result(result: dict) -> None:
     ]
     st.dataframe(emission_rows, width="stretch", hide_index=True)
 
+    _render_uncertainty_section()
+
     st.markdown("### 碳价对标情景")
     cost = result.get("scenario_cost", {})
     if cost.get("情景成本_参考价") is not None:
@@ -270,6 +294,63 @@ def _render_inventory_result(result: dict) -> None:
         ]
     st.table(cost_rows)
     notice("口径提示", cost.get("备注", result.get("methodology_note", "科研情景估算，仅供方案比较。")), amber=True)
+
+
+def _render_uncertainty_section() -> None:
+    st.markdown("### 不确定性分析")
+    st.caption(
+        "点估计掩盖了排放因子的多来源差异与活动数据误差。按 IPCC 2006 Approach 2 做蒙特卡洛抽样，"
+        "给出 90% 置信区间，并指出哪项数据最值得优先改进。"
+    )
+    c1, c2, c3 = st.columns([1.2, 1, 1])
+    quality = c1.radio(
+        "活动数据质量", ["台账", "抽样", "估计"], index=1, horizontal=True,
+        help="台账/GPS：里程 CV 5%；抽样统计：CV 10%；经验估计：CV 20%",
+    )
+    n_samples = c2.select_slider("抽样次数", options=[2000, 5000, 10000, 20000], value=10000)
+    run = c3.button("运行蒙特卡洛", width="stretch")
+    if run:
+        try:
+            resp = api_post("/api/uncertainty", {
+                "fleet": st.session_state.fleet_data, "n_samples": n_samples, "data_quality": quality,
+            })
+            if resp.status_code != 200:
+                show_api_error(resp)
+            else:
+                st.session_state.uncertainty_result = resp.json()
+        except requests.RequestException as exc:
+            st.error(f"无法连接核算服务（{API_BASE_URL}）：{exc}")
+
+    u = st.session_state.get("uncertainty_result")
+    if not u:
+        return
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("点估计", f"{u['point_estimate_t']:,.0f} t")
+    m2.metric("P50 中位数", f"{u['p50_t']:,.0f} t")
+    m3.metric("90% 区间", f"{u['p5_t']:,.0f} – {u['p95_t']:,.0f}")
+    m4.metric("相对不确定度", f"±{u['relative_uncertainty_pct']:.1f}%")
+    left, right = st.columns(2)
+    with left:
+        st.plotly_chart(
+            plot_uncertainty_histogram(u["histogram"], u["point_estimate_t"], u["p5_t"], u["p95_t"]),
+            width="stretch", config={"displayModeBar": False},
+        )
+    with right:
+        st.plotly_chart(plot_uncertainty_contributions(u["contributions"]), width="stretch",
+                        config={"displayModeBar": False})
+    top = next(iter(u["contributions"]), None)
+    if top:
+        bias = (u["mean_t"] - u["point_estimate_t"]) / u["point_estimate_t"] * 100 if u["point_estimate_t"] else 0
+        tip = f"最大不确定性来源是「{top}」，优先用台账或 GPS 数据替换该项估计值，区间收窄最明显。"
+        if abs(bias) >= 1:
+            tip += f" 抽样均值较点估计{'偏高' if bias > 0 else '偏低'} {abs(bias):.1f}%，说明因子分布不对称（如 LNG 实测值普遍高于指南值）。"
+        notice("解读", tip)
+    with st.expander("排放因子抽样分布（三角分布参数）"):
+        st.dataframe(
+            [{"车型": k, "分布": v["dist"], "下限": v["low"], "众数(基准)": v["mode"], "上限": v["high"],
+              "来源数": v["n_sources"]} for k, v in u["ef_distributions"].items()],
+            hide_index=True, width="stretch",
+        )
 
 
 def render_factors() -> None:

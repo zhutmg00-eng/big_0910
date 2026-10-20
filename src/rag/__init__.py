@@ -1,14 +1,21 @@
 """RAG政策解析助手 - 完整调用链路"""
-from src.rag.vector_store import PolicyVectorStore
+import hashlib
+import logging
+from pathlib import Path
+
+from src.rag.vector_store import PolicyVectorStore, get_vector_store
 from src.rag.generator import SYSTEM_PROMPT, build_retrieval_answer, build_user_prompt, call_llm
 from src.config import RETRIEVAL_TOP_K
+from src.rag.parser import _CJK_GAP
+
+logger = logging.getLogger(__name__)
 
 
 class PolicyAdvisor:
     """碳交易政策顾问"""
 
     def __init__(self, vector_store: PolicyVectorStore = None):
-        self.vs = vector_store or PolicyVectorStore()
+        self.vs = vector_store or get_vector_store()
 
     def ask(
         self,
@@ -29,8 +36,12 @@ class PolicyAdvisor:
         """
         top_k = top_k or RETRIEVAL_TOP_K
 
-        # 1. 检索
-        retrieved = self.vs.search(question, k=top_k)
+        # 1. 检索（第二道兜底：检索层任何异常都不让 /api/ask 返回 500）
+        try:
+            retrieved = self.vs.search(question, k=top_k)
+        except Exception as exc:  # pragma: no cover - 防御性
+            logger.exception("知识库检索失败，返回空证据：%s", exc)
+            retrieved = []
 
         # 2. 构建Prompt
         user_prompt = build_user_prompt(question, retrieved, carbon_profile)
@@ -49,6 +60,9 @@ class PolicyAdvisor:
                         round(1 - r["distance"], 3)
                         if r.get("distance") is not None else None
                     ),
+                    "chunk_id": r.get("id", ""),
+                    "excerpt": _excerpt(r.get("text", "")),
+                    "retrievers": r.get("retrievers", []),
                 }
                 for r in retrieved
             ],
@@ -66,7 +80,59 @@ class PolicyAdvisor:
         return len(chunks)
 
 
+def _excerpt(text: str, limit: int = 220) -> str:
+    body = text.split("\n", 1)[1] if text.startswith("来源文档：") and "\n" in text else text
+    body = " ".join(body.split())
+    body = _CJK_GAP.sub("", body)  # 中文之间不保留排版空格
+    return body[:limit] + ("…" if len(body) > limit else "")
+
+
+def _guess_doc_date(name: str) -> str:
+    for year in ("2027", "2026", "2025", "2024", "2023", "2022", "2021", "2020"):
+        if year in name:
+            return year
+    return ""
+
+
+def ingest_directory(directory: Path, vector_store: PolicyVectorStore | None = None,
+                     force: bool = False) -> dict:
+    """批量导入目录下的政策文档（md/txt/pdf/docx/html）。幂等：同名文档整体替换。"""
+    from src.rag.parser import process_document
+
+    vs = vector_store or get_vector_store()
+    files = sorted(
+        f for f in Path(directory).iterdir()
+        if f.suffix.lower() in {".md", ".txt", ".pdf", ".docx", ".html", ".htm"}
+    )
+    if force:
+        vs.clear()
+    known = {} if force else vs.source_hashes()
+    total, docs, skipped = 0, 0, 0
+    for f in files:
+        digest = hashlib.sha1(f.read_bytes()).hexdigest()[:16]
+        if known.get(f.name) == digest:  # 内容未变：跳过，避免每次启动都重算嵌入
+            skipped += 1
+            continue
+        date = _guess_doc_date(f.name)
+        chunks = process_document(f, date)
+        if not chunks:
+            continue
+        for c in chunks:
+            c.setdefault("metadata", {})["doc_hash"] = digest
+        vs.add_documents(chunks, f.name, date)
+        total += len(chunks)
+        docs += 1
+    # 目录中已删除的文档同步移出知识库
+    removed = [src for src in known if src not in {f.name for f in files}]
+    for src in removed:
+        vs.remove_source(src)
+    return {"documents": docs, "chunks": total, "skipped": skipped, "removed": len(removed),
+            "kb_documents": len(vs.source_hashes()), "kb_chunks": vs.count()}
+
+
 __all__ = [
+    "ingest_directory",
+    "get_vector_store",
     "PolicyAdvisor",
     "PolicyVectorStore",
     "SYSTEM_PROMPT",

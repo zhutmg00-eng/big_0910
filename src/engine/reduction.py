@@ -17,7 +17,7 @@ from typing import List, Optional
 from src.engine.calculator import VehicleGroupData, calculate_emission, calculate_load_adjustment
 from src.engine.quota import DEFAULT_SCENARIO_REDUCTION_TARGET, estimate_quota_gap
 from src.engine.carbon_price import estimate_compliance_cost, load_carbon_price_data
-from src.engine.tco import calculate_fleet_tco, calculate_single_vehicle_tco
+from src.engine.tco import calculate_fleet_tco
 
 
 # ============================================================
@@ -440,7 +440,7 @@ def find_optimal_reduction(
             base_measures.append({
                 "name": f"将{group.count}辆{group.vehicle_type}替换为新能源物流车",
                 "count": group.count,
-                "change_key": f"替换为新能源物流车",
+                "change_key": "替换为新能源物流车",
             })
 
     # 为柴油车型生成"更换LNG"措施
@@ -497,7 +497,7 @@ def find_optimal_reduction(
                     }
                     scenarios.append(ReductionScenario(
                         name=f"组合：{m1['name']} + {m2['name']} + {m3['name']}",
-                        description=f"三措施组合",
+                        description="三措施组合",
                         changes=combined_changes,
                     ))
 

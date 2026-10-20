@@ -21,13 +21,18 @@ services:
       - CORS_ORIGINS=http://localhost:8501,http://localhost:3000
       - APP_API_KEY=${APP_API_KEY:-dev-key}
       - PYTHONUNBUFFERED=1
+      - KB_AUTO_INGEST=1
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-auto}
+      - RETRIEVAL_MODE=${RETRIEVAL_MODE:-rrf3}
+      - HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 15s
+      start_period: 120s  # 首次启动需下载嵌入模型并建库
 
   # ---- Streamlit Web UI ----
   web:

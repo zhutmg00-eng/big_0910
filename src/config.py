@@ -16,6 +16,7 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 POLICY_DOCS_DIR = DATA_DIR / "policy_docs"
 CHROMA_DB_DIR = DATA_DIR / "chroma_db"
+MODEL_CACHE_DIR = Path(os.getenv("MODEL_CACHE_DIR", str(DATA_DIR / "models")))
 
 # 确保目录存在
 for d in [DATA_DIR, RAW_DIR, PROCESSED_DIR, POLICY_DOCS_DIR, CHROMA_DB_DIR]:
@@ -29,10 +30,11 @@ DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
 ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
-LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-chat")
+LLM_MODEL = os.getenv("LLM_MODEL") or "deepseek-chat"
 
 # Embedding配置
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "chromadb-default")
+# auto：已安装 fastembed 时使用中文 BGE 模型（推荐），否则降级为 chromadb-default
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "auto")
 
 # 根据模型选择API配置
 def get_llm_config(model: str = None) -> dict:
@@ -76,6 +78,11 @@ LOAD_FACTOR_THRESHOLD = 0.75
 CHUNK_SIZE = 800       # 政策文档切分大小（字符）
 CHUNK_OVERLAP = 150    # 重叠字符数
 RETRIEVAL_TOP_K = 5    # 检索返回数量
+# 默认检索模式：rrf3 = BM25 + 稠密向量 + 字面规则 三路倒数排名融合（Recall@10 最高，见 docs/rag_benchmark）
+# 可选：rrf3 | rrf | rerank | hybrid(v0.3 加权重排) | bm25 | vector | keyword
+RETRIEVAL_MODE = (os.getenv("RETRIEVAL_MODE") or "rrf3").lower()
+RRF_K = 60             # RRF 常数（Cormack et al. 2009 推荐值，不针对评测集调参）
+RRF_CANDIDATES = 50    # 每路检索器参与融合的候选数
 RETRIEVAL_THRESHOLD = 0.7  # 相似度阈值
 LLM_TEMPERATURE = 0.1  # 低温度减少幻觉
 LLM_MAX_TOKENS = 2000  # 最大输出长度

@@ -5,7 +5,7 @@
 - API超时/限流 → 重试1次后降级
 - 其他异常 → 返回错误信息
 """
-from typing import List, Dict, Optional
+from typing import List, Dict
 from src.config import LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS, get_llm_config
 
 # ============================================================

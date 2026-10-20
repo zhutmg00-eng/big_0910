@@ -5,8 +5,14 @@
 - API key鉴权（X-API-Key header）
 - 文件路径校验（防止路径遍历攻击）
 """
+import logging
 import os
-from fastapi import FastAPI, HTTPException, Depends, Security
+import secrets
+import time
+import uuid
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, Depends, Request, Security
 from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,21 +21,62 @@ from pathlib import Path
 from src.models.fleet import FleetInput
 from src.models.policy import PolicyAnswer, PolicyQuestion
 from src.models.tco import VehicleTCORunRequest
+from src.models.uncertainty import UncertaintyRequest
+
+APP_VERSION = "0.4.0"
+logger = logging.getLogger("carbon_api")
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"),
+                    format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """启动时可选自动建库（KB_AUTO_INGEST=1），首次部署无需手动执行入库脚本。"""
+    if os.getenv("KB_AUTO_INGEST", "0") == "1":
+        try:
+            from src.config import POLICY_DOCS_DIR
+            from src.rag import ingest_directory
+            from src.rag.vector_store import get_vector_store
+
+            vs = get_vector_store()
+            if vs.count() == 0:
+                logger.info("知识库为空，开始自动入库 %s", POLICY_DOCS_DIR)
+                logger.info("自动入库完成: %s", ingest_directory(POLICY_DOCS_DIR, vs))
+        except Exception:  # 建库失败不应阻止计算类接口启动
+            logger.exception("知识库自动入库失败，政策问答将不可用")
+    yield
+
 
 app = FastAPI(
     title="物流碳排放与减排情景决策助手 API",
-    version="0.3.0",
-    description="面向物流企业的科研原型，核算直接运营排放并模拟减排情景",
+    version=APP_VERSION,
+    description="面向物流企业的科研原型：直接运营排放核算、不确定性分析、减排情景与政策检索",
+    lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_context(request: Request, call_next):
+    """为每个请求分配 X-Request-ID 并记录耗时，便于排查与性能评估。"""
+    rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed = (time.perf_counter() - start) * 1000
+    response.headers["X-Request-ID"] = rid
+    response.headers["X-Process-Time-ms"] = f"{elapsed:.1f}"
+    if request.url.path.startswith("/api/") and request.url.path != "/api/health":
+        logger.info("%s %s %s %.1fms rid=%s", request.method, request.url.path,
+                    response.status_code, elapsed, rid)
+    return response
 
 
 # ============================================================
 # CORS配置（可通过环境变量配置允许的来源）
 # ============================================================
-ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8501,http://localhost:3000").split(",")
+ALLOWED_ORIGINS = (os.getenv("CORS_ORIGINS") or "http://localhost:8501,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in ALLOWED_ORIGINS],
+    allow_origins=[o.strip() for o in ALLOWED_ORIGINS if o.strip()],
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -44,7 +91,7 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 async def verify_api_key(api_key: str = Security(api_key_header)):
     """验证API Key（如果配置了APP_API_KEY则强制校验，否则开发模式跳过）"""
     if API_KEY:  # 生产模式：需要校验
-        if api_key != API_KEY:
+        if not api_key or not secrets.compare_digest(api_key, API_KEY):  # 常量时间比较，防计时攻击
             raise HTTPException(status_code=401, detail="Invalid or missing API key")
     # 开发模式（未设API_KEY）：跳过鉴权
     return api_key
@@ -87,14 +134,14 @@ class CarbonResult(BaseModel):
 # ========== API路由 ==========
 
 @app.get("/api/health")
-async def health_check():
-    return {"status": "ok", "version": "0.3.0"}
+def health_check():
+    return {"status": "ok", "version": APP_VERSION}
 
 
 @app.get("/api/vehicle-types")
-async def get_vehicle_types(api_key: str = Depends(verify_api_key)):
+def get_vehicle_types(api_key: str = Depends(verify_api_key)):
     """获取支持的车型列表"""
-    from src.engine.emission_factors import list_vehicle_types, get_all_factors
+    from src.engine.emission_factors import get_all_factors
     factors = get_all_factors()
     return {
         "vehicle_types": [
@@ -110,7 +157,7 @@ async def get_vehicle_types(api_key: str = Depends(verify_api_key)):
 
 
 @app.post("/api/calculate", response_model=CarbonResult)
-async def calculate_carbon(fleet_input: FleetInput, api_key: str = Depends(verify_api_key)):
+def calculate_carbon(fleet_input: FleetInput, api_key: str = Depends(verify_api_key)):
     """计算直接运营排放基线、模拟碳预算差额和情景成本。"""
     from src.engine.calculator import VehicleGroupData, calculate_emission
     from src.engine.quota import estimate_quota_gap
@@ -166,30 +213,29 @@ async def calculate_carbon(fleet_input: FleetInput, api_key: str = Depends(verif
 
 
 @app.post("/api/ask", response_model=PolicyAnswer)
-async def ask_policy(question: PolicyQuestion, api_key: str = Depends(verify_api_key)):
+def ask_policy(question: PolicyQuestion, api_key: str = Depends(verify_api_key)):
     """碳交易政策智能问答"""
     from src.rag import PolicyAdvisor
 
-    advisor = PolicyAdvisor()
-    result = advisor.ask(question.question, question.carbon_profile)
-
+    t0 = time.perf_counter()
+    result = PolicyAdvisor().ask(question.question, question.carbon_profile)
     return PolicyAnswer(
         question=result["question"],
         retrieved_sources=result["retrieved_sources"],
         answer=result["answer"],
+        latency_ms=round((time.perf_counter() - t0) * 1000, 1),
     )
 
 
 @app.get("/api/kb/stats")
-async def kb_stats(api_key: str = Depends(verify_api_key)):
+def kb_stats(api_key: str = Depends(verify_api_key)):
     """知识库统计"""
-    from src.rag.vector_store import PolicyVectorStore
-    vs = PolicyVectorStore()
-    return vs.get_stats()
+    from src.rag.vector_store import get_vector_store
+    return get_vector_store().get_stats()
 
 
 @app.post("/api/kb/ingest")
-async def ingest_document(
+def ingest_document(
     file_path: str,
     doc_date: str = "",
     api_key: str = Depends(verify_api_key),
@@ -211,8 +257,38 @@ async def ingest_document(
     return {"file": safe_path.name, "chunks_added": count}
 
 
+@app.post("/api/kb/ingest-all")
+def ingest_all_documents(force: bool = False, api_key: str = Depends(verify_api_key)):
+    """批量导入 data/policy_docs 下全部政策文档（幂等）。"""
+    from src.config import POLICY_DOCS_DIR
+    from src.rag import ingest_directory
+
+    return ingest_directory(POLICY_DOCS_DIR, force=force)
+
+
+@app.post("/api/uncertainty")
+def emission_uncertainty(payload: UncertaintyRequest, api_key: str = Depends(verify_api_key)):
+    """蒙特卡洛排放不确定性分析：P5/P50/P95 区间与方差贡献排序。"""
+    from dataclasses import asdict
+    from src.engine.calculator import VehicleGroupData
+    from src.engine.uncertainty import monte_carlo_emission
+
+    fleet = [VehicleGroupData(v.vehicle_type, v.count, v.annual_km, v.load_factor) for v in payload.fleet]
+    try:
+        res = monte_carlo_emission(
+            fleet,
+            n_samples=payload.n_samples,
+            seed=payload.seed,
+            data_quality=payload.data_quality,
+            load_delta=payload.load_delta,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return asdict(res)
+
+
 @app.get("/api/tco/defaults")
-async def get_tco_defaults(api_key: str = Depends(verify_api_key)):
+def get_tco_defaults(api_key: str = Depends(verify_api_key)):
     """获取所有车型的 TCO 基准参数与宏观经济默认参数"""
     from dataclasses import asdict
     from src.engine.tco import DEFAULT_TCO_BENCHMARKS, TCOEconomicParameters
@@ -223,7 +299,7 @@ async def get_tco_defaults(api_key: str = Depends(verify_api_key)):
 
 
 @app.post("/api/tco/calculate")
-async def calculate_tco_endpoint(payload: VehicleTCORunRequest, api_key: str = Depends(verify_api_key)):
+def calculate_tco_endpoint(payload: VehicleTCORunRequest, api_key: str = Depends(verify_api_key)):
     """计算单个车型新能源替代的 TCO 经济账与投资回收期"""
     from dataclasses import asdict
     from src.engine.tco import (
