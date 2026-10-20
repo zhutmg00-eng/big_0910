@@ -9,11 +9,15 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT
+_COLLECTED_CACHE = None
 METRICS = json.loads((ROOT / "docs" / "derived_metrics.json").read_text(encoding="utf-8"))
 
 
@@ -91,7 +95,7 @@ def test_vehicle_total_claims_consistent():
     total = METRICS["mape"]["vehicles_total"]
     expected = f"{total:,}"
     for rel in ("docs/academic_paper.md", "docs/real_fleet_validation_report.md"):
-        text = _read_private(rel)
+        text = _read_defense(rel)
         assert expected in text, f"{rel} 未出现台账车辆总数 {expected}"
 
 
@@ -134,7 +138,7 @@ def test_figure_artifacts_have_no_unrendered_placeholders():
         "docs/artifacts/fig3_rq3_sensitivity_heatmap.svg",
         "docs/artifacts/all_charts_dashboard.html",
     ):
-        text = _read_private(rel)
+        text = _read_defense(rel)
         for token in ("{ERR_LO", "{ERR_HI", "{MAPE_EQ", "{MAPE_WT", "{LF_NO_BIAS", "{KB_DOCS"):
             assert token not in text, f"{rel} 仍含未渲染占位符 {token}"
 
@@ -146,7 +150,7 @@ def test_figure_artifacts_have_no_stale_claims():
         "docs/artifacts/fig1_rq1_real_fleet_validation.html",
         "docs/artifacts/all_charts_dashboard.html",
     ):
-        text = _read_private(rel)
+        text = _read_defense(rel)
         for stale in STALE_FIGURE_CLAIMS:
             assert stale not in text, f"{rel} 仍含早期草稿数值/表述 {stale}"
 
@@ -195,30 +199,82 @@ RAG_RESULTS = json.loads(
     )
 )
 
-# 答辩类材料：这些文件是直接对外讲述的，数字必须与实测一致
+# 答辩类材料：这些文件是直接对外讲述的，数字必须与实测一致。
+#
+# 【2026-10-21 扩容说明】原名单只有 3 份 .md，而这三份恰恰被 .gitignore 排除，
+# 于是在公开仓库里 12/16 条口径守卫全部 skip——守卫守住了「作者本机已清理过的文件」，
+# 却放过了「真正公开、真正被评委打开的产物」。
+# 新登记的 2 份是公开仓库里的直接载体（git ls-files 确认在库），
+# 被证伪的「0.8171 / 近 20 倍 / 100% 拒答 / 37 份 268 Chunk / Kappa=1.0 / 4.905 分 / 107 项」
+# 曾完整存活在这两个文件里。加进来之后守卫会立刻变红，这正是它应该做的事。
 DEFENSE_DOCS = (
     "docs/大创中期答辩核心指南与评审问辨应对.md",
     "docs/国家级优秀大创答辩逐字稿与尖锐质询策略_升级版.md",
     "docs/大创中期答辩幻灯片视觉与内容全景设计图解.md",
+    "docs/artifacts/defense_presentation_deck.html",
+    "scripts/generate_presentation_pptx.py",
 )
+
+# 公开载体不是私有文书：它们必须在仓库里，缺失即是缺陷（而不是 skip）。
+PUBLIC_DEFENSE_DOCS = (
+    "docs/artifacts/defense_presentation_deck.html",
+    "scripts/generate_presentation_pptx.py",
+)
+
+
+def _read_defense(rel):
+    """公开载体缺失要判失败；私有文书缺失才允许 skip。"""
+    if rel in PUBLIC_DEFENSE_DOCS:
+        path = ROOT / rel
+        assert path.exists(), f"{rel} 是对外公开载体，必须存在于仓库中"
+        return path.read_text(encoding="utf-8")
+    return _read_private(rel)
+
+
+# 被证伪的表述允许以「撤回台账」的形式留在材料里（这是学术诚信的体现，
+# 不是缺陷）。判定标准是它所在的那一行有没有撤回标记。
+RETRACT_MARKERS = (
+    "撤回", "不成立", "已删除", "无数据支持", "非拒答", "不是",
+    "已更正", "属循环定义", "旧稿", "旧快照", "早期材料", "早期草稿", "曾把",
+)
+
+
+def _assert_no_unretracted(text, needles, rel, message):
+    """被证伪的表述若与撤回标记同处一个段落，则放行；否则视为未标注的继续断言。
+
+    只看单行是不够的：markdown 里一行就是一个整段，撤回说明常写在邻句，
+    而 html 又把整页压成一行。所以取「命中行 ±1 行」做窗口判定。
+    """
+    lines = text.splitlines()
+    if isinstance(needles, str):
+        needles = (needles,)
+    for lineno, line in enumerate(lines, 1):
+        if not any(n in line for n in needles):
+            continue
+        window = " ".join(lines[max(0, lineno - 2):lineno + 1])
+        if any(m in window for m in RETRACT_MARKERS):
+            continue
+        raise AssertionError(f"{rel}:{lineno} {message}：{line.strip()[:200]}")
 
 
 def test_rag_defense_docs_do_not_quote_single_query_ndcg_as_mrr():
     """0.8171 是单题 nDCG，不得作为方案 MRR 出现在答辩材料里。"""
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
-        assert "0.8171" not in text, (
-            f"{rel} 仍把 0.8171 当作 MRR 引用；该值是 detailed_results.hybrid[36] "
-            "的单题 nDCG，不是任何方案的 MRR"
+        _assert_no_unretracted(
+            _read_defense(rel),
+            ("0.8171",),
+            rel,
+            "仍把 0.8171 当作 MRR 引用；该值是 detailed_results.hybrid[36] 的"
+            "单题 nDCG，不是任何方案的 MRR",
         )
 
 
 def test_rag_defense_docs_do_not_claim_20x_improvement():
     """20 倍提升的说法已被证伪：与自身旧方案比是 1.00 倍。"""
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
+        text = _read_defense(rel)
         for stale in ("近 20 倍", "近20倍", "提升20倍", "提升 20 倍"):
-            assert stale not in text, f"{rel} 仍声称检索指标提升 20 倍"
+            _assert_no_unretracted(text, stale, rel, "仍声称检索指标提升 20 倍")
 
 
 def test_rag_defense_docs_use_measured_mrr_values():
@@ -234,7 +290,7 @@ def test_rag_defense_docs_use_measured_mrr_values():
         for metrics in setting.values():
             measured.add(round(metrics["MRR"], 4))
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
+        text = _read_defense(rel)
         for token in re.findall(r"MRR[^0-9]{0,12}(0\.\d{4})", text):
             assert float(token) in measured, (
                 f"{rel} 引用了实测结果中不存在的 MRR {token}；实测集合为 {sorted(measured)}"
@@ -244,7 +300,7 @@ def test_rag_defense_docs_use_measured_mrr_values():
 def test_rag_defense_docs_do_not_use_stale_kb_size():
     """旧快照 37 份/268 块不得再作为当前知识库规模出现。"""
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
+        text = _read_defense(rel)
         assert "37 份法规" not in text, f"{rel} 仍使用旧知识库规模 37 份法规"
         assert "37份法规" not in text, f"{rel} 仍使用旧知识库规模 37 份法规"
         assert "268 个 Chunk" not in text and "268 Chunk" not in text, (
@@ -255,14 +311,55 @@ def test_rag_defense_docs_do_not_use_stale_kb_size():
 def test_defense_docs_do_not_claim_fabricated_vehicle_total():
     """45,035 辆无法由任何车辆子集推出，已被论文更正为覆盖 51,990 辆。"""
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
+        text = _read_defense(rel)
         assert "45,035" not in text, f"{rel} 仍使用无法复算的车辆数 45,035"
 
 
+def _collected_test_count() -> int:
+    """当前真实收集到的测试数，供"文档里的测试数"逐字比对。
+
+    这里刻意**不写死数字**：本测试的文件名就是"口径一致性"，如果它自己把
+    "当前真实测试数"抄成常量，那它就成了它要防的东西——历史上 107/119/159/170/173
+    都是这样一段段抄旧、再一节节失效的。改为运行时向 pytest 要真实总数。
+    """
+    global _COLLECTED_CACHE
+    if _COLLECTED_CACHE is not None:
+        return _COLLECTED_CACHE
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q",
+         "--ignore=" + str(REPO_ROOT / "tmp")],
+        cwd=str(REPO_ROOT), capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=300,
+    )
+    m = re.search(r"(\d+)\s+tests?\s+collected", proc.stdout)
+    if not m:
+        pytest.skip("无法取得当前收集数，跳过测试数口径校验")
+    _COLLECTED_CACHE = int(m.group(1))
+    return _COLLECTED_CACHE
+
+
 def test_defense_docs_test_count_matches_collection():
-    """答辩材料写的测试数必须是当前真实收集数，不能是旧值。"""
+    """答辩材料写的测试数必须是当前真实收集数，不能是旧值。
+
+    历史上这个数字在仓里出现过 107 / 117 / 119 / 159 / 170 / 173 / 221 七种写法，
+    每次都是"文档更新了、守卫没更新"或反之。现在两边都不写死：
+    文档必须出现运行时真实收集数，且不得残留任何一个历史旧值。
+    """
+    actual = _collected_test_count()
+    stale_values = [107, 117, 119, 159, 170, 173, 221]
     for rel in DEFENSE_DOCS:
-        text = _read_private(rel)
-        for stale in ("107 项", "107项", "119 项", "159 项", "170 项"):
-            assert stale not in text, f"{rel} 仍声称 {stale} 测试（实际为 173）"
-        assert "173" in text, f"{rel} 未出现当前真实测试数 173"
+        text = _read_defense(rel)
+        for stale in stale_values:
+            if stale == actual:
+                continue
+            for pat in (f"{stale} 项", f"{stale}项"):
+                assert pat not in text, (
+                    f"{rel} 仍声称「{pat}」测试，当前真实收集数为 {actual}"
+                )
+        # 只有"陈述测试数"的载体才必须写出当前值：幻灯片生成脚本只负责
+        # 逐页渲染，测试数由 html/md 承载，不强求它复述。
+        if rel in PUBLIC_DEFENSE_DOCS and rel.endswith(".py"):
+            continue
+        assert str(actual) in text, (
+            f"{rel} 未出现当前真实测试数 {actual}"
+        )

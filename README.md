@@ -297,11 +297,13 @@ PDF 测试会检查预算字段、科研免责声明、新能源核算边界、�
 
 | 范围 | 命令 | 用例数 | 结果 |
 |---|---|---|:---:|
-| `tests/` 目录 | `python -m pytest tests -q` | 162 | 全部通过 |
-| 全仓（含 `scripts/` 内的集成测试） | `python -m pytest -q` | 173 | 全部通过、0 失败 |
+| `tests/` 目录 | `python -m pytest tests -q` | 220 | 全部通过 |
+| 全仓（含 `scripts/` 内的集成测试） | `python -m pytest -q` | 221 | 全部通过、0 失败 |
 
 > 不要在文档里手工维护「测试数」作为卖点：该数字随每次提交变化，且历史上出现过
-> 107 / 119 / 159 / 170 四种互相冲突的写法。需要引用时一律执行上表命令取实测值。
+> 107 / 119 / 159 / 170 / 173 五种互相冲突的写法。需要引用时一律执行上表命令取实测值。
+> `tests/test_claim_consistency.py::test_defense_docs_test_count_matches_collection`
+> 会自己向 pytest 要真实收集数再与答辩材料逐字比对，两边都不写死。
 
 知识库为空时 2 项 RAG 基准测试会 skip 而非失败，所以必须先在本地跑
 `python scripts/ingest_policy_docs.py --force` 再数测试；CI 里设置 `RAG_BENCH_REQUIRED=1`，知识库缺失就直接失败。

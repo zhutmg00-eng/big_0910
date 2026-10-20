@@ -242,6 +242,20 @@ def _render_inventory_result(result: dict) -> None:
     m3.metric("预算差额", f"{gap:+,.0f} tCO2e")
     m4.metric("情景状态", status)
 
+    # 口径警示：B 按 CSV 参考里程算、E 按用户填报实际里程算，两者不同源。
+    # 里程偏离较大时 Gap 里混入了"活动水平差异"，不是纯减排目标缺口。
+    # API 已在 carbon_budget["活动水平偏离_pct"] 里算好，这里必须让用户看见。
+    _mismatch_pct = budget.get("活动水平偏离_pct") or 0
+    if abs(_mismatch_pct) >= 5:
+        st.warning(
+            f"**口径提示（影响预算差额的可比性）**\n\n"
+            f"模拟碳预算按政策参考年均里程计算，直接运营排放按你填报的**实际里程**计算，"
+            f"本次两者偏离 **{_mismatch_pct:+.1f}%**。\n\n"
+            f"因此上面的预算差额里混入了活动水平差异：实际里程高于参考值时，"
+            f"差额会被系统性高估。做同比或跨企业对比前请先统一下里程口径，"
+            f"或参阅报告中的分车型基准值自行换算。"
+        )
+
     chart_left, chart_right = st.columns([1, 1.25])
     with chart_left:
         st.plotly_chart(

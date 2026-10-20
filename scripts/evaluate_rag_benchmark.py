@@ -153,9 +153,27 @@ def summarize(records: List[Dict]) -> Dict:
         out[f"Source_Hit@{k}"] = round(sum(r["source_hits_at_k"][k] for r in records) / n, 4)
     h_lo, h_hi = bootstrap_ci([1.0 if r["hits_at_k"][10] else 0.0 for r in records])
     out["Recall@10_CI95"] = [round(h_lo, 4), round(h_hi, 4)]
-    # 负例（“不适用”题）：top-5 内是否召回了能支撑“拒答/不适用”判断的条款
-    out["Negative_Rejection_Accuracy"] = round(
-        sum(1 for r in neg if r["hits_at_k"][5]) / len(neg), 4) if neg else 1.0
+    # 负例（"不适用"题）：top-5 内是否召回了能支撑"不适用"判断的条款。
+    #
+    # 【重要·口径修正】这个指标历史上叫 Negative_Rejection_Accuracy 并被写成
+    # "反事实负例正确拒答率 75%/100%"，但它是**循环定义**：
+    #   - 检索层本身没有任何拒答/弃权逻辑（src/rag/ 下搜不到拒答实现）；
+    #   - 这里衡量的是"top-5 是否命中 gold_chunk"，命中了反而说明检索器把
+    #     那条"其实不适用"的条款捞了出来——文件名就叫 Rejection 却是
+    #     "检索命中"的读数，两者不是一回事。
+    # 现在改为如实命名 Negative_Retrieval_HitRate（负例检索命中率），
+    # 保留旧键仅用于向后兼容读取历史结果文件，且其值不再被任何
+    # 对外材料当作"拒答率"引用（见 tests/test_rag_metric_naming.py）。
+    hits_neg = sum(1 for r in neg if r["hits_at_k"][5])
+    ratio = round(hits_neg / len(neg), 4) if neg else 0.0
+    out["Negative_Retrieval_HitRate"] = ratio
+    out["Negative_Retrieval_HitCount"] = f"{hits_neg}/{len(neg)}" if neg else "0/0"
+    # 旧键保留（兼容既有结果 JSON 的读取方），但值同源，且已明确非"拒答率"
+    out["Negative_Rejection_Accuracy"] = ratio
+    out["Negative_Rejection_Accuracy_note"] = (
+        "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；"
+        "检索层无拒答实现，请勿在对外材料中称为拒答率"
+    )
     return out
 
 

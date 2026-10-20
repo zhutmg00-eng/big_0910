@@ -113,6 +113,10 @@ class SingleVehicleTCOResult:
     lifespan_co2_reduction_t: float  # 全生命周期总减排量 (tCO2e)
     lifespan_net_savings_yuan: float  # 全生命周期净节省 (NPV折现后净现值收益，元)
     yearly_cumulative_cashflow_yuan: List[float] = field(default_factory=list)  # 0~N年累计现金流
+    # BaaS 宣称的"初始垫资骤降 xx%"来自哪里，必须显式写出来。
+    # 详见 baas_capex_note：这个比例是代数恒等式的算术结果，不是敏感性分析的结论，
+    # 拿它当卖点时评委一问"充电桩单价取多少"就答不上来。
+    baas_capex_note: str = ""
 
 
 @dataclass
@@ -174,6 +178,7 @@ class FleetTCOResult:
                         else None
                     ),
                     "annual_co2_reduction_t": round(v.annual_co2_reduction_t, 2),
+                    "baas_capex_note": v.baas_capex_note,
                 }
                 for k, v in self.by_vehicle_type.items()
             },
@@ -311,6 +316,27 @@ def calculate_single_vehicle_tco(
     for year in range(1, n + 1):
         yearly_cashflow.append(-delta_capex_total + year * annual_opex_saving_total)
 
+    baas_capex_note = ""
+    if params.is_baas_mode:
+        # 买断单车增量 = (ev - ice) + charger；BaaS 单车增量 = (ev - ice) - discount。
+        # 于是 BaaS 的"降幅"= (charger + discount) / (ev - ice + charger)，
+        # 只与 benchmark 的车价与充电桩单价有关，与年租金、年里程、油价电价全都无关。
+        # 实测重卡：charger 3 万、discount 20 万、ev-ice 30 万 → 69.7%。
+        # 把它写成"垫资骤降 70%"会让人误以为是运营优化带来的，实际上改一下
+        # charger_cost_wan 这个假设值就能让比例在 67.7%~71.4% 之间任意滑动。
+        buyout_delta = (
+            spec.ev_vehicle_price_wan - spec.ice_vehicle_price_wan + spec.charger_cost_wan
+        )
+        if buyout_delta > 0:
+            cut_pct = (buyout_delta - single_capex_delta / 10000.0) / buyout_delta * 100
+            baas_capex_note = (
+                f"BaaS 初始垫资比买断低 {cut_pct:.1f}%，该比例由代数恒等式决定"
+                f"（买断单价增量 = 车价差 {spec.ev_vehicle_price_wan - spec.ice_vehicle_price_wan:.1f} 万"
+                f" + 充电桩 {spec.charger_cost_wan:.1f} 万；BaaS 单价增量 = 车价差 − 电池剥离立减 "
+                f"{default_chassis_discount:.1f} 万），与电池租金、年里程、油价电价均无关。"
+                f"引用此比例时应同时披露充电桩成本假设，它不是敏感性分析的结论。"
+            )
+
     return SingleVehicleTCOResult(
         target_vehicle_type=vehicle_type,
         replace_count=replace_count,
@@ -328,6 +354,7 @@ def calculate_single_vehicle_tco(
         lifespan_co2_reduction_t=lifespan_co2,
         lifespan_net_savings_yuan=lifespan_net_savings,
         yearly_cumulative_cashflow_yuan=yearly_cashflow,
+        baas_capex_note=baas_capex_note,
     )
 
 

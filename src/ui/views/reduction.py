@@ -116,6 +116,15 @@ def _render_baseline(carbon_result: dict) -> None:
     m3.metric("预算差额", f"{budget.get('预算差额_t', 0):+,.0f} tCO2e")
     m4.metric("情景状态", budget.get("状态", "未知"))
 
+    # 与总览页保持一致的口径警示：预算差额混有活动水平差异时，减排情景的
+    # "消除超出量"结论也会被同比例放大，必须先提示。
+    _mismatch_pct = budget.get("活动水平偏离_pct") or 0
+    if abs(_mismatch_pct) >= 5:
+        st.warning(
+            f"基线里程偏离参考值 **{_mismatch_pct:+.1f}%**，预算差额中混入活动水平差异，"
+            f"下面各情景的「超出量」会被同比例放大，请勿直接当作减排目标缺口。"
+        )
+
 
 def _calculate_reduction(
     carbon_result: dict,

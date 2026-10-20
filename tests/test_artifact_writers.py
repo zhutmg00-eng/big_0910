@@ -32,7 +32,24 @@ FORMAL_WRITER = REPO_ROOT / "scripts" / "render_academic_figures.py"
 
 
 def _read(path: Path) -> str:
+    # 早期脚本必须入库：它是"谁在写正式产物"这条契约的一半，
+    # 缺了它守卫就失效，所以缺失直接判失败。
+    assert path.exists(), (
+        f"{path.name} 必须随仓库发布，否则无法验证产物路径契约"
+    )
     return path.read_text(encoding="utf-8")
+
+
+def _read_formal_writer() -> str:
+    # scripts/render_academic_figures.py 被 .gitignore 排除（与论文产物同级的
+    # 私有出图脚本）。在公开 clone / CI 里它不存在，此时跳过而不是失败，
+    # 但跳过原因要写清，免得 CI 绿得没有说服力。
+    if not FORMAL_WRITER.exists():
+        pytest.skip(
+            "scripts/render_academic_figures.py 未入库"
+            "（.gitignore 排除，属私有出图脚本），跳过该侧校验"
+        )
+    return FORMAL_WRITER.read_text(encoding="utf-8")
 
 
 def test_legacy_writer_uses_suffixed_output_paths():
@@ -78,7 +95,7 @@ def test_formal_figure_exists_and_is_matplotlib_generated(name):
 
 def test_formal_writer_does_not_write_legacy_names():
     """反过来：正式脚本不应产出 _legacy 后缀的文件。"""
-    source = _read(FORMAL_WRITER)
+    source = _read_formal_writer()
     assert "_legacy" not in source, (
         "render_academic_figures.py 不应写 _legacy 产物，_legacy 只属于被取代的旧脚本"
     )
