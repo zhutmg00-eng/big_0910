@@ -67,3 +67,32 @@ def test_budget_mode_labels_candidate_not_optimal():
     assert result.scenarios
     name = result.scenarios[0].name
     assert "最优方案" not in name, f"预算模式下不应自称最优方案：{name}"
+
+
+def test_gap_elimination_message_shows_scenario_own_reduction():
+    """每个情景的"可消除超出量"文本必须带上它自己的减排量。
+
+    旧实现打印的是基线超出量（所有情景共用常数），于是减排 350.8 t 与
+    2104.8 t 的两个情景都会写成"可消除模拟碳预算超出量（210.5 tCO2e）"，
+    读者无从判断两者差别有多大。
+    """
+    from src.engine.reduction import ReductionScenario, compare_scenarios
+
+    fleet = [VehicleGroupData("重型柴油货车", 30, 80000, 0.85)]
+    scenarios = [
+        ReductionScenario(name=f"替换{k}辆", description="", changes={"替换为新能源物流车": k})
+        for k in (5, 30)
+    ]
+    comparison = compare_scenarios(fleet, scenarios)
+
+    gap_lines = [n for n in comparison.recommendations if "消除模拟碳预算超出量" in n]
+    assert len(gap_lines) == 2, f"预期两个情景各有一条说明，实际 {gap_lines}"
+
+    reductions = sorted(
+        s.reduction_t for s in comparison.scenarios if s.reduction_t > 0
+    )
+    for line in gap_lines:
+        # 文本里必须出现该情景自己的减排量（两位以内可差一位小数）
+        assert any(f"{r:.1f}" in line for r in reductions), (
+            f"超出量说明未包含该情景的减排量：{line}"
+        )

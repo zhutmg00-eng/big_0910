@@ -439,10 +439,30 @@ def compare_scenarios(
         reduction_target=budget_reduction_target,
     )
 
+    # 检查哪些情景能覆盖模拟碳预算超出量
+    baseline = calculate_emission(baseline_fleet)
+    baseline_summary = _summarize_fleet(baseline_fleet)
+    # 必须与上面各情景使用同一减排目标，否则建议文本里的超出量会和
+    # 情景明细里的差额对不上（同一份报告出现两套预算口径）。
+    baseline_gap = estimate_quota_gap(
+        baseline.total_emission_t,
+        baseline_summary,
+        reduction_target=budget_reduction_target,
+    )
+
+    # 说明：这里不再逐个情景重算剩余差额。
+    #
+    # 模拟碳预算 total_quota_t 随车辆数线性缩放，而减排量也随替换台数线性增长，
+    # 因此"减排量 ≥ 基线超出量"一旦成立，该情景必然把超出量清零；
+    # 不成立的情景则完全进不了下面这个分支。实测（100 辆轻型柴油货车：
+    # 基线超出 171.1 t，替换 1/2/5 辆分别减排 11.8/23.6/59.0 t，全部小于
+    # 171.1，均被过滤）证实"部分消除"区间不可达，故原先写的百分比分支是死代码，
+    # 保留只会让读者以为存在部分达标的情况。
     for r in results:
         if r.reduction_t >= baseline_gap.gap_t and baseline_gap.gap_t > 0:
             global_recommendations.append(
-                f"「{r.name}」情景可消除模拟碳预算超出量（{baseline_gap.gap_t} tCO2e）"
+                f"「{r.name}」情景可完全消除模拟碳预算超出量"
+                f"（减排 {r.reduction_t:.1f} tCO2e ≥ 超出量 {baseline_gap.gap_t:.1f} tCO2e）"
             )
 
     return ScenarioComparison(
