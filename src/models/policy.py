@@ -37,4 +37,15 @@ class PolicyAnswer(BaseModel):
     question: str
     retrieved_sources: list[RetrievedSource]
     answer: str
+    evidence_count: int = Field(
+        0,
+        description=(
+            "实际检索到的证据条数（= len(retrieved_sources)，显式给出便于调用方"
+            "在证据为空时告警；证据为 0 时 answer 不含任何政策条款引用）"
+        ),
+    )
+    evidence_warning: str = Field(
+        "",
+        description="证据为空时的说明。非空表示回答未基于任何检索证据，不应作为政策依据引用。",
+    )
     latency_ms: Optional[float] = Field(None, description="检索+生成耗时（毫秒）")

@@ -138,6 +138,18 @@ def health_check():
     return {"status": "ok", "version": APP_VERSION}
 
 
+@app.get("/api/kb/health")
+def kb_health():
+    """知识库健康自检：回答"政策问答为什么是空的"。
+
+    独立于 /api/health（后者只表示进程活着）。按需懒加载，不阻塞服务启动。
+    status: ok / empty / degraded；warning 非空时可直接展示给用户。
+    """
+    from src.rag.vector_store import get_vector_store
+
+    return get_vector_store().health()
+
+
 @app.get("/api/vehicle-types")
 def get_vehicle_types(api_key: str = Depends(verify_api_key)):
     """获取支持的车型列表"""
@@ -229,6 +241,8 @@ def ask_policy(question: PolicyQuestion, api_key: str = Depends(verify_api_key))
         question=result["question"],
         retrieved_sources=result["retrieved_sources"],
         answer=result["answer"],
+        evidence_count=result.get("evidence_count", len(result["retrieved_sources"])),
+        evidence_warning=result.get("evidence_warning", ""),
         latency_ms=round((time.perf_counter() - t0) * 1000, 1),
     )
 

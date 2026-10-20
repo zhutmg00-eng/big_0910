@@ -32,7 +32,10 @@ class PolicyAdvisor:
             top_k: 检索返回数量
 
         Returns:
-            dict: {question, retrieved_sources, answer}
+            dict: {question, retrieved_sources, answer, evidence_count, evidence_warning}
+
+        ``evidence_count == 0`` 表示未检索到任何证据，此时不调用大模型，
+        直接返回说明性提示（见下方无证据短路），避免编造政策依据。
         """
         top_k = top_k or RETRIEVAL_TOP_K
 
@@ -43,10 +46,39 @@ class PolicyAdvisor:
             logger.exception("知识库检索失败，返回空证据：%s", exc)
             retrieved = []
 
-        # 2. 构建Prompt
+        # 2. 无证据短路：绝不把"空知识库"交给 LLM 自由生成
+        #
+        # 实测（2026-10）：知识库为空时，原实现会把空证据塞进 prompt 照常调 LLM，
+        # 模型先如实说"未检索到任何相关政策条款"，紧接着又输出
+        # "全国碳市场目前仅覆盖发电、钢铁、水泥、电解铝等重点排放行业，
+        #  物流运输行业未被纳入配额管理范围"——这句话没有任何检索证据支撑，
+        # 而检索层与日志都不报错。对一个以"可溯源"为卖点的政策问答，
+        # 这比直接报错危险得多。因此证据为空时直接返回显式提示，不调 LLM。
+        if not retrieved:
+            return {
+                "question": question,
+                "retrieved_sources": [],
+                "answer": (
+                    "未在知识库中检索到与该问题相关的政策条款，因此本次不生成回答——"
+                    "没有证据的作答等同于编造政策依据。\n\n"
+                    "可能原因：① 知识库为空（全新 clone 后尚未入库）；"
+                    "② 问题与现有政策语料主题偏离较大。\n\n"
+                    "处理方式：\n"
+                    "1. 检查知识库状态：`GET /api/kb/health`（status=empty 即需入库）\n"
+                    "2. 入库语料：`python scripts/ingest_policy_docs.py --force`\n"
+                    "3. 或换个与交通低碳、排放核算、碳市场相关的问题再试"
+                ),
+                "evidence_count": 0,
+                "evidence_warning": (
+                    "检索证据为 0 条，本次回答未调用大模型、不含任何政策条款引用。"
+                    "若知识库应为空库，请先执行 scripts/ingest_policy_docs.py 入库。"
+                ),
+            }
+
+        # 3. 构建Prompt
         user_prompt = build_user_prompt(question, retrieved, carbon_profile)
 
-        # 3. 调用LLM
+        # 4. 调用LLM
         fallback_answer = build_retrieval_answer(question, retrieved)
         answer = call_llm(SYSTEM_PROMPT, user_prompt, fallback_answer=fallback_answer)
 
@@ -67,6 +99,8 @@ class PolicyAdvisor:
                 for r in retrieved
             ],
             "answer": answer,
+            "evidence_count": len(retrieved),
+            "evidence_warning": "",
         }
 
     def ingest_document(self, file_path, doc_date: str = ""):

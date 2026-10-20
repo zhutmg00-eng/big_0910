@@ -15,9 +15,21 @@ from src.ui.theme import empty_state, notice, page_header
 RETRIEVER_LABELS = {"bm25": "BM25", "vector": "语义向量", "keyword": "字面规则", "rerank": "精排"}
 
 
-def _render_sources(sources: list, latency_ms: float | None = None) -> None:
-    """展示可溯源的证据段落：来源文件、分块 ID、命中检索器与原文摘录。"""
+def _render_sources(
+    sources: list,
+    latency_ms: float | None = None,
+    evidence_warning: str = "",
+) -> None:
+    """展示可溯源的证据段落：来源文件、分块 ID、命中检索器与原文摘录。
+
+    证据为空时必须显式告警而不是静默隐藏溯源区——空证据 + 正常回答
+    意味着回答没有任何政策条款支撑，用户看不到溯源区会误以为已核验。
+    """
     if not sources:
+        st.warning(
+            evidence_warning
+            or "本次未检索到任何政策证据，回答不含可溯源条款，请勿作为政策依据引用。"
+        )
         return
     title = f"证据溯源 · {len(sources)} 条" + (f" · {latency_ms:.0f} ms" if latency_ms else "")
     with st.expander(title):
@@ -38,7 +50,11 @@ def _render_sources(sources: list, latency_ms: float | None = None) -> None:
 def _render_message(message: dict) -> None:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        _render_sources(message.get("sources", []), message.get("latency_ms"))
+        _render_sources(
+            message.get("sources", []),
+            message.get("latency_ms"),
+            message.get("evidence_warning", ""),
+        )
 
 
 def render_policy_advisor() -> None:
@@ -94,10 +110,12 @@ def render_policy_advisor() -> None:
                 result = response.json()
                 answer = result.get("answer", "未检索到可用回答。")
                 sources = result.get("retrieved_sources", [])
+                evidence_warning = result.get("evidence_warning", "")
                 st.markdown(answer)
-                _render_sources(sources, result.get("latency_ms"))
+                _render_sources(sources, result.get("latency_ms"), evidence_warning)
                 st.session_state.messages.append(
                     {"role": "assistant", "content": answer, "sources": sources,
+                     "evidence_warning": evidence_warning,
                      "latency_ms": result.get("latency_ms")}
                 )
             except requests.RequestException as exc:
