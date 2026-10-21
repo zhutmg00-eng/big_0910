@@ -351,7 +351,7 @@
               <b>【数据来源】</b>：针对中小物流缺乏发票台账问题，采用吕晨、蔡博峰2021分省排放因子与GB 30510标准，对比顺丰/中通等4家企业披露的真实燃油消耗台账。
             </div>
             <div style="background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; font-size: 11px; color: var(--text); margin-top: auto;">
-              <b>【实证推导结论】</b>：等权 MAPE 为 4.23%（按排放量加权为 2.38%，两个口径不可混用）。四个车队相对误差落在 [+1.66%, +7.27%]；但实测 8 条车队记录中有 6 条为低估，方向不具一致性，因此不主张任何保守性保证，也不把正偏包装成「上限安全垫」。
+              <b>【实证推导结论】</b>：等权 MAPE 为 4.23%（按排放量加权为 2.38%，两个口径不可混用）。四个车队相对误差落在 [+1.66%, +7.27%]，同向为正；但观测单元只有 4 个车队（n=4），不足以外推为「恒定正偏」，因此不主张任何保守性保证，也不把正偏包装成「上限安全垫」。
             </div>
           </div>
           <div class="academic-card border-secondary">
@@ -550,7 +550,7 @@
                 • 中通快递 (10,400辆): 1,160,586t vs 1,141,686t ➔ <b>+1.66%</b><br>
                 • 京东物流 (14,000辆): 82,390t vs 79,095t ➔ <b>+4.17%</b><br>
                 • 区域冷链 (90辆): 1,245t vs 1,160t ➔ <b>+7.27%</b><br>
-                • <b>加权平均相对误差 (MAPE): 4.23%</b> (远优于行业经验容差 10%)
+                • <b>案例等权平均相对误差 (MAPE): 4.23%</b>（按排放量加权为 2.38%，两口径不可混用）
               </div>
             </div>
             <div class="academic-card border-secondary" style="padding: 10px;">
@@ -562,7 +562,7 @@
             <div class="academic-card border-accent" style="padding: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 正偏保守性机理阐释</div>
               <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
-                早期草稿曾据《GHG Protocol》审慎原则把正偏解释为「合规排放上限安全垫」，该解释已被实测否证：扩展到 8 条车队记录后有 6 条为低估。本项目只主张误差量级（等权 MAPE 4.23%、最大 7.27%），不主张任何保守性保证。
+                早期草稿曾据《GHG Protocol》审慎原则把正偏解释为「合规排放上限安全垫」，该解释已被否证：观测单元只有 4 个车队（n=4），样本量不足以支撑「恒定正偏」，且该正偏来自分省因子与国标工况因子的取值差异，不是审慎设计的产物。本项目只主张误差量级（等权 MAPE 4.23%、最大 7.27%），不主张任何保守性保证。
               </div>
             </div>
             <div class="academic-card border-primary" style="padding: 10px;">

@@ -596,7 +596,7 @@ def test_4223_is_not_called_weighted_mape():
     """
     for rel in GENERATOR_SCRIPTS + ("docs/artifacts/defense_presentation_deck.html",):
         text = _read_defense(rel)
-        for m in re.finditer(r"加权[^。；\n]{0,12}4\.23", text):
+        for m in re.finditer(r"加权[^。；\n]{0,20}4\.23", text):
             window = text[max(0, m.start() - 60): m.start() + 80]
             assert any(w in window for w in WEIGHTED_LABEL_WHITELIST), (
                 f"{rel} 把 4.23% 称为「加权 MAPE」，实测加权值为 2.38%：{window!r}"

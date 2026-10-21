@@ -186,7 +186,12 @@ class TestImportApi:
         assert text.splitlines()[0] == "车型,数量,年均里程(km),实载率"
         # 模板里的车型必须全部能被解析回来，否则模板自己就是错的
         for line in text.splitlines()[1:5]:
-            assert parse_fleet_table("车型,数量,年均里程,实载率\n" + line) is not None
+            parsed = parse_fleet_table("车型,数量,年均里程,实载率\n" + line)
+            # 只断言 is not None 是恒真假绿（函数要么抛错要么返回对象），
+            # 必须确认那一行的车型真的被识别出来、且数量被读成正数
+            assert parsed.total_vehicles > 0, f"模板行未解析出车辆：{line}"
+            assert parsed.groups, f"模板行未匹配到任何车型：{line}"
+            assert parsed.groups[0].vehicle_type, f"模板行车型为空：{line}"
 
     def test_import_returns_normalised_groups(self, client):
         response = client.post(
