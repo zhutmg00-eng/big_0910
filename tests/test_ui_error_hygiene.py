@@ -125,3 +125,44 @@ def test_fake_response_helper_is_compatible_with_requests_shape():
     """确认 _FakeResponse 与真实 requests.Response 的接口一致。"""
     assert hasattr(requests.Response(), "json")
     assert _FakeResponse(422, {"detail": []}).status_code == 422
+
+
+class TestBackendMissingDiagnosis:
+    """端口被占用 / 后端没起来时，必须说人话，不能把陌生服务的路由名怼给用户。
+
+    第 9 轮评审实测：本机 8000 端口被 node 服务占着，Streamlit 收到
+    ``{"message": "Route POST:/api/calculate not found"}`` 并原样渲染，
+    用户看到的是 ``Route POST:/api/calculate not found``。
+    """
+
+    def test_404_on_write_endpoint_is_diagnosed_as_wrong_service(self):
+        from src.ui.api_client import _backend_missing_hint
+
+        hint = _backend_missing_hint(404)
+        assert "ApiWorker" not in hint
+        assert "端口" in hint
+        assert "API_BASE_URL" in hint
+
+    def test_connection_error_is_translated_to_startup_hint(self):
+        from src.ui.api_client import _describe_backend_down
+
+        exc = requests.ConnectionError("HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded")
+        text = _describe_backend_down(exc)
+        assert "连不上核算服务" in text
+        assert "uvicorn" in text
+        assert "端口" in text
+        # 不把底层类名当唯一线索：应给出可执行动作
+        assert "python -m uvicorn" in text
+
+
+class TestUiNeverLeaksServerPaths:
+    def test_advisory_uses_filename_not_absolute_path(self):
+        import io as _io
+        import pathlib
+        import re
+
+        source = _io.open(
+            pathlib.Path(__file__).resolve().parent.parent / "src" / "ui" / "views" / "advisory.py",
+            encoding="utf-8",
+        ).read()
+        assert not re.search(r'保存位置：\{report_path\}', source)

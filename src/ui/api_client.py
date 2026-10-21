@@ -32,11 +32,50 @@ def api_get(path: str) -> requests.Response:
 
 def show_api_error(response: requests.Response) -> None:
     """Render the backend's most useful error detail."""
+    # 404/502/503 先分诊：本机 8000 端口常被别的进程（node 服务、旧版本、
+    # 别的课的项目）占着，此时后端根本没起来，浏览器却能连上，前端会把
+    # 陌生服务的 {"message": "Route POST:/api/calculate not found"} 原样
+    # 渲染成「请求未完成（404）：Route POST:/api/calculate not found」——
+    # 用户看到的是路由名，而不是「你的后端没起来」。
+    if response.status_code in _BACKEND_MISSING_STATUS:
+        st.error(_backend_missing_hint(response.status_code))
+        return
     try:
         detail = response.json().get("detail", response.text)
     except ValueError:
         detail = response.text
     st.error(f"请求未完成（{response.status_code}）：{_humanize_detail(detail)}")
+
+
+#: 这几个状态码在「前端连上了某个服务」的前提下基本只有一种解释：
+#: 端口上跑的不是本项目后端（或后端在重启）。统一走分诊提示。
+_BACKEND_MISSING_STATUS = (404, 502, 503, 504)
+
+
+def _describe_backend_down(exc: requests.RequestException) -> str:
+    """把连接类异常翻译成「后端没起来 / 端口被占用」。
+
+    ``requests`` 的原生报错是 ``HTTPConnectionPool(host='localhost',
+    port=8000): Max retries exceeded ... Errno 10061``，对车队老板毫无意义。
+    """
+    reason = type(exc).__name__
+    return (
+        f"连不上核算服务（{API_BASE_URL}，{reason}）。\n\n"
+        "常见原因有两个：① 后端没启动 —— 另开一个终端执行 "
+        "`python -m uvicorn src.api.main:app --port 8000`；"
+        "② 8000 端口被别的程序占用 —— 换端口启动后端，并设置环境变量 "
+        "`API_BASE_URL` 指向新端口。"
+    )
+
+
+def _backend_missing_hint(status_code: int) -> str:
+    return (
+        f"核算服务返回 {status_code}，说明 {API_BASE_URL} 上跑的不是本项目后端"
+        "（端口多半被别的程序占用了）。\n\n"
+        "请换一个端口启动后端，例如 `python -m uvicorn src.api.main:app --port 8010`，"
+        "并设置环境变量 `API_BASE_URL=http://localhost:8010` 后重启界面。"
+    )
+
 
 
 #: 后端 Pydantic 字段名 → 用户可读的中文字段名。

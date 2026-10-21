@@ -7,7 +7,7 @@ from pathlib import Path
 import requests
 import streamlit as st
 
-from src.ui.api_client import API_BASE_URL, api_post, show_api_error
+from src.ui.api_client import _describe_backend_down, api_post, show_api_error
 from src.ui.navigation import navigate_to
 from src.ui.theme import empty_state, notice, page_header
 
@@ -119,7 +119,7 @@ def render_policy_advisor() -> None:
                      "latency_ms": result.get("latency_ms")}
                 )
             except requests.RequestException as exc:
-                st.error(f"无法连接政策检索服务（{API_BASE_URL}）：{exc}")
+                st.error(_describe_backend_down(exc))
 
 
 def render_report() -> None:
