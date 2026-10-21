@@ -208,6 +208,30 @@ def _render_import_report() -> None:
         st.rerun()
 
 
+def _render_fleet_anomalies_warning(fleet: list[dict]) -> None:
+    """对单车里程极端偏高或实载率极低给出专业级业务提示（软拦截）。"""
+    if not fleet:
+        return
+    high_km_items = [
+        f"{item['vehicle_type']}（{item['annual_km']:,} km/年）"
+        for item in fleet if item.get("annual_km", 0) > 250_000
+    ]
+    if high_km_items:
+        st.warning(
+            f"⚠️ 检测到部分车型单车年里程异常偏高（>25万公里）：{'、'.join(high_km_items)}。"
+            "请确认是否为长途双班倒挂重卡（如干线快递包车）；若为输入笔误请及时调整，避免基线排放严重失真。"
+        )
+    low_lf_items = [
+        f"{item['vehicle_type']}（{item.get('load_factor', 0):.0%}）"
+        for item in fleet if item.get("load_factor", 1.0) < 0.20
+    ]
+    if low_lf_items:
+        st.info(
+            f"ℹ️ 提示：部分车型平均满载率偏低（<20%）：{'、'.join(low_lf_items)}。"
+            "系统已按低载保守机制自动启动排放上浮修正；若属于单向放空/回程无货场景，该上浮能有效防范低估风险。"
+        )
+
+
 def render_inventory() -> None:
     page_header(
         "核算 · 第一步",
@@ -314,6 +338,7 @@ def render_inventory() -> None:
             for index, item in enumerate(fleet)
         ]
         st.dataframe(rows, width="stretch", hide_index=True)
+        _render_fleet_anomalies_warning(fleet)
 
         d1, d2 = st.columns([3, 1])
         selected_row = d1.selectbox(

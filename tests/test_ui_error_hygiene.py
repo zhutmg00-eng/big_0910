@@ -359,3 +359,42 @@ def test_config_anchors_dotenv_to_repo_root():
     source = (repo / "src" / "config.py").read_text(encoding="utf-8")
     assert "load_dotenv(dotenv_path=" in source
     assert '.env' in source
+
+
+class TestFleetAnomalySoftWarnings:
+    """第 13 轮盲审 P2-3：单车里程极端偏高或实载率偏低应有软拦截与专业解释。"""
+
+    def test_warning_rendered_when_annual_km_exceeds_250k(self, monkeypatch):
+        import streamlit as st
+        from src.ui.views.overview import _render_fleet_anomalies_warning
+
+        warnings = []
+        monkeypatch.setattr(st, "warning", lambda msg: warnings.append(msg))
+        fleet = [{"vehicle_type": "重型柴油半挂牵引车(>49t)", "count": 10, "annual_km": 280_000, "load_factor": 0.8}]
+        _render_fleet_anomalies_warning(fleet)
+        assert len(warnings) == 1
+        assert "25万公里" in warnings[0]
+        assert "长途双班倒挂重卡" in warnings[0]
+
+    def test_info_rendered_when_load_factor_below_20_percent(self, monkeypatch):
+        import streamlit as st
+        from src.ui.views.overview import _render_fleet_anomalies_warning
+
+        infos = []
+        monkeypatch.setattr(st, "info", lambda msg: infos.append(msg))
+        fleet = [{"vehicle_type": "轻型柴油货车", "count": 5, "annual_km": 30_000, "load_factor": 0.15}]
+        _render_fleet_anomalies_warning(fleet)
+        assert len(infos) == 1
+        assert "20%" in infos[0]
+        assert "低载保守机制" in infos[0]
+
+    def test_normal_fleet_triggers_no_warnings(self, monkeypatch):
+        import streamlit as st
+        from src.ui.views.overview import _render_fleet_anomalies_warning
+
+        called = []
+        monkeypatch.setattr(st, "warning", lambda msg: called.append(msg))
+        monkeypatch.setattr(st, "info", lambda msg: called.append(msg))
+        fleet = [{"vehicle_type": "重型柴油货车", "count": 20, "annual_km": 80_000, "load_factor": 0.75}]
+        _render_fleet_anomalies_warning(fleet)
+        assert len(called) == 0
