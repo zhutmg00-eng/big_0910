@@ -626,3 +626,47 @@ def test_plugin_does_not_claim_mcp_support():
         assert ("未实现" in window) or ("不是" in window) or ("没有" in window), (
             f"README 提到 MCP 但未说明本项目未实现：{window!r}"
         )
+
+# 「专家双盲评审 / 4.905 分」是本项目被反复点名的问题：README 已声明不主张任何
+# 专家评分，评分卡原件也未纳入公开仓库，但答辩材料与生成器里仍把它当卖点。
+# 这里把规则写成守卫，避免下一次又漂回去。
+EXPERT_SCORE_NEEDLES = ("4.905", "4.933", "4.877")
+EXPERT_SCORE_FILES = (
+    "docs/artifacts/defense_presentation_deck.html",
+    "scripts/build_defense_pdfs.py",
+    "scripts/generate_presentation_pptx.py",
+    "docs/中期答辩成果与实证全景报告.md",
+    "docs/大创中期答辩核心指南与评审问辨应对.md",
+    "docs/国家级优秀大创答辩逐字稿与尖锐质询策略_升级版.md",
+    "docs/大创中期答辩幻灯片视觉与内容全景设计图解.md",
+)
+
+
+def test_expert_scores_are_never_used_as_evidence():
+    """任何材料提到 4.905 等分数时，同段落必须同时说明「不主张/已撤回/未署名」。"""
+    for rel in EXPERT_SCORE_FILES:
+        text = _read_defense(rel)
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if not any(needle in line for needle in EXPERT_SCORE_NEEDLES):
+                continue
+            window = "\n".join(lines[max(0, index - 3) : index + 4])
+            assert any(
+                marker in window
+                for marker in ("不主张", "已撤回", "未署名", "不引用", "不作证据", "撤回")
+            ), f"{rel}:{index + 1} 引用了专家评分却没有说明不可核验/不主张：{line.strip()[:80]}"
+
+
+def test_defense_materials_do_not_claim_double_blind_expert_review():
+    """专家意见是「非结构化咨询访谈」，不能写成「双盲同行评议」。"""
+    for rel in EXPERT_SCORE_FILES:
+        text = _read_defense(rel)
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if "双盲" not in line:
+                continue
+            window = "\n".join(lines[max(0, index - 2) : index + 3])
+            assert any(
+                marker in window
+                for marker in ("非双盲", "不是双盲", "不构成", "单盲", "不使用")
+            ), f"{rel}:{index + 1} 把专家意见写成双盲评审：{line.strip()[:80]}"

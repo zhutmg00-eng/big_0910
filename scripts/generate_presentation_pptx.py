@@ -864,7 +864,7 @@ def create_deck():
     tf_l14.word_wrap = True
 
     p = tf_l14.paragraphs[0]
-    p.text = "评审专家 A · 高校交通低碳学者 / 博士生导师"
+    p.text = "受邀咨询人 A · 高校交通低碳学者 / 博士生导师（咨询访谈，未评分）"
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_PRIMARY
@@ -897,7 +897,7 @@ def create_deck():
     tf_r14.word_wrap = True
 
     p = tf_r14.paragraphs[0]
-    p.text = "评审专家 B · 头部物流企业能源总监 / 资深高级工程师"
+    p.text = "受邀咨询人 B · 头部物流企业能源总监 / 资深高级工程师（咨询访谈，未评分）"
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_PRIMARY
@@ -921,7 +921,7 @@ def create_deck():
     p.font.size = Pt(9.5)
     p.font.color.rgb = COLOR_SECONDARY
 
-    add_footnote(s14, "专家独立评分表与采纳台账见 docs/expert_review/专家盲评综合评估与意见采纳报告.md")
+    add_footnote(s14, "意见采纳台账见第五章；咨询记录原件为私有材料，不入公开仓库，读者无法核验，故本页不给任何评分")
 
     # ==========================================================================
     # Slide 15: 团队分工与经费使用合规性（答辩必查管理指标）
