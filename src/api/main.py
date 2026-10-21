@@ -176,11 +176,12 @@ def build_security_posture(api_key: str | None = None) -> dict:
 
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
-    """验证API Key（如果配置了APP_API_KEY则强制校验，否则开发模式跳过）"""
-    if API_KEY:  # 生产模式：需要校验
+    """验证API Key（仅受保护模式强制校验；开发模式或占位符跳过校验）"""
+    posture = build_security_posture()
+    if posture["auth_required"]:  # 仅在真正处于受保护模式时才拦截
         if not api_key or not secrets.compare_digest(api_key, API_KEY):  # 常量时间比较，防计时攻击
             raise HTTPException(status_code=401, detail="Invalid or missing API key")
-    # 开发模式（未设API_KEY）：跳过鉴权
+    # 开发模式（未设API_KEY或为占位符）：跳过鉴权
     return api_key
 
 

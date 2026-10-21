@@ -69,3 +69,34 @@ class TestHealthExposesPosture:
         body = TestClient(app).get("/api/health").json()
         assert body["security"]["auth_required"] is False
         assert body["security"]["mode"] in {"open_dev", "placeholder_key"}
+
+
+class TestVerifyApiKeyConsistency:
+    def test_placeholder_key_does_not_block_requests(self, monkeypatch):
+        """第14轮盲审 P0-2：占位符模式下自检报 auth_required:false，中间件不得强制 401。"""
+        import src.api.main as api_main
+        monkeypatch.setattr(api_main, "API_KEY", "your-api-key-here")
+        client = TestClient(app)
+        payload = {
+            "company_name": "测试物流企业",
+            "fleet": [{"vehicle_type": "重型柴油货车", "count": 10, "annual_km": 80000, "load_factor": 0.75}],
+        }
+        # 未携带 X-API-Key Header，占位符模式下应正常放行
+        resp = client.post("/api/calculate", json=payload)
+        assert resp.status_code == 200, f"占位符模式下应免鉴权放行，实际返回 {resp.status_code}: {resp.text}"
+
+    def test_real_key_blocks_unauthorized_requests(self, monkeypatch):
+        """真实密钥受保护模式下，必须拦截未带正确 Header 的请求。"""
+        import src.api.main as api_main
+        monkeypatch.setattr(api_main, "API_KEY", "real-production-secret-999")
+        client = TestClient(app)
+        payload = {
+            "company_name": "测试物流企业",
+            "fleet": [{"vehicle_type": "重型柴油货车", "count": 10, "annual_km": 80000, "load_factor": 0.75}],
+        }
+        resp = client.post("/api/calculate", json=payload)
+        assert resp.status_code == 401
+        # 带正确 Header 则放行
+        resp_authed = client.post("/api/calculate", json=payload, headers={"X-API-Key": "real-production-secret-999"})
+        assert resp_authed.status_code == 200
+
