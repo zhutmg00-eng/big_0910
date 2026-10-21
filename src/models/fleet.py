@@ -33,10 +33,14 @@ class VehicleInput(BaseModel):
     @field_validator("vehicle_type")
     @classmethod
     def validate_vehicle_type(cls, value: str) -> str:
+        from src.engine.fleet_import import resolve_vehicle_type
+
         vehicle_type = value.strip()
-        if not get_emission_factor(vehicle_type):
+        # 优先完全匹配因子表，其次尝试口语同义词与驱动型式模糊归一化
+        resolved = resolve_vehicle_type(vehicle_type) or vehicle_type
+        if not get_emission_factor(resolved):
             raise ValueError(f"不支持的车型: {vehicle_type or value}")
-        return vehicle_type
+        return resolved
 
 
 class FleetInput(BaseModel):

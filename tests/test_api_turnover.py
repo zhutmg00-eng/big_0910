@@ -84,3 +84,30 @@ def test_turnover_endpoint_input_validation():
         "green_electricity_ratio": 1.5,
     })
     assert r_ratio.status_code == 422
+
+
+def test_turnover_endpoint_vehicle_synonym_resolution():
+    """第14轮盲审 P1-2：支持国家标准/口语车型别名（如轻型纯电动货车、纯电重卡）自动归一化"""
+    payload = {
+        "fleet": [
+            {
+                "vehicle_type": "轻型纯电动货车",  # 行业合规名称，自动归一化为新能源物流车
+                "count": 15,
+                "annual_km": 30000.0,
+                "load_factor": 0.8,
+            },
+            {
+                "vehicle_type": "重卡",  # 口语简称，自动归一化为重型柴油货车
+                "count": 20,
+                "annual_km": 80000.0,
+                "load_factor": 0.85,
+            },
+        ],
+        "region": "上海",
+        "green_electricity_ratio": 0.5,
+    }
+    r = client.post("/api/turnover", json=payload)
+    assert r.status_code == 200, f"车型别名应被自动归一化并计算成功: {r.text}"
+    data = r.json()
+    assert data["scope2"]["electric_vehicle_count"] == 15
+    assert data["turnover_and_intensity"]["total_turnover_tkm"] > 0
