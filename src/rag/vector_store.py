@@ -283,7 +283,10 @@ class PolicyVectorStore:
 
     # ------------------------------------------------------------------ 对外检索接口
     def search(self, query: str, k: int = 5, mode: str | None = None) -> List[Dict]:
-        """检索最相关的政策条款。返回 [{id, text, metadata, distance, score, retrievers}]。"""
+        """检索最相关的政策条款。返回 [{id, text, metadata, distance, score, retrievers, rank}]。
+
+        ``rank`` 是 1 起的最终名次，供上层判断「跨检索器支持度」时使用。
+        """
         mode = (mode or RETRIEVAL_MODE).lower()
         if mode not in self.MODES:
             raise ValueError(f"未知检索模式 {mode}，可选 {self.MODES}")
@@ -295,20 +298,29 @@ class PolicyVectorStore:
         if mode == "bm25":
             ranked = self._rank_bm25(query, k)
             top = ranked[0][1] if ranked else 1.0
-            return [self._item(cid, 1 - s / (top or 1), score=s, retrievers=["bm25"]) for cid, s in ranked]
+            # 单路检索：第一名同时算「该路第 1 名」与「唯一召回它的检索器」，
+            # 上层按「跨检索器支持度」判定时不会把纯 BM25 的完美命中误判成不对题。
+            return [self._item(cid, 1 - s / (top or 1), score=s, retrievers=["bm25"], rank=i)
+                    for i, (cid, s) in enumerate(ranked, start=1)]
         if mode == "vector":
-            return [self._item(cid, d, score=1 - d, retrievers=["vector"])
-                    for cid, d in self._rank_vector(query, k)]
+            return [self._item(cid, d, score=1 - d, retrievers=["vector"], rank=i)
+                    for i, (cid, d) in enumerate(self._rank_vector(query, k), start=1)]
         if mode == "keyword":
-            return [self._item(cid, 1 - s, score=s, retrievers=["keyword"])
-                    for cid, s in self._rank_lexical(query, k)]
+            return [self._item(cid, 1 - s, score=s, retrievers=["keyword"], rank=i)
+                    for i, (cid, s) in enumerate(self._rank_lexical(query, k), start=1)]
         if mode == "hybrid":
-            return self._search_legacy_hybrid(query, k)
+            results = self._search_legacy_hybrid(query, k)
+            for rank, item in enumerate(results, start=1):
+                item["rank"] = rank
+            return results
         if mode == "rerank" or (RERANKER_MODEL and mode in {"rrf", "rrf3"}):
             base = "rrf3" if mode == "rerank" else mode
             candidates = self._search_fused(query, max(k, RERANK_CANDIDATES), base)
             return rerank(query, candidates, model_name=RERANKER_MODEL or DEFAULT_RERANKER, top_k=k)
-        return self._search_fused(query, k, mode)
+        results = self._search_fused(query, k, mode)
+        for rank, item in enumerate(results, start=1):
+            item["rank"] = rank
+        return results
 
     def _search_fused(self, query: str, k: int, mode: str) -> List[Dict]:
 
@@ -325,8 +337,12 @@ class PolicyVectorStore:
         results = []
         for cid, score in fused:
             hit_by = [name for name, r in rankings.items() if cid in r[:n]]
-            # distance 归一化到 [0,1]：被所有检索器排第一时为 0
-            results.append(self._item(cid, 1 - score / max_possible, score=score, retrievers=hit_by))
+            # 名次一致性置信度（0~1）：被所有检索器排第一时为 1，只被一个弱检索器
+            # 勉强召回时接近 0。**这是名次分位，不是语义相关性**，不能当作
+            # 「回答是否对题」的概率，也不能与向量模式的 cosine 相似度混用。
+            distance = 1 - score / max_possible
+            results.append(self._item(cid, distance, score=score, retrievers=hit_by,
+                                      agreement=round(1 - distance, 6)))
         return results
 
     def _search_legacy_hybrid(self, query: str, k: int) -> List[Dict]:

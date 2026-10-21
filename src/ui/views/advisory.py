@@ -36,12 +36,23 @@ def _render_sources(
         for i, src in enumerate(sources, 1):
             tags = " · ".join(RETRIEVER_LABELS.get(r, r) for r in src.get("retrievers", []))
             rel = src.get("relevance")
+            basis = src.get("relevance_basis")
+            # 融合检索下没有「相关度」：1-distance 是名次分位，三路都排第一反而接近 0。
+            # 这时显示「交叉印证 N 路」，不要给用户一个会被误读成概率的小数。
+            if basis == "multi_retriever_agreement":
+                rel_text = f" · 交叉印证 {len(src.get('retrievers', []))} 路"
+            elif basis == "single_retriever_hit":
+                rel_text = " · 单路召回（无交叉印证）"
+            elif isinstance(rel, (int, float)):
+                rel_text = f" · 相关度 {rel:.2f}"
+            else:
+                rel_text = ""
             st.markdown(
                 f"**[{i}] {src.get('source', '未知来源')}**"
                 + (f"（{src['date']}）" if src.get("date") else "")
                 + (f"  \n`{src.get('chunk_id', '')}`" if src.get("chunk_id") else "")
                 + (f" · 命中：{tags}" if tags else "")
-                + (f" · 相关度 {rel:.2f}" if isinstance(rel, (int, float)) else "")
+                + rel_text
             )
             if src.get("excerpt"):
                 st.caption(src["excerpt"])

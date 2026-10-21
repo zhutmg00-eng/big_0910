@@ -112,11 +112,19 @@ def test_nonexistent_question_still_returns_structure(empty_store) -> None:
 
 
 class _StubStore:
-    """返回固定相关性证据的向量库替身，用于验证低相关度提示。"""
+    """返回固定相关性证据的向量库替身，用于验证低相关度提示。
 
-    def __init__(self, relevance: float, n: int = 5):
+    必须带 ``mode`` 与 ``rank``：第 10 轮评审发现融合检索下 ``1 - distance``
+    是 RRF 名次分位而不是相关度，所以 ``_result_relevance`` 只在 vector /
+    keyword 模式下把它当相关度用。替身默认模拟 vector 模式。
+    """
+
+    def __init__(self, relevance: float, n: int = 5, mode: str = "vector",
+                 retrievers=("vector",)):
         self.relevance = relevance
         self.n = n
+        self.mode = mode
+        self.retrievers = list(retrievers)
 
     def search(self, query, k=5):  # noqa: ARG002 - 接口签名对齐
         return [
@@ -124,11 +132,16 @@ class _StubStore:
                 "id": f"c{i}",
                 "text": "来源文档：x.md\n正文",
                 "distance": 1 - self.relevance,
+                "score": self.relevance,
                 "metadata": {"source": "某政策.md", "date": "2026-01-01"},
-                "retrievers": ["bm25"],
+                "retrievers": list(self.retrievers),
+                "rank": i + 1,
             }
             for i in range(self.n)
         ]
+
+    def search_mode(self) -> str:
+        return self.mode
 
 
 class TestLowRelevanceWarning:
@@ -159,3 +172,47 @@ class TestLowRelevanceWarning:
         result = PolicyAdvisor(vector_store=_StubStore(0.88)).ask("q", {})
         assert result["evidence_warning"], "阈值调到 0.90 后 0.88 应触发提示"
         assert "0.90" in result["evidence_warning"]
+
+class TestFusedRelevanceIsNotCorrelation:
+    """第 10 轮评审实测的口径错误：融合检索里 1-distance 是 RRF 名次分位。
+
+    现象：rrf3 下被三路同时排第一的「配额清缴期限」relevance ≈ 0.00，
+    完全对题却被报成「最高相关性只有 0.00，可能并不对题」；而「我想请假」
+    的 relevance = 0.994，比真正对题的问题还高。这里锁住修复后的语义。
+    """
+
+    def _sources(self, *retrievers_lists, threshold=0.62):
+        from src.rag import _low_relevance_warning
+
+        sources = [
+            {"relevance": 1.0 if len(r) >= 2 else 0.0,
+             "relevance_basis": "multi_retriever_agreement" if len(r) >= 2 else "single_retriever_hit",
+             "relevance_mode": "rrf3", "retrievers": list(r), "rank": i + 1}
+            for i, r in enumerate(retrievers_lists)
+        ]
+        return _low_relevance_warning(sources)
+
+    def test_perfect_hit_is_not_reported_as_low_relevance(self, monkeypatch) -> None:
+        monkeypatch.setattr("src.rag.call_llm", lambda *a, **k: "答复")
+        store = _StubStore(0.0, n=3, mode="rrf3", retrievers=("bm25", "vector", "keyword"))
+        result = PolicyAdvisor(vector_store=store).ask("配额清缴期限", {})
+        # distance = 1 - 0.0 = 1.0（旧口径会算成 relevance 0.0）
+        assert result["evidence_warning"] == ""
+
+    def test_fused_mode_never_claims_a_correlation_number(self, monkeypatch) -> None:
+        monkeypatch.setattr("src.rag.call_llm", lambda *a, **k: "答复")
+        store = _StubStore(0.99, n=3, mode="rrf3", retrievers=("bm25", "vector"))
+        result = PolicyAdvisor(vector_store=store).ask("q", {})
+        assert result["retrieved_sources"][0]["relevance"] == 1.0
+        assert result["retrieved_sources"][0]["relevance_basis"] == "multi_retriever_agreement"
+
+    def test_single_retriever_hit_is_flagged(self) -> None:
+        warning = self._sources(("bm25",), ("bm25",), ("bm25",))
+        assert "没有一条被两个以上检索器共同召回" in warning
+
+    def test_partial_support_is_flagged(self) -> None:
+        warning = self._sources(("bm25", "vector"), ("bm25",), ("bm25",), ("keyword",), ("bm25",))
+        assert "只有 1 条被两个以上检索器共同召回" in warning
+
+    def test_full_support_is_silent(self) -> None:
+        assert self._sources(("bm25", "vector"), ("bm25", "keyword")) == ""
