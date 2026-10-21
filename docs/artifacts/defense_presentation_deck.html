@@ -441,7 +441,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig0_system_architecture.png" alt="系统全层级技术架构图">
+            <img src="fig0_system_architecture.svg" onerror="this.onerror=null;this.src='fig0_system_architecture.png'" alt="系统全层级技术架构图">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -540,7 +540,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig1_rq1_real_fleet_validation.png" alt="RQ1 真实车队基准复核">
+            <img src="fig1_rq1_real_fleet_validation.svg" onerror="this.onerror=null;this.src='fig1_rq1_real_fleet_validation.png'" alt="RQ1 真实车队基准复核">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -649,7 +649,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig2_rq2_rag_benchmark_comparison.png" alt="RQ2 RAG 对照消融实验">
+            <img src="fig2_rq2_rag_benchmark_comparison.svg" onerror="this.onerror=null;this.src='fig2_rq2_rag_benchmark_comparison.png'" alt="RQ2 RAG 对照消融实验">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -697,7 +697,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig3_rq3_sensitivity_heatmap.png" alt="RQ3 敏感性扰动热力图">
+            <img src="fig3_rq3_sensitivity_heatmap.svg" onerror="this.onerror=null;this.src='fig3_rq3_sensitivity_heatmap.png'" alt="RQ3 敏感性扰动热力图">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -718,9 +718,13 @@
             <div class="academic-card border-accent" style="padding: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 主导误差源量化归因</div>
               <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
-                • 满载率扰动带来的相对误差极差为 2.63%；<br>
-                • 里程扰动带来的相对误差极差为 3.01%；<br>
-                量化证实：满载率假设是微观核算的主导可控误差源，验证了设置低满载率惩罚函数的工程必要性。
+                • 同一里程倍数下，实载率扰动引起的 MAPE 行内极差为 3.67%~5.50%（跨度约 4.59 pp）；<br>
+                • 同一实载率偏移下，里程 ±20% 引起的 MAPE 列内极差为 20.72%~26.76%；<br>
+                量化证实：<b>年均里程是主导误差源（约为实载率的 5~9 倍），实载率是次要误差源</b>；
+                低满载率惩罚函数的作用是让实载率这一次要项在低载时不被系统性低估，
+                而不是它主导误差。<br>
+                <span style="color:#b45309;">（早期材料把两者主次写反、写成「极差 2.63% / 3.01%」，
+                已按 50 格扫描结果重算并更正；两个方向都存在强不对称，不能写成单一常数。）</span>
               </div>
             </div>
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -747,7 +751,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig4_baas_tco_comparison.png" alt="换电 BaaS TCO 回本周期对比">
+            <img src="fig4_baas_tco_comparison.svg" onerror="this.onerror=null;this.src='fig4_baas_tco_comparison.png'" alt="换电 BaaS TCO 回本周期对比">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -807,7 +811,7 @@
         </div>
         <div class="slide-body">
           <div class="chart-box">
-            <img src="fig5_grid_scope2_green_power.png" alt="30 个省级行政区电网因子与绿电抵扣">
+            <img src="fig5_grid_scope2_green_power.svg" onerror="this.onerror=null;this.src='fig5_grid_scope2_green_power.png'" alt="30 个有数据省级行政区（全国共 31 个省级行政区）电网因子与绿电抵扣">
           </div>
           <div class="info-pane">
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -864,30 +868,30 @@
             <tbody>
               <tr>
                 <td><b>排放因子数据库</b></td>
-                <td>整理收录 15 条分车型因子</td>
-                <td>完成 19 条权威因子 (蔡博峰2021/GB 30510-2024)</td>
-                <td style="text-align: center; font-weight: 700; color: var(--accent);">126%</td>
+                <td>排放因子数据库（19 条记录）</td>
+                <td>完成 19 条权威因子 (蔡博峰2021/GB 30510-2024)（开题预期成果已写 19 条）</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">100%</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
               </tr>
               <tr>
                 <td><b>碳价历史数据库</b></td>
-                <td>收录 200 条市场价格记录</td>
-                <td>收录 274 条全国及试点市场真实周度交易数据</td>
-                <td style="text-align: center; font-weight: 700; color: var(--accent);">137%</td>
+                <td>碳价历史数据库（274 条周度数据）</td>
+                <td>收录 274 条全国及试点市场周度交易数据（开题预期成果已写 274 条；其中真实成交 73 条、其余为插值）</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">100%</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
               </tr>
               <tr>
                 <td><b>政策法规知识库</b></td>
-                <td>收集整理 30 份政策文档</td>
-                <td>清洗 39 份政策文件并切分 281 个规范切片</td>
-                <td style="text-align: center; font-weight: 700; color: var(--accent);">123%</td>
+                <td>政策文档知识库（37 份文档）</td>
+                <td>清洗 42 份政策文件，入库可检索 39 份、281 个规范切片（开题预期成果已写 37 份）</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">105%</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">超额完成</td>
               </tr>
               <tr>
                 <td><b>真实车队复核 (RQ1)</b></td>
-                <td>复核约 20,000 辆车队台账</td>
+                <td>（开题报告未给出车队复核数量，此项为中期新增实证）</td>
                 <td>完成顺丰/中通/京东/冷链 51,990 辆真实台账复核</td>
-                <td style="text-align: center; font-weight: 700; color: var(--accent);">225%</td>
+                <td style="text-align: center; font-weight: 700; color: var(--accent);">新增</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">大幅超额</td>
               </tr>
               <tr>
@@ -965,7 +969,7 @@
           </div>
         </div>
         <div class="footnote">
-          注 / 来源依据：双专家背靠背独立评分表与整改台账见 docs/expert_review/专家盲评综合评估与意见采纳报告.md
+          注 / 来源依据：本页为专家咨询访谈（非双盲、不引用评分）。访谈记录与整改台账为私有材料，未入库（.gitignore 排除 docs/expert_review/），公开仓库读者无法核验，故此处不提供链接、也不主张任何评分。可核验的是第五章逐条列出的意见与对应改动，每条都指向仓库里的具体文件与提交。
         </div>
       </div>
 
@@ -1056,7 +1060,10 @@
           </div>
         </div>
         <div class="footnote">
-          注 / 来源依据：总资助 2,000 元，中期执行 1,250 元 (执行率 62.5%)，结余 750 元预留结题；发票真实齐全，无违规支出
+          注 / 来源依据：总资助 2,000 元，中期执行 1,250 元，**总体执行率 62.5%（= 1,250 / 2,000，
+          按金额加权；不能把六行「执行率」列直接取平均，那是 63.6%，口径不同）**，结余 750 元预留结题；
+          论文版面费原列 500 元、现列 300 元，差额 200 元并入软件著作权登记费（明细见开题报告预算表）。
+          发票真实齐全，无违规支出
         </div>
       </div>
 
@@ -1135,9 +1142,9 @@
       10: "【Slide 10 RQ3 敏感性分析 · 35秒】\n【网格扰动推导】：我们构建了实载率 (-0.30~+0.15) 与里程 (±20%) 的 5×5 扰动网格系统扫描 50 组参数。\n结果表明：全网格 50 组参数组合的 MAPE 介于 3.04% 至 29.80% 之间（中位数 14.51%），其中 30/50 组合超过 10%。\n【误差源量化（全部由扫描结果现算，无手工数字）】：里程确为一阶主导因子，但效应<b>强不对称</b>——里程 +20% 使 MAPE 上升 +20.72~+21.63 pp，而里程 −20% 仅上升 +5.30~+13.55 pp（因为误差取绝对值后并不关于零点对称）。实载率引起的 MAPE 变化约 <b>4.59 pp</b>（同一里程倍数下行内极差 3.67~5.50 pp），且不是可跨里程倍数通用的常数。早期材料写的「±20% 里程≈±20 pp」「实载率净效应 1.3 pp」均无任何计算依据，已撤回。结论：野外采集应优先保证里程数据质量。",
       11: "【Slide 11 前沿突破 BaaS 推导 · 45秒】\n【评委重点关注：BaaS 回收期是怎么算出来的？】：\n以 10 辆 49t 重卡年跑 10 万公里为例：柴油车单价 35 万，纯电 65 万加充电桩 3 万。传统买断初始垫资 ΔCAPEX = (65-35+3)×10 = 330 万元；年油费 24.75 万 vs 年电费 11.20 万，含维保节省后年运营节省 140.75 万元，静态回收期 330 / 140.75 = 2.34 年。\n而在换电 BaaS 模式下：剥离电池（立减 20 万/车）且免建充电桩，裸车 45 万元，10 辆车初始垫资仅 ΔCAPEX_BaaS = (45-35)×10 = 100 万元 (降幅 70%)；年电池租金 45 万元，扣除租金后年净现金流 140.75 - 45 = 95.75 万元；静态回收期 = 100 / 95.75 = 1.04 年 (较买断缩短 55%)。\n【口径说明（必读）】：以上两套数字均取电价 0.80 元/kWh、电池租金 4.5 万元/车·年。若电价取 1.00 元/kWh，则买断年运营节省 112.75 万元、回收期 2.93 年，BaaS 扣除租金后年净现金流 67.75 万元、回收期 1.48 年——早期版本 Slide 11 写的 1.46 年即此口径，两者不是矛盾而是假设不同，回答质询时须先说明电价。\n【另需主动交代】：初始垫资降幅 69.7% 是代数恒等式（买断单价增量 = 车价差 30 万 + 充电桩 3 万，BaaS 单价增量 = 车价差 − 电池剥离立减 20 万），与电池租金、年里程、油价电价均无关，只随充电桩成本假设滑动，不能当作敏感性分析的结论。",
       12: "【Slide 12 前沿突破 绿电 Scope 2 · 35秒】\n【电网核算推导】：针对纯电车尾气 0 排放但发电端有排放的争议，我们收录生态环境部 2025 年 47 号公告的省级电网因子（<b>30 个省级行政区</b>，西藏暂缺数据），建立 Scope 2 外购电模型，扣减充电耗电间接排放得出真实净减排量；引入绿电消纳比例实现动态抵扣；并核算 GB 1589 吨位万吨公里周转量与 gCO2/t·km 排放强度，无缝对接交通部达峰考核方案。",
-      13: "【Slide 13 阶段检查承诺对照 · 35秒】\n【开题承诺 vs 中期核验】：对标开题报告，中期 7 大任务按任务条数计均已完成：排放因子库扩充至 19 条 (126%)、碳价库 274 条 (137%)、法规知识库 281 切片 (129%)、真实车队复核覆盖 51,990 辆 (260%，但观测单元是 4 个车队)；自建 40 题金标集并通过 Wilcoxon 检验；超额突破 BaaS TCO 与 30 个省级行政区 Scope 2 间接核算，无任何落后项。",
+      13: "【Slide 13 阶段检查承诺对照 · 35秒】\n【开题承诺 vs 中期核验】：对标开题报告，中期 7 大任务按任务条数计均已完成：排放因子库 19 条、碳价库 274 条、政策文档 37 份（中期核验 42 份、入库可检索 39 份 281 切片）——这三项都是开题「预期成果」里已经写成完成态的数字，因此中期完成率按 100%（不虚报超额）；真实车队复核覆盖 51,990 辆，规模是开题未给出的新增实证（观测单元是 4 个车队，不是 51,990 个样本）；自建 40 题金标集并通过 Wilcoxon 检验；超额突破 BaaS TCO 与 30 个省级行政区 Scope 2 间接核算，无任何落后项。",
       14: "【Slide 14 专家咨询评审 · 35秒】\n【关于外部意见的定位，我们不夸大】：我们邀请了高校交通低碳方向学者与物流企业能源负责人进行了<b>非结构化咨询访谈</b>，并据其反馈整改（采纳条目见 docs 中的采纳台账）。<b>这不构成独立双盲同行评议，我们也不引用任何具体评分数字</b>——早期材料曾写「4.905/5.0」，但评分表原件未纳入仓库，且不同文档给出的分项互相冲突，该分数已从对外材料中撤回。",
-      15: "【Slide 15 团队分工与财务合规 · 30秒】\n【组织与财务】：陈铭浩统筹架构与 TCO 模型、张可为负责活动水平引擎与 51,990 辆台账核对、王逸贤负责 RAG 三路融合检索与回归测试，汪晓霞导师把关双碳合规红线与评审指导。\n获批总经费 2,000 元，中期已执行 1,250 元 (执行率 62.5%)，结余 750 元严格预留用于项目研究；全部票据真实齐全，合规执行。",
+      15: "【Slide 15 团队分工与财务合规 · 30秒】\n【组织与财务】：陈铭浩统筹架构与 TCO 模型、张可为负责活动水平引擎与 51,990 辆台账核对、王逸贤负责 RAG 三路融合检索与回归测试，汪晓霞导师把关双碳合规红线与评审指导。\n获批总经费 2,000 元，中期已执行 1,250 元 (总体执行率 62.5%，按金额加权)，结余 750 元严格预留用于项目研究；全部票据真实齐全，合规执行。",
       16: "【Slide 16 结题规划与致谢 · 20秒】\n【结题冲刺】：目前团队已完成科研原型系统研发与实证分析，软著申请材料已准备就绪；后续将对接车队开展实测，并向公铁联运协同优化演进。\n总结而言，我们坚守科学底色、严守合规红线、紧跟产业前沿。感谢各位评审专家的悉心指导，请各位老师批评指正！我们已备好附录材料，随时恭候专家质询！"
     };
 
