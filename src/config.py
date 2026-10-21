@@ -94,6 +94,11 @@ RRF_WEIGHTS = {
     "vector": float(os.getenv("RRF_WEIGHT_VECTOR") or 0.1),
     "keyword": float(os.getenv("RRF_WEIGHT_KEYWORD") or 0.8),
 }
-RETRIEVAL_THRESHOLD = 0.7  # 相似度阈值
+# 检索相关度的「低置信」提示阈值。注意它不用于过滤（过滤会改变实测指标，
+# 必须重跑金标集才能对外引用），只用于在答复旁标注「这些条款可能不对题」。
+# 定标依据：实测「?"这样的空问题」也能拿到相关性 0.50~0.53 的 5 条证据
+# （稠密向量对任意输入都会给出 0.5 左右的余弦相似度），而真正对题的提问通常
+# 在 0.62 以上，故取 0.62 作为提示线。
+RETRIEVAL_THRESHOLD = float(os.getenv("RETRIEVAL_THRESHOLD") or 0.62)
 LLM_TEMPERATURE = 0.1  # 低温度减少幻觉
 LLM_MAX_TOKENS = 2000  # 最大输出长度

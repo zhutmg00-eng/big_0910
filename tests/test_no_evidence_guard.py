@@ -53,17 +53,27 @@ def test_empty_kb_does_not_call_llm(empty_store, monkeypatch) -> None:
 
 
 def test_empty_kb_answer_states_no_evidence(empty_store) -> None:
-    """说明文本必须自陈"没有证据"，并给出可操作的排查路径。"""
+    """说明文本必须自陈「没找到」，并给用户可执行的下一步。
+
+    第 8 轮评审 P1-1 指出原实现把 `python scripts/ingest_policy_docs.py
+    --force`、`GET /api/kb/health` 这些开发者命令当成给车队老板的答复。
+    现在主体改成「换说法 / 换主题 / 找管理员」，运维命令退到
+    evidence_warning 的括注里。
+    """
     result = PolicyAdvisor(vector_store=empty_store).ask("碳排放怎么核算？", {})
     answer = result["answer"]
 
-    assert "未在知识库中检索到" in answer
-    assert "不生成回答" in answer
+    assert "没有找到可引用的条款" in answer
+    assert "不作答" in answer
     # 必须给出下一步动作，而不是让用户卡在这里
-    assert "ingest_policy_docs.py" in answer
-    assert "/api/kb/health" in answer
+    assert "换个说法" in answer
+    assert "系统管理员" in answer
     assert result["evidence_warning"], "evidence_warning 不能为空，前端据此显示告警"
-    assert "未调用大模型" in result["evidence_warning"]
+    assert "未生成回答" in result["evidence_warning"]
+    # 运维信息仍在，但只出现在告警的括注里，不占答复主体
+    assert "ingest_policy_docs.py" in result["evidence_warning"]
+    assert "/api/kb/health" in result["evidence_warning"]
+    assert "ingest_policy_docs.py" not in answer
 
 
 def test_empty_kb_answer_does_not_assert_policy_facts(empty_store) -> None:
@@ -99,3 +109,53 @@ def test_nonexistent_question_still_returns_structure(empty_store) -> None:
     result = PolicyAdvisor(vector_store=empty_store).ask("完全不相关的问题 xyzzzy", {})
     for key in ("question", "retrieved_sources", "answer", "evidence_count", "evidence_warning"):
         assert key in result, f"返回结构缺少字段 {key}"
+
+
+class _StubStore:
+    """返回固定相关性证据的向量库替身，用于验证低相关度提示。"""
+
+    def __init__(self, relevance: float, n: int = 5):
+        self.relevance = relevance
+        self.n = n
+
+    def search(self, query, k=5):  # noqa: ARG002 - 接口签名对齐
+        return [
+            {
+                "id": f"c{i}",
+                "text": "来源文档：x.md\n正文",
+                "distance": 1 - self.relevance,
+                "metadata": {"source": "某政策.md", "date": "2026-01-01"},
+                "retrievers": ["bm25"],
+            }
+            for i in range(self.n)
+        ]
+
+
+class TestLowRelevanceWarning:
+    """第 9 轮评审 P1：POST /api/ask {"question":"?"} 返回 5 条证据但相关性
+    只有 0.501–0.533，evidence_warning 却是空的。
+
+    稠密向量对任何输入都会给出 0.5 左右的余弦相似度，所以「检索到了」不等于
+    「对题」；不提示的话用户会看到一段以错位条款为依据、语气却很确定的答复。
+    """
+
+    def test_low_relevance_emits_warning(self, monkeypatch) -> None:
+        monkeypatch.setattr("src.rag.call_llm", lambda *a, **k: "答复")
+        result = PolicyAdvisor(vector_store=_StubStore(0.52)).ask("?", {})
+        assert result["evidence_count"] == 5
+        warning = result["evidence_warning"]
+        assert warning, "低相关度时不能静默"
+        assert "0.52" in warning
+        assert "可能并不对题" in warning
+
+    def test_high_relevance_has_no_warning(self, monkeypatch) -> None:
+        monkeypatch.setattr("src.rag.call_llm", lambda *a, **k: "答复")
+        result = PolicyAdvisor(vector_store=_StubStore(0.88)).ask("物流企业是否纳入碳市场？", {})
+        assert result["evidence_warning"] == ""
+
+    def test_threshold_is_configurable_and_used(self, monkeypatch) -> None:
+        monkeypatch.setattr("src.rag.RETRIEVAL_THRESHOLD", 0.90)
+        monkeypatch.setattr("src.rag.call_llm", lambda *a, **k: "答复")
+        result = PolicyAdvisor(vector_store=_StubStore(0.88)).ask("q", {})
+        assert result["evidence_warning"], "阈值调到 0.90 后 0.88 应触发提示"
+        assert "0.90" in result["evidence_warning"]

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from src.rag.vector_store import PolicyVectorStore, get_vector_store
 from src.rag.generator import SYSTEM_PROMPT, build_retrieval_answer, build_user_prompt, call_llm
-from src.config import RETRIEVAL_TOP_K
+from src.config import RETRIEVAL_THRESHOLD, RETRIEVAL_TOP_K
 from src.rag.parser import _CJK_GAP
 
 logger = logging.getLogger(__name__)
@@ -58,20 +58,26 @@ class PolicyAdvisor:
             return {
                 "question": question,
                 "retrieved_sources": [],
+                # 面向终端用户（车队老板）的话术：先说结论与原因，再说怎么办。
+                # 第 8 轮评审 P1-1：原实现把 `GET /api/kb/health`、
+                # `python scripts/ingest_policy_docs.py --force` 这些开发者命令
+                # 直接当成给用户的答复，老板看不懂；运维信息应是附带而非主体。
                 "answer": (
-                    "未在知识库中检索到与该问题相关的政策条款，因此本次不生成回答——"
-                    "没有证据的作答等同于编造政策依据。\n\n"
-                    "可能原因：① 知识库为空（全新 clone 后尚未入库）；"
-                    "② 问题与现有政策语料主题偏离较大。\n\n"
-                    "处理方式：\n"
-                    "1. 检查知识库状态：`GET /api/kb/health`（status=empty 即需入库）\n"
-                    "2. 入库语料：`python scripts/ingest_policy_docs.py --force`\n"
-                    "3. 或换个与交通低碳、排放核算、碳市场相关的问题再试"
+                    "这个问题在现有政策语料里没有找到可引用的条款，所以本次不作答。\n\n"
+                    "我们宁可说「没找到」，也不凭印象给出一条查不到出处的结论——"
+                    "政策问答一旦编造依据，比不给答案危险得多。\n\n"
+                    "你可以：\n"
+                    "1. 换个说法再问一次（例如把「我的车要不要交碳税」改成"
+                    "「物流企业是否纳入全国碳排放权交易市场」）；\n"
+                    "2. 问与运输低碳、排放核算、碳市场相关的主题；\n"
+                    "3. 若这是刚部署的新环境，知识库可能还没导入政策文件，"
+                    "请联系系统管理员把政策语料导入后再试。"
                 ),
                 "evidence_count": 0,
                 "evidence_warning": (
-                    "检索证据为 0 条，本次回答未调用大模型、不含任何政策条款引用。"
-                    "若知识库应为空库，请先执行 scripts/ingest_policy_docs.py 入库。"
+                    "本次没有找到可引用的政策条款，因此未生成回答，也不含任何条款引用。"
+                    "（运维提示：GET /api/kb/health 查看知识库状态，"
+                    "status=empty 时执行 python scripts/ingest_policy_docs.py --force 入库。）"
                 ),
             }
 
@@ -82,25 +88,27 @@ class PolicyAdvisor:
         fallback_answer = build_retrieval_answer(question, retrieved)
         answer = call_llm(SYSTEM_PROMPT, user_prompt, fallback_answer=fallback_answer)
 
+        sources = [
+            {
+                "source": r["metadata"].get("source", "未知"),
+                "date": r["metadata"].get("date", ""),
+                "relevance": (
+                    round(1 - r["distance"], 3)
+                    if r.get("distance") is not None else None
+                ),
+                "chunk_id": r.get("id", ""),
+                "excerpt": _excerpt(r.get("text", "")),
+                "retrievers": r.get("retrievers", []),
+            }
+            for r in retrieved
+        ]
+
         return {
             "question": question,
-            "retrieved_sources": [
-                {
-                    "source": r["metadata"].get("source", "未知"),
-                    "date": r["metadata"].get("date", ""),
-                    "relevance": (
-                        round(1 - r["distance"], 3)
-                        if r.get("distance") is not None else None
-                    ),
-                    "chunk_id": r.get("id", ""),
-                    "excerpt": _excerpt(r.get("text", "")),
-                    "retrievers": r.get("retrievers", []),
-                }
-                for r in retrieved
-            ],
+            "retrieved_sources": sources,
             "answer": answer,
             "evidence_count": len(retrieved),
-            "evidence_warning": "",
+            "evidence_warning": _low_relevance_warning(sources),
         }
 
     def ingest_document(self, file_path, doc_date: str = ""):
@@ -112,6 +120,31 @@ class PolicyAdvisor:
         chunks = process_document(file_path, doc_date)
         self.vs.add_documents(chunks, file_path.name, doc_date)
         return len(chunks)
+
+
+def _low_relevance_warning(sources: list[dict]) -> str:
+    """证据相关性整体偏低时给出提示。
+
+    第 9 轮评审实测：``POST /api/ask {"question":"?"}`` 返回 200、
+    evidence_count=5、evidence_warning=""，而 5 条证据的相关性只有
+    0.501–0.533。检索层永远不会返回空（稠密向量对任何输入都给 0.5 左右），
+    所以「检索到了」并不等于「对题」——不提示的话，用户会看到一段以错位
+    条款为依据、语气却很确定的答复。
+
+    这里只做提示、不做过滤：过滤会改变已对外引用的检索指标（MRR/Recall），
+    要改必须重跑 40 题金标集，属于另一件事。
+    """
+    values = [s["relevance"] for s in sources if s.get("relevance") is not None]
+    if not values:
+        return ""
+    best = max(values)
+    if best >= RETRIEVAL_THRESHOLD:
+        return ""
+    return (
+        f"检索到 {len(values)} 条条款，但最高相关性只有 {best:.2f}"
+        f"（低于提示线 {RETRIEVAL_THRESHOLD:.2f}），可能并不对题。"
+        "请结合原文核对，或换一种问法。"
+    )
 
 
 def _excerpt(text: str, limit: int = 220) -> str:
