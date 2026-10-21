@@ -121,6 +121,10 @@ def render_inventory() -> None:
         "企业名称",
         value=st.session_state.get("company_name", "示例物流公司"),
         key="inventory_company",
+        # 后端 CompanyInfo.company_name 限制 100 字符；这里不设上限时，
+        # 超长名称要到点击计算后才由 422 拦下，用户事先无从得知。
+        max_chars=100,
+        help="最多 100 个字符，会显示在导出的 PDF 报告抬头。",
     )
     scenario_reduction_target_pct = st.slider(
         "模拟预算减排目标",

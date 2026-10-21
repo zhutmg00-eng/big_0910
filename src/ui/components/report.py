@@ -3,6 +3,7 @@
 报告包含封面、执行摘要、分车型排放明细、模拟碳预算与情景成本分析。
 """
 import os
+import re
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm, cm
@@ -21,6 +22,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 FONT_REGISTERED = False
 FONT_NAME = "Helvetica"  # 默认 fallback
 
+#: Windows/Linux 文件名非法字符。原本只替换 "/"，实测企业名
+#: ``A|B?C*D<E>F`` 会直接抛 ``OSError [Errno 22] Invalid argument``，
+#: 而 ``顺丰:冷链`` 虽能建文件但生成的下载名语义混乱。
+_ILLEGAL_FILENAME_CHARS = re.compile(r'[\\/:*?"<>|\r\n\t]')
+
 _FONT_PATHS = [
     "C:/Windows/Fonts/msyh.ttc",
     "C:/Windows/Fonts/simsun.ttc",
@@ -37,6 +43,19 @@ _FONT_PATHS = [
 ]
 # 注意：v0.3 列表末尾的 DejaVuSans 不含中文字形，在 Linux/Docker 中会被"成功"注册，
 # 导致 PDF 中文全部变成方框。v0.4 删除该项，并以 reportlab 内置 CID 字体兜底。
+
+
+def _safe_filename(company_name: str, max_len: int = 60) -> str:
+    """把企业名清洗为跨平台可用的文件名片段。
+
+    原实现只替换 ``/``，实测企业名 ``A|B?C*D<E>F`` 在 Windows 上直接抛
+    ``OSError [Errno 22] Invalid argument``，``顺丰:冷链`` 则生成带冒号的
+    文件（LinuX 可用、Windows 不可用）。这里统一替换 Windows/Linux 全部
+    非法字符，并截断到 60 字符，避免超出路径长度上限。
+    """
+    cleaned = _ILLEGAL_FILENAME_CHARS.sub("_", (company_name or "企业").strip())
+    cleaned = cleaned.strip(". ") or "企业"
+    return cleaned[:max_len]
 
 
 def _register_chinese_font():
@@ -281,7 +300,7 @@ def generate_carbon_report(
         reports_dir = DATA_DIR / "reports"
         reports_dir.mkdir(parents=True, exist_ok=True)
         date_str = datetime.now().strftime("%Y%m%d")
-        safe_name = (company_name or "企业").replace("/", "_")
+        safe_name = _safe_filename(company_name)
         output_path = str(reports_dir / f"{safe_name}_报告_{date_str}.pdf")
 
     # ---- 构建 PDF ----

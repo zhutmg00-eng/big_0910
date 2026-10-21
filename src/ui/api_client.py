@@ -36,4 +36,63 @@ def show_api_error(response: requests.Response) -> None:
         detail = response.json().get("detail", response.text)
     except ValueError:
         detail = response.text
-    st.error(f"请求未完成（{response.status_code}）：{detail}")
+    st.error(f"请求未完成（{response.status_code}）：{_humanize_detail(detail)}")
+
+
+#: 后端 Pydantic 字段名 → 用户可读的中文字段名。
+#: 只用于把「校验失败」翻译成人话；未登记的字段回退到字段名本身。
+_FIELD_LABELS = {
+    "company_name": "企业名称",
+    "fleet": "车队清单",
+    "vehicle_type": "车型",
+    "count": "车辆数",
+    "annual_km": "年均里程",
+    "load_factor": "满载率",
+    "companies": "对比企业",
+    "question": "问题",
+    "diesel_price_yuan_per_l": "柴油单价",
+    "electricity_price_yuan_per_kwh": "电价",
+}
+
+
+def _humanize_detail(detail) -> str:
+    """把 FastAPI/Pydantic 的校验错误翻译成一句人话。
+
+    背景：``st.error(f"...{detail}")`` 在 422 时会把整块 ``list[dict]``
+    原样打印出来（含 ``input`` 里的全部用户输入与 ``ctx`` 内部结构），
+    实测输入 200 字企业名时屏幕上是一大段 Python 字典。这里逐条取
+    ``msg`` 并按 ``loc`` 映射成中文，**绝不回显 ``input``/``ctx``**。
+    """
+    if not isinstance(detail, list):
+        return str(detail)
+    messages = []
+    for item in detail:
+        if not isinstance(item, dict):
+            messages.append(str(item))
+            continue
+        msg = str(item.get("msg") or "").strip()
+        loc = [part for part in (item.get("loc") or []) if isinstance(part, str)]
+        field = next((p for p in reversed(loc) if p in _FIELD_LABELS), None)
+        if field:
+            label = _FIELD_LABELS[field]
+            if "at most" in msg:
+                limit = (item.get("ctx") or {}).get("max_length")
+                msg = f"{label}最多 {limit} 个字符" if limit else f"{label}过长"
+            elif "at least" in msg:
+                limit = (item.get("ctx") or {}).get("min_length")
+                msg = f"{label}至少 {limit} 个字符" if limit else f"{label}过短"
+            elif "greater than" in msg:
+                msg = f"{label}必须大于 {(item.get('ctx') or {}).get('gt', 0)}"
+            elif "less than or equal" in msg:
+                msg = f"{label}不能超过 {(item.get('ctx') or {}).get('le', '')}".strip()
+            elif "missing" in msg:
+                msg = f"缺少必填项：{label}"
+            else:
+                msg = f"{label}：{msg}"
+        elif msg:
+            msg = f"参数格式不正确：{msg}"
+        if msg:
+            messages.append(msg)
+    if not messages:
+        return "提交的内容未通过校验，请检查后重试"
+    return "；".join(messages)

@@ -169,7 +169,9 @@ def render_report() -> None:
                 type="primary",
                 width="stretch",
             )
-        st.caption(f"保存位置：{report_path}")
+        # 不回显服务器绝对路径：容器里会是 /app/data/reports/xxx.pdf，
+        # 对用户既点不了也找不到，还暴露了部署目录结构。
+        st.caption(f"文件名：{Path(report_path).name}")
     notice("报告用途", "报告为科研原型输出，应在正式提交或对外使用前复核企业数据、因子来源与适用政策。", amber=True)
 
 
