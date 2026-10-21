@@ -275,7 +275,7 @@
             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">39 份政策文件切分 281 切片（Kappa 在零变异下退化为 1，不作信度证据）</div>
           </div>
           <div class="academic-card border-primary" style="padding: 12px;">
-            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">259 项全绿</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">260 项全绿</div>
             <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">自动化回归测试全部通过</div>
             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">物理守恒断言与 PEP 540 防死锁</div>
           </div>
@@ -458,7 +458,7 @@
             </div>
             <div class="academic-card border-primary" style="padding: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 工程质量与规范保障</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">全仓编写 259 项全自动化回归测试；强制注入 PEP 540 UTF-8 环境，配置 30 秒超时熔断，防范跨平台挂起。</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">全仓编写 260 项全自动化回归测试；强制注入 PEP 540 UTF-8 环境，配置 30 秒超时熔断，防范跨平台挂起。</div>
             </div>
           </div>
         </div>
@@ -612,7 +612,7 @@
           </div>
           <div class="academic-card border-secondary">
             <div style="font-size: 13px; font-weight: 700; color: var(--secondary); margin-bottom: 6px;">
-              双人独立背靠背审校与一致性信度检验 (Kappa 验证)
+              双人独立背靠背审校与 κ 退化的方法论说明
             </div>
             <div style="font-size: 11px; line-height: 1.5; color: var(--text);">
               <b>1. 双盲标注流程设计</b>：<br>
@@ -623,9 +623,13 @@
               <code>P_o = 观测一致率 = 40 / 40 = 1.00 (100% 吻合)</code><br>
               <code>P_e = 偶然一致概率期望 = Σ (P_A_i × P_B_i) = 0.28</code><br><br>
               <code>κ = (P_o - P_e) / (1 - P_e) = (1.00 - 0.28) / (1 - 0.28) = 1.00</code><br><br>
-              <b>3. 信度评定结论</b>：<br>
-              根据 Landis & Koch (1977) 统计学评定准则：<br>
-              Kappa = 1.00 属于最高等级的“完全一致 (Almost Perfect Agreement)”，证明本评测金标集具备严谨学术客观性。
+              <b>3. 这个 Kappa 不能作为信度证据（必须主动说明）</b>：<br>
+              κ = 1 来自观测一致率恒为 1.00 的<b>数学退化</b>——两位标注者在两个编码字段上取值零变异
+              （一列全「✓」、一列全「同意」），此时 κ 必然等于 1，无论标注者实际判断是否一致。<br>
+              因此本栏只证明「最终稿两人无争议」，<b>不构成 Landis &amp; Koch 意义上的「完全一致」</b>，
+              更不能用来论证金标集客观。<br>
+              本项目不引用 κ = 1.0 作为严谨性证据；40 题的质量以「争议题逐一复核 + 反事实负例显式设计」保证，
+              n = 40 本身是本研究的主要局限。
             </div>
           </div>
         </div>
@@ -903,7 +907,7 @@
               <tr>
                 <td><b>工程测试与质量保障</b></td>
                 <td>编写基础代码测试</td>
-                <td>259 项自动化测试全部通过，封装 Cordis 官方微内核插件</td>
+                <td>260 项自动化测试全部通过，封装 Cordis 官方微内核插件</td>
                 <td style="text-align: center; font-weight: 700; color: var(--accent);">100%</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">规范达标</td>
               </tr>

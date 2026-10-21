@@ -534,3 +534,20 @@ def test_sensitivity_median_is_14_51_everywhere():
     for rel in MEDIAN_DOCS:
         text = _read_defense(rel)
         assert "14.52" not in text, f"{rel} 仍写 14.52%（实测中位数 14.51%）"
+
+
+# ---------------------------------------------------------------- Kappa 退化
+
+def test_deck_does_not_cite_kappa_as_reliability_evidence():
+    """零变异下 κ 恒等于 1，是数学退化，不能援引 Landis & Koch 判据论证客观性。
+
+    线上真实事故：展板 Slide 8 原文写「Kappa = 1.00 属于最高等级的『完全一致
+    (Almost Perfect Agreement)』，证明本评测金标集具备严谨学术客观性」，
+    而同一批材料的生成器与论文都已声明 Kappa 不作信度证据。
+    """
+    rel = "docs/artifacts/defense_presentation_deck.html"
+    text = _read_defense(rel)
+    assert "Almost Perfect" not in text, f"{rel} 仍把 κ=1 描述为「完全一致」"
+    assert "证明本评测金标集" not in text, f"{rel} 仍用 κ=1 论证金标集客观性"
+    # 必须留下退化说明
+    assert "数学退化" in text or "零变异" in text, f"{rel} 缺少 κ 退化的说明"
