@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pandas as pd
+
 import requests
 import streamlit as st
 
@@ -522,17 +524,35 @@ def render_factors() -> None:
     from src.engine.emission_factors import get_all_factors
 
     factors = get_all_factors()
+    # 16 种车型里有 12 种没有「百公里油耗」（电动/天然气车型按 kWh 或 kg 计价），
+    # 早期写法把 "不适用" 字符串混进这一列，pandas 推断成 object 后 pyarrow 转换失败，
+    # 页面直接抛 ArrowInvalid。数值列留空、另设一列文字说明，才是稳定写法。
     rows = [
         {
             "车型": name,
             "燃料类型": data["fuel_type"],
             "CO2 排放因子（kg/km）": data["co2_kg_per_km"],
-            "油耗参考（L/100km）": data.get("fuel_consumption_l_per_100km") or "不适用",
+            "油耗参考（L/100km）": data.get("fuel_consumption_l_per_100km"),
+            "油耗说明": (
+                ""
+                if data.get("fuel_consumption_l_per_100km")
+                else "不适用（该车型未登记百公里油耗参考值）"
+            ),
             "年均里程参考（km）": f"{data['avg_annual_km']:,}",
         }
         for name, data in factors.items()
     ]
-    st.dataframe(rows, width="stretch", hide_index=True)
+    _factors_frame = pd.DataFrame(rows)
+    st.dataframe(
+        _factors_frame,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "油耗参考（L/100km）": st.column_config.NumberColumn(
+                "油耗参考（L/100km）", format="%.1f", help="柴油/汽油车型的百公里燃料消耗"
+            ),
+        },
+    )
 
     st.markdown("## 数据来源")
     for name, data in factors.items():

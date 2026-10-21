@@ -11,6 +11,8 @@
 这些不是计算问题，但会让老板第一眼就放弃，所以单独立守卫。
 """
 
+import io
+
 import pytest
 import requests
 
@@ -166,3 +168,38 @@ class TestUiNeverLeaksServerPaths:
             encoding="utf-8",
         ).read()
         assert not re.search(r'保存位置：\{report_path\}', source)
+
+def test_factor_table_converts_to_arrow():
+    """排放因子表混入字符串会让 st.dataframe 抛 ArrowInvalid（页面一打开就崩）。
+
+    16 种车型里有 12 种没有百公里油耗参考值，数值列必须留空而不是写「不适用」。
+    """
+    import pandas as pd
+    import pyarrow as pa
+
+    from src.engine.emission_factors import get_all_factors
+
+    factors = get_all_factors()
+    rows = [
+        {
+            "车型": name,
+            "燃料类型": data["fuel_type"],
+            "CO2 排放因子（kg/km）": data["co2_kg_per_km"],
+            "年均里程参考（km）": f"{data['avg_annual_km']:,}",
+        }
+        for name, data in factors.items()
+    ]
+    frame = pd.DataFrame(rows)
+    table = pa.Table.from_pandas(frame)
+    assert table.num_rows == len(factors)
+
+
+def test_factor_table_source_keeps_numeric_column_clean():
+    """守卫源码：油耗列不得再用 `or "..."` 这种字符串回落。
+
+    断言针对赋值表达式而不是任意出现，否则注释里提到「不适用」也会被误判。
+    """
+    source = io.open("src/ui/views/overview.py", encoding="utf-8").read()
+    assert '"油耗参考（L/100km）": data.get("fuel_consumption_l_per_100km") or "' not in source
+    assert "油耗说明" in source
+    assert "NumberColumn" in source
