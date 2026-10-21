@@ -274,6 +274,8 @@ def generate_carbon_report(
     llm_answer: str = "",
     output_path: str = None,
     budget_reduction_target: float = 0.10,
+    uncertainty: dict = None,
+    uncertainty_meta: dict = None,
 ) -> str:
     """
     生成物流碳排放与减排情景 PDF 报告。
@@ -290,6 +292,9 @@ def generate_carbon_report(
         llm_answer: 政策建议（可选）
         output_path: 输出路径（可选）
         budget_reduction_target: 模拟预算相对参考活动排放的减排目标
+        uncertainty: 蒙特卡洛结果 dict（p5_t/p50_t/p95_t/mean_t/relative_uncertainty_pct/
+            contributions/variance_contributions），为 None 时报告写明"本次未运行"
+        uncertainty_meta: 抽样设置（n_samples/data_quality），用于让区间可复算
 
     Returns:
         生成的 PDF 文件路径
@@ -526,6 +531,72 @@ def generate_carbon_report(
     elements.append(t6)
 
     elements.append(Paragraph(compliance_cost.get("备注", ""), styles["Disclaimer"]))
+
+    # ============================================================
+    # 不确定性区间（蒙特卡洛）
+    # ============================================================
+    # 此前 P5/P95 只在界面图上显示，进不了 PDF。区间恰恰是"这份数字能不能
+    # 拿去对外"的关键：点估计 1,352 t 与 90% 区间 1,180–1,560 t 是两件事。
+    elements.append(Spacer(1, 8 * mm))
+    elements.append(Paragraph("排放量的不确定性区间", styles["SubSectionTitle"]))
+
+    if not uncertainty or not uncertainty.get("p95_t"):
+        elements.append(Paragraph(
+            "本次未运行为蒙特卡洛抽样，报告中的排放量为点估计，不含不确定性区间。"
+            "如需给出区间，请在「排放盘点 → 不确定性分析」中运行蒙特卡洛后重新生成本报告。",
+            styles["BodyTextCN"],
+        ))
+    else:
+        meta = uncertainty_meta or {}
+        p5 = uncertainty.get("p5_t", 0.0)
+        p50 = uncertainty.get("p50_t", 0.0)
+        p95 = uncertainty.get("p95_t", 0.0)
+        mean_t = uncertainty.get("mean_t", 0.0)
+        rel = uncertainty.get("relative_uncertainty_pct", 0.0)
+        unc_data = [["指标", "数值"],
+                    ["点估计（确定性核算）", f"{_fmt_number(total_emission_t)} tCO2e"],
+                    ["抽样均值", f"{_fmt_number(mean_t)} tCO2e"],
+                    ["P5（下界）", f"{_fmt_number(p5)} tCO2e"],
+                    ["P50（中位数）", f"{_fmt_number(p50)} tCO2e"],
+                    ["P95（上界）", f"{_fmt_number(p95)} tCO2e"],
+                    ["90% 区间", f"{_fmt_number(p5)} ~ {_fmt_number(p95)} tCO2e"],
+                    ["相对不确定度", f"±{rel:.1f}%"]]
+        if meta:
+            settled = []
+            if meta.get("n_samples"):
+                settled.append(f"抽样 {int(meta['n_samples']):,} 次")
+            if meta.get("data_quality"):
+                settled.append(f"活动数据质量「{meta['data_quality']}」")
+            if settled:
+                unc_data.append(["抽样设置", "，".join(settled)])
+        t_unc = Table(unc_data, colWidths=[4 * cm, width - 4 * cm])
+        t_unc.setStyle(_build_table_style(2))
+        elements.append(t_unc)
+        elements.append(Spacer(1, 4 * mm))
+
+        # 哪一项数据最值得先改进：用一阶方差贡献（可加、可比较），
+        # 底部的秩相关 contributions 只能同案例内排序，不能回答这个问题。
+        variance_contrib = uncertainty.get("variance_contributions") or {}
+        if variance_contrib:
+            ranked = sorted(variance_contrib.items(), key=lambda kv: kv[1], reverse=True)[:3]
+            contrib_data = [["不确定性来源（一阶方差贡献）", "占比"]]
+            for name, share in ranked:
+                contrib_data.append([str(name), f"{share * 100:.1f}%"])
+            t_contrib = Table(contrib_data, colWidths=[width - 3.5 * cm, 3.5 * cm])
+            t_contrib.setStyle(_build_table_style(2))
+            elements.append(t_contrib)
+            elements.append(Spacer(1, 3 * mm))
+            top = ranked[0]
+            elements.append(Paragraph(
+                f"优先改进「{top[0]}」：它贡献了排放量方差的 {top[1] * 100:.1f}%，"
+                "用实测台账或 GPS 数据替换该项估计值，区间收窄最明显。",
+                styles["BodyTextCN"],
+            ))
+        elements.append(Paragraph(
+            "区间来自排放因子三角分布与活动数据误差的蒙特卡洛抽样，反映的是输入数据本身的不确定性，"
+            "不含模型形式误差（例如核算边界的选择）。点估计与 P50 的差异说明抽样均值与确定性核算口径不同。",
+            styles["Disclaimer"],
+        ))
 
     # 政策资料提示（可选）
     if llm_answer and llm_answer.strip():

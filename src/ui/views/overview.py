@@ -472,6 +472,12 @@ def _render_uncertainty_section() -> None:
                 show_api_error(resp)
             else:
                 st.session_state.uncertainty_result = resp.json()
+                # 记下抽样设置：报告里要写"这个区间是怎么来的"，否则读者无法判断
+                # 90% 区间是 2000 次粗糙抽样还是 2 万次的结果。
+                st.session_state.uncertainty_meta = {
+                    "n_samples": n_samples,
+                    "data_quality": quality,
+                }
         except requests.RequestException as exc:
             st.error(_describe_backend_down(exc))
 

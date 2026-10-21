@@ -150,6 +150,7 @@ def render_report() -> None:
         {"章节": "核算摘要", "内容": "车队规模、直接运营排放和核算边界"},
         {"章节": "分车型明细", "内容": "车型活动水平与排放结果"},
         {"章节": "情景判断", "内容": "模拟碳预算差额与碳价对标成本"},
+        {"章节": "不确定性区间", "内容": "蒙特卡洛 P5/P50/P95 与优先改进的数据项（运行过才有）"},
         {"章节": "资料建议", "内容": "最近一次政策顾问回答（如有）"},
     ]
     st.table(report_sections)
@@ -199,6 +200,8 @@ def _generate_report(result: dict) -> None:
             compliance_cost=result.get("scenario_cost", {}),
             llm_answer=llm_answer,
             budget_reduction_target=budget.get("情景减排目标", 0.10),
+            uncertainty=st.session_state.get("uncertainty_result"),
+            uncertainty_meta=st.session_state.get("uncertainty_meta"),
         )
         st.session_state.report_path = str(report_path)
     except Exception as exc:
