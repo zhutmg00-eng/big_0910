@@ -524,7 +524,12 @@ def test_generators_do_not_contain_stale_test_counts():
     package_deliverables.py 写 117 项，而实际是 248 项。
     """
     actual = _collected_test_count()
-    stale = [n for n in (105, 106, 107, 117, 119, 159, 170, 173, 220, 221, 239, 241, 247) if n != actual]
+    stale = [
+        n for n in (
+            105, 106, 107, 117, 119, 159, 170, 173, 220, 221, 239, 241, 247,
+            263, 300, 342, 355, 375, 379, 390, 397, 399, 401, 404, 406, 409,
+        ) if n != actual
+    ]
     for rel in GENERATOR_SCRIPTS:
         text = _read_defense(rel)
         for n in stale:
