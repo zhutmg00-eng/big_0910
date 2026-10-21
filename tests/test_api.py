@@ -179,3 +179,53 @@ class TestAPI:
         if data["status"] == "ok":
             assert data["count"] > 0
             assert data["warning"] == ""
+
+
+class TestNonFinitePayloadHandling:
+    """JSON 里写 NaN / Infinity 是合法的（json.loads 接受），必须稳定返回 422。
+
+    第 9 轮评审实测：校验失败时 Pydantic 把 ``float('nan')`` 放进 ``input``，
+    默认 JSONResponse 用 ``allow_nan=False`` 序列化失败 → ``500 text/plain
+    'Internal Server Error'``，且响应没有 ``X-Request-ID``，日志中查不到。
+    """
+
+    _NAN_BODY = (
+        '{"company_name":"x","fleet":[{"vehicle_type":"重型柴油货车",'
+        '"count":50,"annual_km":NaN,"load_factor":0.7}]}'
+    )
+    _INF_BODY = (
+        '{"company_name":"x","fleet":[{"vehicle_type":"重型柴油货车",'
+        '"count":Infinity,"annual_km":100000,"load_factor":0.7}]}'
+    )
+
+    def test_nan_payload_returns_422_not_500(self):
+        response = client.post(
+            "/api/calculate", content=self._NAN_BODY, headers={"Content-Type": "application/json"}
+        )
+        assert response.status_code == 422, response.text
+        assert response.headers.get("content-type", "").startswith("application/json")
+
+    def test_infinity_payload_returns_422_not_500(self):
+        response = client.post(
+            "/api/calculate", content=self._INF_BODY, headers={"Content-Type": "application/json"}
+        )
+        assert response.status_code == 422, response.text
+
+    @pytest.mark.parametrize("body", ["_NAN_BODY", "_INF_BODY"])
+    def test_validation_error_keeps_request_id(self, body):
+        """任何 422 都必须带 X-Request-ID，否则用户报错时无从定位。"""
+        import src.api.main as api_main
+
+        saved = api_main.API_KEY
+        api_main.API_KEY = ""
+        try:
+            client = TestClient(api_main.app, raise_server_exceptions=False)
+            response = client.post(
+                "/api/calculate",
+                content=getattr(self, body),
+                headers={"Content-Type": "application/json"},
+            )
+        finally:
+            api_main.API_KEY = saved
+        assert response.status_code == 422
+        assert response.headers.get("X-Request-ID")
