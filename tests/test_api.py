@@ -229,3 +229,41 @@ class TestNonFinitePayloadHandling:
             api_main.API_KEY = saved
         assert response.status_code == 422
         assert response.headers.get("X-Request-ID")
+
+
+class TestAbsurdInputsAreRejected:
+    """第 8 轮评审：count=10**6、annual_km=1e12 直接 200，没人拦。
+
+    上界不是安全边界，是笔误边界——把「吨」填进「辆」、把「月里程」
+    乘 12 再加两个零，用户自己不一定会发现，但结果会荒谬一个量级。
+    """
+
+    def _post(self, **overrides):
+        group = {"vehicle_type": "重型柴油货车", "count": 50, "annual_km": 100000, "load_factor": 0.7}
+        group.update(overrides)
+        return client.post("/api/calculate", json={"company_name": "越界测试", "fleet": [group]})
+
+    def test_huge_count_rejected(self):
+        response = self._post(count=10 ** 6)
+        assert response.status_code == 422, response.text
+        assert "车辆数量" in response.text or "count" in response.text
+
+    def test_huge_annual_km_rejected(self):
+        response = self._post(annual_km=1e12)
+        assert response.status_code == 422, response.text
+
+    def test_reasonable_values_still_pass(self):
+        response = self._post(count=27_500, annual_km=180_000)
+        assert response.status_code == 200, response.text
+
+    def test_tco_rejects_huge_annual_km(self):
+        response = client.post(
+            "/api/tco/calculate",
+            json={
+                "vehicle_type": "重型柴油货车",
+                "replace_count": 10,
+                "annual_km": 1e12,
+                "annual_co2_reduction_t": 0.0,
+            },
+        )
+        assert response.status_code == 422, response.text

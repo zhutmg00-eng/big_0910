@@ -4,13 +4,30 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.engine.emission_factors import get_emission_factor
 
+#: 单一车型分组的车辆数上限。10 万辆已经超过绝大多数物流企业自有车队规模
+#: （验证案例里最大的顺丰也只有 27,500 辆），再大就是数量级笔误。
+MAX_FLEET_COUNT = 100_000
+#: 单车年运营里程上限。长途干线重卡年跑 15~20 万 km 属高强度，30 万 km
+#: 意味着平均每天 820 km、全年无休，已到物理与法规极限。
+MAX_ANNUAL_KM = 300_000.0
+
 
 class VehicleInput(BaseModel):
     """一组同类型车辆。"""
 
     vehicle_type: str = Field(..., min_length=1, description="车型名称")
-    count: int = Field(..., gt=0, description="车辆数量（辆）")
-    annual_km: float = Field(..., gt=0, description="年均运营里程 (km/年)")
+    # 上界不是「防攻击」，而是防把吨/台/公里数填错列：第 8 轮评审把
+    # count=10**6、annual_km=1e12 直接送进来，接口返回 200 与
+    # total_emission_t=8.77e14，界面上没有任何提示。全国营运货车保有量也就
+    # 千万级、单车年里程 30 万 km 已是极端，超过这个量级只会是笔误。
+    count: int = Field(
+        ..., gt=0, le=MAX_FLEET_COUNT,
+        description=f"车辆数量（辆），上限 {MAX_FLEET_COUNT}",
+    )
+    annual_km: float = Field(
+        ..., gt=0, le=MAX_ANNUAL_KM,
+        description=f"年均运营里程 (km/年)，上限 {MAX_ANNUAL_KM:,.0f}",
+    )
     load_factor: float = Field(0.75, ge=0, le=1, description="平均满载率 (0~1)")
 
     @field_validator("vehicle_type")
