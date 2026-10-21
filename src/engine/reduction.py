@@ -392,6 +392,7 @@ def compare_scenarios(
     baseline_fleet: List[VehicleGroupData],
     scenarios: List[ReductionScenario],
     budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
+    econ_params=None,
 ) -> ScenarioComparison:
     """
     多情景对比
@@ -402,6 +403,8 @@ def compare_scenarios(
         budget_reduction_target: 模拟预算所用的直接运营减排目标。必须与
             analyze_reduction_scenario 使用同一个值，否则基线与情景的预算
             口径不一致，差额变化失去意义。
+        econ_params: 可选 TCOEconomicParameters，透传给每个情景的 TCO 计算。
+            不传则各情景按默认买断口径算回收期。
 
     Returns:
         ScenarioComparison: 多情景对比结果
@@ -409,7 +412,10 @@ def compare_scenarios(
     results = []
     for scenario in scenarios:
         analysis = analyze_reduction_scenario(
-            baseline_fleet, scenario.changes, budget_reduction_target=budget_reduction_target
+            baseline_fleet,
+            scenario.changes,
+            budget_reduction_target=budget_reduction_target,
+            econ_params=econ_params,
         )
         analysis.name = scenario.name  # 附加情景名称
         results.append(analysis)
@@ -418,11 +424,19 @@ def compare_scenarios(
     results.sort(key=lambda x: x.reduction_pct, reverse=True)
 
     # 全局建议
+    #
+    # 注意：这里**不**叫"最优情景"。调用方（find_optimal_reduction）之后还会按
+    # 净节省额重排，所以此处排第一的只是"减排量最大的情景"。早期这里写死
+    # "最优情景："前置，导致 multi-measure 车队出现自相矛盾：
+    #   · find_optimal_reduction 选出的最优是「替换 + LNG + 满载率」，减排 672.29 t、省 10927 元
+    #   · 但本函数提前 append 的第一条建议指向另一个组合，减排 703.43 t、只省 9699 元
+    # 读者会看到两条互斥的"最优"。改为中性的"减排量最大的情景"。
     global_recommendations = []
     if results:
-        best = results[0]
+        biggest = results[0]
         global_recommendations.append(
-            f"最优情景：「{best.name}」，直接运营减排{best.reduction_pct}%（{best.reduction_t} tCO2e）"
+            f"减排量最大的情景：「{biggest.name}」，直接运营减排"
+            f"{biggest.reduction_pct}%（{biggest.reduction_t} tCO2e）"
         )
 
     # 汇总各情景的减排潜力
@@ -481,6 +495,8 @@ def find_optimal_reduction(
     baseline_fleet: List[VehicleGroupData],
     budget: Optional[float] = None,
     budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
+    econ_params=None,
+    max_candidates: int = 400,
 ) -> ScenarioComparison:
     """
     在预算约束下寻找最优减排组合
@@ -492,6 +508,13 @@ def find_optimal_reduction(
         baseline_fleet: 基线车队
         budget: 预算上限（元），None表示无预算限制
         budget_reduction_target: 模拟预算减排目标，透传给 compare_scenarios
+        econ_params: 经济参数，透传到 TCO 层。此前本函数不接受经济参数，
+            导致界面打开油价/电价/车电分离开关后，「最优方案」仍是按默认参数
+            算出来的，与页面上的回收期对不上
+        max_candidates: 候选组合数上限。措施数随车型数增长（n 种车型约 2n+1
+            组措施），三措施组合是 C(n,3)：14 种车型就有 3654 个情景，每个都
+            要跑一次 TCO 与预算差额，界面会卡几十秒。超过上限时按措施顺序
+            截断，并在建议里明写「已截断、不是全局最优」
 
     Returns:
         ScenarioComparison: 最优方案对比结果
@@ -547,6 +570,13 @@ def find_optimal_reduction(
                 changes=combined_changes,
             ))
 
+    # 组合数爆炸防护：见 max_candidates 的说明。
+    truncated_measures = 0
+    max_measures = max(2, int(round(max_candidates ** (1 / 3))) + 2)
+    if len(base_measures) > max_measures:
+        truncated_measures = len(base_measures) - max_measures
+        base_measures = base_measures[:max_measures]
+
     # 三措施组合（仅当措施数≥3时）
     if len(base_measures) >= 3:
         for i in range(len(base_measures)):
@@ -566,10 +596,23 @@ def find_optimal_reduction(
                         changes=combined_changes,
                     ))
 
+    if len(scenarios) > max_candidates:
+        scenarios = scenarios[:max_candidates]
+
     # 计算所有情景并筛选
     comparison = compare_scenarios(
-        baseline_fleet, scenarios, budget_reduction_target=budget_reduction_target
+        baseline_fleet,
+        scenarios,
+        budget_reduction_target=budget_reduction_target,
+        econ_params=econ_params,
     )
+
+    if truncated_measures:
+        comparison.recommendations.append(
+            f"候选措施过多（车型组合达 {len(base_measures) + truncated_measures} 组），"
+            f"已截断为 {len(base_measures)} 组措施、{len(scenarios)} 个组合方案，"
+            "因此结论是「在这个候选集内」的最优，不是全局最优。"
+        )
 
     # 排序键：碳价对标的净节省额。
     #
@@ -617,6 +660,18 @@ def find_optimal_reduction(
             best = scored[0][0]
             comparison.scenarios = sorted([best], key=lambda x: x.reduction_pct, reverse=True)
             comparison.scenarios[0].name = f"最优方案（{best.name}）"
+
+    # 把"最终选中的方案"写成第一条建议。
+    # 不写这一步，读者只能看到 compare_scenarios 给出的"减排量最大的情景"，
+    # 而它未必是按净节省额选出的那个——两条建议指向不同方案时无法自洽。
+    if comparison.scenarios:
+        chosen = comparison.scenarios[0]
+        savings_now = chosen.cost_savings.get("节省_元") or 0.0
+        comparison.recommendations.insert(
+            0,
+            f"推荐方案：「{chosen.name}」，直接运营减排 {chosen.reduction_t:.1f} tCO2e"
+            f"（{chosen.reduction_pct:.2f}%），碳价对标净节省 {savings_now:,.0f} 元。",
+        )
 
     return comparison
 

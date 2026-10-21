@@ -183,9 +183,132 @@ def render_reduction() -> None:
                 lifespan_years,
             )
 
+    _render_optimal_explorer(
+        carbon_result, fleet_data,
+        diesel_price=diesel_price, elec_price=elec_price,
+        discount_rate_pct=discount_rate_pct, lifespan_years=lifespan_years,
+        baas_mode=baas_mode, baas_rental=baas_rental,
+    )
+
     scenario = st.session_state.get("reduction_result")
     if scenario:
         _render_scenario(scenario)
+
+
+def _render_optimal_explorer(
+    carbon_result: dict,
+    fleet_data: list,
+    diesel_price: float,
+    elec_price: float,
+    discount_rate_pct: float,
+    lifespan_years: int,
+    baas_mode: bool,
+    baas_rental: float,
+) -> None:
+    """枚举单/双/三措施组合，找出净节省额最大的方案。
+
+    第 9 轮评审 P0-4：原来的「模型建议」区 6 条里 3 条是复述上文数字、
+    2 条是免责声明，没有一条能告诉用户「那我到底该做什么」。
+    引擎里其实早就有 find_optimal_reduction（枚举全部组合并按碳价对标净节省额
+    排序），但 UI 零引用，等于白写。
+
+    默认折叠：枚举要跑几十毫秒到几百毫秒，不该拖慢首屏。
+    """
+    from src.engine.calculator import VehicleGroupData
+    from src.engine.reduction import find_optimal_reduction
+    from src.engine.tco import TCOEconomicParameters
+
+    with st.expander("对比全部可行组合，找更省的方案"):
+        st.caption(
+            "按车型枚举「替换为新能源」「更换 LNG」「提升满载率」的单措施、双措施与三措施组合，"
+            "按碳价对标的净节省额排序。净节省额是把减排量按参考碳价折算成钱，"
+            "因此减排越多省越多；同等减排时省得多的优先。"
+        )
+        if st.button("开始枚举组合", key="run_optimal_search"):
+            baseline_fleet = [
+                VehicleGroupData(
+                    vehicle_type=item["vehicle_type"],
+                    count=item["count"],
+                    annual_km=item["annual_km"],
+                    load_factor=item["load_factor"],
+                )
+                for item in fleet_data
+            ]
+            st.session_state.optimal_signature = (
+                round(float(diesel_price), 4), round(float(elec_price), 4),
+                round(float(discount_rate_pct), 4), int(lifespan_years),
+                bool(baas_mode), round(float(baas_rental), 4),
+                tuple((i["vehicle_type"], i["count"], i["annual_km"], i["load_factor"]) for i in fleet_data),
+            )
+            st.session_state.optimal_stale = False
+            with st.spinner("正在枚举减排组合…"):
+                try:
+                    comparison = find_optimal_reduction(
+                        baseline_fleet,
+                        max_candidates=120,
+                        budget_reduction_target=carbon_result.get("carbon_budget", {}).get(
+                            "情景减排目标", 0.10
+                        ),
+                        econ_params=TCOEconomicParameters(
+                            diesel_price_yuan_per_l=float(diesel_price),
+                            electricity_price_yuan_per_kwh=float(elec_price),
+                            discount_rate=float(discount_rate_pct) / 100,
+                            lifespan_years=int(lifespan_years),
+                            is_baas_mode=bool(baas_mode),
+                            baas_annual_battery_rental_yuan=float(baas_rental),
+                        ),
+                    )
+                    chosen = comparison.scenarios[0]
+                    st.session_state.optimal_result = {
+                        "name": chosen.name,
+                        "reduction_t": chosen.reduction_t,
+                        "reduction_pct": chosen.reduction_pct,
+                        "cost_savings": chosen.cost_savings,
+                        "recommendations": comparison.recommendations,
+                    }
+                except Exception:
+                    logger.exception("枚举减排组合失败")
+                    st.error("组合枚举失败，请检查车队数据或稍后重试。")
+                    st.session_state.pop("optimal_result", None)
+
+        current_signature = (
+            round(float(diesel_price), 4), round(float(elec_price), 4),
+            round(float(discount_rate_pct), 4), int(lifespan_years),
+            bool(baas_mode), round(float(baas_rental), 4),
+            tuple((i["vehicle_type"], i["count"], i["annual_km"], i["load_factor"]) for i in fleet_data),
+        )
+        if (
+            st.session_state.get("optimal_signature")
+            and st.session_state.get("optimal_signature") != current_signature
+        ):
+            st.session_state.optimal_stale = True
+        if st.session_state.get("optimal_stale"):
+            st.info("经济参数或车队已变更，下面的结果来自上一次枚举，请重新点击「开始枚举组合」。")
+
+        optimal = st.session_state.get("optimal_result")
+        if not optimal:
+            return
+        best = optimal
+        m1, m2, m3 = st.columns(3)
+        m1.metric("推荐方案减排量", f"{best['reduction_t']:,.1f} tCO2e")
+        m2.metric("减排比例", f"{best['reduction_pct']:.2f}%")
+        m3.metric("碳价对标净节省", f"{best['cost_savings'].get('节省_元', 0):,.0f} 元")
+        st.markdown(f"**方案：** {best['name']}")
+        # 引擎会把每个候选情景的说明都塞进 recommendations（17 个方案就有 17 条），
+        # 原样铺开会把真正的结论埋掉。这里只保留「推荐方案」「排序依据」「截断说明」
+        # 三类，其余按车型计数折叠。
+        always_keep = ("推荐方案：", "候选方案按", "候选措施过多")
+        main_lines = [r for r in best["recommendations"] if r.startswith(always_keep)]
+        other_lines = [r for r in best["recommendations"] if not r.startswith(always_keep)]
+        for line in main_lines:
+            st.write(f"- {line}")
+        if other_lines:
+            with st.expander(f"其余 {len(other_lines)} 条候选情景说明"):
+                for line in other_lines:
+                    st.write(f"- {line}")
+        st.caption(
+            "净节省额按参考碳价折算，属情景对标口径，不等于企业实际履约成本或确定收益。"
+        )
 
 
 def _render_baseline(carbon_result: dict) -> None:
