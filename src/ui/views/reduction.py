@@ -66,15 +66,21 @@ def render_reduction() -> None:
         step=1,
         help="同一车辆不同时计入新能源替换和满载率提升。",
     )
-    target_load_pct = st.slider(
-        "目标满载率",
-        min_value=50,
-        max_value=100,
-        value=int(round(max(current_load, 0.80) * 100)),
-        step=5,
-        format="%d%%",
-    )
-    target_load = target_load_pct / 100
+    if current_load >= 1.0:
+        # 没有提升空间时不渲染滑块，直接沿用当前值，避免「滑块摆在上面却永远
+        # 触发不了」的交互死锁
+        target_load = current_load
+    else:
+        target_load_pct = st.slider(
+            "目标满载率",
+            min_value=50,
+            max_value=100,
+            value=int(round(max(current_load, 0.80) * 100)),
+            step=5,
+            format="%d%%",
+            help=f"该车型当前满载率 {current_load:.0%}，目标值必须高于它才能形成减排情景。",
+        )
+        target_load = target_load_pct / 100
 
     # 车电分离（BaaS）口径。项目对外主打的「初始垫资降约 70%」只在 BaaS 下成立，
     # 但此前 UI 没有任何入口，评委在界面上复现不出来，只能看脚本结果。
@@ -98,16 +104,34 @@ def render_reduction() -> None:
         ))
 
     invalid_overlap = replace_count + replace_load > type_count
+    # 第 8 轮评审实测的交互死锁：目标满载率滑块 value 取 max(当前, 0.80) 且
+    # max=100，当前满载率已经是 98% 时，「目标满载率」永远不可能高于当前值，
+    # 于是点计算只会得到「请提高目标满载率」——除非用户自己发现得先把当前
+    # 满载率改小。这种情形下「提升满载率」这项措施在数学上无空间，
+    # 不该让按钮可点，也不该把滑块摆在那里当陷阱。
+    load_capacity_exhausted = current_load >= 1.0
+    no_load_room = replace_load > 0 and target_load <= current_load
     if invalid_overlap:
         st.error(f"两项措施合计涉及 {replace_count + replace_load} 辆，超过该车型的 {type_count} 辆。")
-    elif replace_load > 0 and target_load <= current_load:
+    elif load_capacity_exhausted:
+        st.info(
+            f"该车型当前满载率已达 {current_load:.0%}，提升满载率没有空间；"
+            "此页只能做新能源替换。若要评估装载率改善，请回到排放盘点下调该车型的满载率后再来。"
+        )
+    elif no_load_room:
         st.warning("目标满载率需高于当前满载率，才能形成减排情景。")
+
+    nothing_selected = replace_count == 0 and replace_load == 0
+    can_submit = not (invalid_overlap or load_capacity_exhausted or no_load_room or nothing_selected)
+    if nothing_selected:
+        st.caption("先在下面选一项措施：替换为新能源车，或提升满载率。")
 
     if st.button(
         "计算减排情景",
         type="primary",
         width="stretch",
-        disabled=invalid_overlap,
+        disabled=not can_submit,
+        help=None if can_submit else "当前配置无法形成有效情景，先按上方提示调整。",
     ):
         if replace_count == 0 and replace_load == 0:
             st.warning("至少配置一项减排措施后再计算。")

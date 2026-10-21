@@ -96,3 +96,55 @@ def test_gap_elimination_message_shows_scenario_own_reduction():
         assert any(f"{r:.1f}" in line for r in reductions), (
             f"超出量说明未包含该情景的减排量：{line}"
         )
+
+
+def _render_reduction_app(load_factor: float):
+    """用 AppTest 渲染减排页，返回 AppTest 实例（不发真实请求）。"""
+    from streamlit.testing.v1 import AppTest
+
+    script = """
+import streamlit as st
+from src.ui.views.reduction import render_reduction
+
+st.session_state["company_name"] = "示例"
+st.session_state["fleet_data"] = [{"vehicle_type": "重型柴油货车", "count": 10,
+                                  "annual_km": 100000, "load_factor": %r}]
+st.session_state["carbon_result"] = {
+    "company_name": "示例",
+    "total_emission_t": 2730.0,
+    "total_vehicles": 10,
+    "emission_by_type": {"重型柴油货车": {"车辆数": 10, "排放量_t": 2730.0}},
+    "carbon_budget": {"预算_t": 2800.0, "预算差额_t": -70.0, "状态": "低于预算"},
+    "scenario_cost": {},
+    "methodology_note": "",
+}
+render_reduction()
+""" % (load_factor,)
+    at = AppTest.from_string(script, default_timeout=120).run()
+    assert not at.exception, at.exception[0].value if at.exception else ""
+    return at
+
+
+class TestReductionUiHasNoInteractionDeadlock:
+    """第 8 轮评审实测：满载率 98% 时「目标满载率」滑块永远无效、按钮却能点。
+
+    根因是滑块 ``value=max(当前, 0.80)`` 且 ``max=100``——当前满载率已经
+    98% 时目标值不可能高于当前值，点下去只会得到「请提高目标满载率」。
+    """
+
+    def test_full_load_hides_target_slider(self):
+        at = _render_reduction_app(1.0)
+        labels = [slider.label for slider in at.slider]
+        assert "目标满载率" not in labels
+        hints = " ".join(getattr(item, "value", "") or "" for item in at.info)
+        assert "没有空间" in hints
+
+    def test_full_load_disables_submit(self):
+        at = _render_reduction_app(1.0)
+        submit = [b for b in at.button if b.label == "计算减排情景"]
+        assert submit and submit[0].disabled
+
+    def test_normal_load_keeps_slider_available(self):
+        at = _render_reduction_app(0.60)
+        labels = [slider.label for slider in at.slider]
+        assert "目标满载率" in labels
