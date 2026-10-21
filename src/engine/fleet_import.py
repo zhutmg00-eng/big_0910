@@ -11,11 +11,9 @@
 
 三条硬约束：
 
-1. 不引入新依赖。``xlsx`` 除了 pandas 还需要 openpyxl，本项目没有它，
-   所以遇到 Excel 时给出明确提示（另存为 CSV UTF-8），而不是
-   ``ModuleNotFoundError``。注意不要承诺「装了 openpyxl 就能读」——
-   本项目没有任何读取 xlsx 的代码路径，装了也不会改变行为
-   （早期文案这么承诺过，被评审实测证伪后删除）。
+1. 格式兼容性。原生支持 ``.csv``, ``.txt``（制表符/分号等）以及 ``.xlsx``
+   格式（基于 openpyxl）。遇到旧版二进制 ``.xls``（Excel 97-2003）或损坏文件时，
+   给出明确的另存为指引，避免直接崩溃。
 2. 不静默丢数据。认不出的车型、为 0 或负数的车辆数、缺失的里程都会变成
    ``ImportWarning`` 级别的提示，用户在预览表上逐条改。
 3. 同车型多行自动合并（合计车辆数、按车辆数加权平均里程与实载率），
@@ -443,6 +441,39 @@ def parse_fleet_table(
     return result
 
 
+def _excel_bytes_to_csv_text(data: bytes) -> str:
+    """将 .xlsx 文件二进制内容转为标准 CSV 文本。"""
+    try:
+        import openpyxl
+    except ImportError:
+        raise FleetImportError(
+            "当前运行环境未安装 openpyxl，无法直接解析 Excel 文件。"
+            "请在 Excel 里「另存为 → CSV UTF-8（逗号分隔）」后再上传。"
+        )
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+        sheet = wb.active
+        if sheet is None:
+            raise FleetImportError("Excel 工作簿为空，未找到可用工作表。")
+        output = io.StringIO()
+        writer = csv.writer(output)
+        has_content = False
+        for row in sheet.iter_rows(values_only=True):
+            if any(cell is not None and str(cell).strip() != "" for cell in row):
+                has_content = True
+                writer.writerow([str(c) if c is not None else "" for c in row])
+        wb.close()
+        if not has_content:
+            raise FleetImportError("Excel 工作表内容为空，请检查后重试。")
+        return output.getvalue()
+    except FleetImportError:
+        raise
+    except Exception as exc:
+        raise FleetImportError(
+            f"读取 Excel 文件失败：{exc}。请检查文件是否损坏，或在 Excel 里「另存为 → CSV UTF-8（逗号分隔）」后重试。"
+        )
+
+
 def parse_fleet_file(
     filename: str,
     data: bytes,
@@ -450,18 +481,22 @@ def parse_fleet_file(
     default_annual_km: Optional[float] = 80_000.0,
     default_load_factor: float = 0.75,
 ) -> FleetImportResult:
-    """按扩展名分派：``.csv``/``.txt`` 直接解析，``.xlsx`` 给明确提示。"""
+    """按扩展名分派：支持 .csv, .txt 以及 .xlsx 格式。"""
     if len(data) > MAX_CSV_BYTES:
         raise FleetImportError(f"文件 {len(data) / 1024:.0f} KB 超过 {MAX_CSV_BYTES // 1024} KB 上限。")
     name = (filename or "").lower()
-    if name.endswith((".xlsx", ".xlsm", ".xls")):
+    if name.endswith((".xlsx", ".xlsm")):
+        content = _excel_bytes_to_csv_text(data)
+    elif name.endswith(".xls"):
         raise FleetImportError(
-            "暂不支持直接读取 Excel。请在 Excel 里「另存为 → CSV UTF-8（逗号分隔）」后再上传。"
+            "暂不支持旧版 .xls 格式（Excel 97-2003）。请在 Excel 里「另存为 → .xlsx」或「另存为 → CSV UTF-8」后再上传。"
         )
-    if not name.endswith((".csv", ".txt", "")):
-        raise FleetImportError(f"不支持的文件类型：{filename}。请上传 .csv 文件。")
+    elif name.endswith((".csv", ".txt", "")):
+        content = _decode_bytes(data)
+    else:
+        raise FleetImportError(f"不支持的文件类型：{filename}。请上传 .xlsx 或 .csv 文件。")
     return parse_fleet_table(
-        _decode_bytes(data),
+        content,
         default_annual_km=default_annual_km,
         default_load_factor=default_load_factor,
     )

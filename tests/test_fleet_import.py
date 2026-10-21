@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 
+import io
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -157,11 +159,36 @@ class TestRefusesToGuess:
         with pytest.raises(FleetImportError):
             parse_fleet_table(_csv("车型,数量,年均里程", "甲,1,1", "乙,2,2"))
 
-    def test_excel_is_rejected_with_actionable_message(self):
+    def test_valid_excel_xlsx_file_is_parsed_correctly(self):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.append(["车型", "数量", "年均里程(km)", "实载率"])
+        ws.append(["重卡", 10, "10万公里", "85%"])
+        ws.append(["轻卡", 5, 30000, 0.70])
+        buf = io.BytesIO()
+        wb.save(buf)
+        data = buf.getvalue()
+
+        res = parse_fleet_file("车队实测台账.xlsx", data)
+        assert res.total_vehicles == 15
+        assert len(res.groups) == 2
+        heavy = next(g for g in res.groups if g.vehicle_type == "重型柴油货车")
+        assert heavy.count == 10
+        assert heavy.annual_km == 100_000.0
+        assert abs(heavy.load_factor - 0.85) < 1e-4
+
+    def test_corrupted_excel_is_rejected_with_actionable_message(self):
         with pytest.raises(FleetImportError) as exc:
-            parse_fleet_file("台账.xlsx", b"PK\x03\x04")
+            parse_fleet_file("损坏台账.xlsx", b"PK\x03\x04not-a-valid-zip")
         assert "另存为" in str(exc.value)
         assert "CSV" in str(exc.value)
+
+    def test_legacy_xls_is_rejected_with_upgrade_hint(self):
+        with pytest.raises(FleetImportError) as exc:
+            parse_fleet_file("历史台账.xls", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1")
+        assert "xls" in str(exc.value)
+        assert "另存为" in str(exc.value)
 
     def test_oversized_file_rejected(self):
         with pytest.raises(FleetImportError) as exc:
@@ -214,6 +241,29 @@ class TestImportApi:
                 annual_km=group["annual_km"],
                 load_factor=group["load_factor"],
             )
+
+    def test_import_xlsx_via_api_returns_normalised_groups(self, client):
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.append(["车辆类型", "台数", "年行驶里程", "实载率"])
+        ws.append(["重卡", 20, "12万公里", "80%"])
+        ws.append(["轻卡", 10, "4万", "70%"])
+        buf = io.BytesIO()
+        wb.save(buf)
+
+        response = client.post(
+            "/api/fleet/import",
+            files={"file": ("真实企业台账.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        )
+        assert response.status_code == 200, response.text
+        payload = response.json()
+        assert payload["total_vehicles"] == 30
+        assert payload["filename"] == "真实企业台账.xlsx"
+        assert len(payload["groups"]) == 2
+        heavy = next(g for g in payload["groups"] if g["vehicle_type"] == "重型柴油货车")
+        assert heavy["count"] == 20
+        assert heavy["annual_km"] == 120_000.0
 
     def test_bad_file_returns_400_not_500(self, client):
         response = client.post(

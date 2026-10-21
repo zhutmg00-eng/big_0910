@@ -239,10 +239,10 @@ def render_inventory() -> None:
     st.markdown("## 添加车队记录")
 
     # ---- 上传台账（评审核心意见：真正的企业没有耐心点 170 次表单）----
-    with st.expander("从 CSV 台账批量导入（推荐）", expanded=not st.session_state.fleet_data):
+    with st.expander("从 Excel/CSV 台账批量导入（推荐）", expanded=not st.session_state.fleet_data):
         st.caption(
             "台账只需四列：车型、数量、年均里程(km)、实载率。列名有常见同义词容错"
-            "（如「车辆类型／台数／年行驶里程／里程利用率」），也支持 GBK 编码、分号或制表符分隔；"
+            "（如「车辆类型／台数／年行驶里程／里程利用率」），支持 .xlsx、.csv 或 .txt 分隔台账；"
             "同一车型多行会按车辆数加权合并。"
         )
         tpl_col, up_col = st.columns([1, 2])
@@ -262,8 +262,8 @@ def render_inventory() -> None:
                 help="含 4 行示例数据与全部可选车型名，Excel 打开不乱码",
             )
         upload = up_col.file_uploader(
-            "上传车队台账", type=["csv", "txt"], key="fleet_csv",
-            help="Excel 文件请先「另存为 → CSV UTF-8」；单文件上限 2 MB",
+            "上传车队台账", type=["csv", "txt", "xlsx"], key="fleet_csv",
+            help="支持 .xlsx、.csv 或 .txt 制表符分隔台账；单文件上限 2 MB",
         )
         if upload is not None and st.button("解析台账并载入", type="primary"):
             _import_fleet_csv(upload)
