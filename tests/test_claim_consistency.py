@@ -340,6 +340,40 @@ def _collected_test_count() -> int:
     return _COLLECTED_CACHE
 
 
+# 历史上出现过 107 / 117 / 119 / 159 / 170 / 173 / 221 / 239 / 258 / 259 等写法。
+# 这里只列「显然过期」的旧值；near-current 值（259/260/261/262…）不列入，
+# 否则每加一个测试都要回来改这个列表——那正是它要防的「把预期值抄一遍」。
+_STALE_TEST_COUNTS = (107, 117, 119, 159, 170, 173, 221, 239)
+
+
+def _read_any(rel):
+    """论文等私有文书不存在时跳过，公开载体不存在时判失败。"""
+    return _read_defense(rel) if rel in PUBLIC_DEFENSE_DOCS or rel in DEFENSE_DOCS \
+        else _read_private(rel)
+
+
+def test_test_count_claims_are_not_stale_in_this_paper():
+    """论文正文与多份报告仍写「117 项」，而当时实测已是 200+ 项。
+
+    评审指出：这是最容易被现场翻出来的一条——论文是唯一会被逐字读的材料。
+    """
+    actual = _collected_test_count()
+    candidates = [
+        "docs/academic_paper.md",
+        "docs/中期答辩成果与实证全景报告.md",
+        "docs/大创中期进展说明书_技术与实证全景.md",
+    ]
+    for rel in candidates:
+        text = _read_any(rel)
+        for stale in _STALE_TEST_COUNTS:
+            if stale == actual:
+                continue
+            for pat in (f"{stale} 项", f"{stale}项"):
+                assert pat not in text, (
+                    f"{rel} 仍声称「{pat}」测试，当前真实收集数为 {actual}"
+                )
+
+
 def test_defense_docs_test_count_matches_collection():
     """答辩材料写的测试数必须是当前真实收集数，不能是旧值。
 
