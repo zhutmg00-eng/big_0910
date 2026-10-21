@@ -148,3 +148,57 @@ class TestReductionUiHasNoInteractionDeadlock:
         at = _render_reduction_app(0.60)
         labels = [slider.label for slider in at.slider]
         assert "目标满载率" in labels
+
+
+class TestEconomicParametersAreEditable:
+    """第 8 轮评审 P0-3：界面里没有任何油价/电价/折现率入口。
+
+    评审实测：全部参数吃 src/engine/tco.py 的硬编码默认值，电价 2.0 +
+    油价 5.0 时回收期变 None（永不回本），而用户既看不到假设也改不了。
+    「你按什么价算的」是评委与老板必问的第一个问题。
+    """
+
+    _SCRIPT = """
+import streamlit as st
+from src.ui.views.reduction import _calculate_reduction, _render_econ_sanity_hint
+
+st.session_state["company_name"] = "示例"
+fleet = [{"vehicle_type": "重型柴油货车", "count": 10, "annual_km": 100000, "load_factor": 0.60}]
+carbon = {"carbon_budget": {"情景减排目标": 0.0}}
+_render_econ_sanity_hint(DIESEL, ELEC)
+_calculate_reduction(carbon, fleet, "重型柴油货车", 10, 0, 0.60,
+                     diesel_price=DIESEL, elec_price=ELEC,
+                     discount_rate_pct=6.0, lifespan_years=5)
+st.write(st.session_state["reduction_result"]["tco_analysis"]["overall_payback_period_years"])
+"""
+
+    def _run(self, diesel: float, elec: float):
+        from streamlit.testing.v1 import AppTest
+
+        script = self._SCRIPT.replace("DIESEL", str(diesel)).replace("ELEC", str(elec))
+        at = AppTest.from_string(script, default_timeout=120).run()
+        assert not at.exception, at.exception[0].value if at.exception else ""
+        return at
+
+    @staticmethod
+    def _payback(at) -> str:
+        # st.write 会把 Python 值渲染成 Markdown 代码块（``2.34``），需剥反引号
+        return str(at.markdown[-1].value).strip("`")
+
+    def test_electricity_price_changes_payback(self):
+        cheap = self._payback(self._run(7.50, 0.80))
+        expensive = self._payback(self._run(7.50, 1.80))
+        assert cheap != expensive
+        assert float(cheap) < 5.0
+        assert float(expensive) > 100.0
+
+    def test_inverted_prices_give_no_payback(self):
+        at = self._run(5.00, 2.00)
+        assert self._payback(at) == "None"
+        warnings = " ".join(str(w.value) for w in at.warning)
+        assert "没有节省" in warnings or "不回本" in warnings
+
+    def test_hint_shows_energy_cost_gap(self):
+        at = self._run(7.50, 0.80)
+        captions = " ".join(str(c.value) for c in at.caption)
+        assert "元" in captions and "能源成本下降" in captions

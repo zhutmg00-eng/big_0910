@@ -86,6 +86,36 @@ def render_reduction() -> None:
     # 但此前 UI 没有任何入口，评委在界面上复现不出来，只能看脚本结果。
     # 注意这个比例是代数恒等式（车价差 + 充电桩 vs 车价差 − 电池立减），
     # 与租金、里程、油价电价都无关，因此同时提示不要把它当敏感性结论。
+    st.markdown("### 经济参数")
+    # 第 8 轮评审 P0-3：界面里没有任何油价/电价/折现率入口，全部吃
+    # src/engine/tco.py 里的硬编码默认值（柴油 7.50、电价 0.80、贴现 6%、
+    # 周期 5 年）。评审实测电价 2.0 + 油价 5.0 时回收期直接变成「永不回本」，
+    # 而用户既看不到这个假设、也没有任何办法改——「你按什么价算的」
+    # 是评委与老板一定会问的第一个问题。
+    econ_c1, econ_c2 = st.columns(2)
+    diesel_price = econ_c1.number_input(
+        "柴油单价（元/L）",
+        min_value=3.0, max_value=15.0, value=7.50, step=0.10, format="%.2f",
+        help="国标 0# 柴油零售价的年度均值。省级差异较大，请按本企业实际采购价填。",
+    )
+    elec_price = econ_c2.number_input(
+        "综合电价（元/kWh）",
+        min_value=0.20, max_value=3.00, value=0.80, step=0.05, format="%.2f",
+        help="含服务费的充电综合电价。夜间谷电约 0.4–0.6，公共快充常达 1.2–1.8。",
+    )
+    econ_c3, econ_c4 = st.columns(2)
+    discount_rate_pct = econ_c3.number_input(
+        "年贴现率（%）",
+        min_value=0.0, max_value=20.0, value=6.0, step=0.5, format="%.1f",
+        help="用于净现值与平准化成本；回收期本身不做贴现。",
+    )
+    lifespan_years = econ_c4.number_input(
+        "评估周期（年）",
+        min_value=1, max_value=15, value=5, step=1,
+        help="新能源重卡的实际运营寿命通常 5–8 年（受电池衰减约束）。",
+    )
+    _render_econ_sanity_hint(diesel_price, elec_price)
+
     st.markdown("### 购置口径")
     baas_mode = st.checkbox(
         "按车电分离（BaaS）口径计算回收期",
@@ -147,6 +177,10 @@ def render_reduction() -> None:
                 target_load,
                 baas_mode,
                 baas_rental,
+                diesel_price,
+                elec_price,
+                discount_rate_pct,
+                lifespan_years,
             )
 
     scenario = st.session_state.get("reduction_result")
@@ -173,6 +207,32 @@ def _render_baseline(carbon_result: dict) -> None:
         )
 
 
+def _render_econ_sanity_hint(diesel_price: float, elec_price: float) -> None:
+    """油价与电价的关系一旦倒挂，需当场说清，否则用户会拿到"越换越亏"的结论。
+
+    单位能源成本对比（重型柴油货车：33 L/100km、140 kWh/100km）：
+    燃油 100 km 花 ``33 × 油价``，电动 100 km 花 ``140 × 电价``。
+    按默认 7.50 / 0.80 是 247.5 元 vs 112.0 元，电动省 55%；
+    但电价到 1.80 元以上时电费就追平油费，回收期会迅速恶化甚至不可回收。
+    这不是 bug，反而是模型该给出的结论，但前提是用户知道自己在看什么。
+    """
+    fuel_per_100km = 33.0
+    elec_per_100km = 140.0
+    fuel_cost = fuel_per_100km * diesel_price
+    elec_cost = elec_per_100km * elec_price
+    if elec_cost >= fuel_cost:
+        st.warning(
+            f"按当前价格，重卡每 100 km 电费 {elec_cost:,.0f} 元 ≥ 燃油费 {fuel_cost:,.0f} 元，"
+            "能源成本上没有节省。模型会如实给出「不回本或回收期极长」的结论，"
+            "请确认电价是否包含服务费、油价是否为车队实际采购价。"
+        )
+    else:
+        st.caption(
+            f"重卡每 100 km：燃油 {fuel_cost:,.0f} 元 vs 电动 {elec_cost:,.0f} 元，"
+            f"能源成本下降 {1 - elec_cost / fuel_cost:.0%}。"
+        )
+
+
 def _calculate_reduction(
     carbon_result: dict,
     fleet_data: list[dict],
@@ -182,6 +242,10 @@ def _calculate_reduction(
     target_load: float,
     baas_mode: bool = False,
     baas_rental: float = 0.0,
+    diesel_price: float = 7.50,
+    elec_price: float = 0.80,
+    discount_rate_pct: float = 6.0,
+    lifespan_years: int = 5,
 ) -> None:
     with st.spinner("正在计算减排情景…"):
         try:
@@ -216,13 +280,13 @@ def _calculate_reduction(
                 budget_reduction_target=carbon_result.get("carbon_budget", {}).get(
                     "情景减排目标", 0.10
                 ),
-                econ_params=(
-                    TCOEconomicParameters(
-                        is_baas_mode=True,
-                        baas_annual_battery_rental_yuan=baas_rental,
-                    )
-                    if baas_mode
-                    else None
+                econ_params=TCOEconomicParameters(
+                    diesel_price_yuan_per_l=float(diesel_price),
+                    electricity_price_yuan_per_kwh=float(elec_price),
+                    discount_rate=float(discount_rate_pct) / 100,
+                    lifespan_years=int(lifespan_years),
+                    is_baas_mode=bool(baas_mode),
+                    baas_annual_battery_rental_yuan=float(baas_rental),
                 ),
             ).to_dict()
             scenario["selected_type"] = selected_type
