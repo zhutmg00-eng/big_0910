@@ -518,3 +518,19 @@ def test_no_conservatism_padding_claim():
             rel,
             "仍把正偏差包装成「保守性安全垫」",
         )
+
+
+# ---------------------------------------------------------------- 敏感性网格中位数
+
+MEDIAN_DOCS = (
+    "README.md",
+    "docs/artifacts/defense_presentation_deck.html",
+    "docs/artifacts/all_charts_dashboard.html",
+)
+
+
+def test_sensitivity_median_is_14_51_everywhere():
+    """网格中位数实测 14.51；历史上 README/展板/论文分别写过 14.52。"""
+    for rel in MEDIAN_DOCS:
+        text = _read_defense(rel)
+        assert "14.52" not in text, f"{rel} 仍写 14.52%（实测中位数 14.51%）"
