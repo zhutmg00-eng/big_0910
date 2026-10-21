@@ -3,7 +3,10 @@
     "diesel_kg_co2_per_liter": 2.73,
     "gasoline_kg_co2_per_liter": 2.31,
     "lng_kg_co2_per_kg": 2.69,
-    "grid_electricity_kg_co2_per_kwh": 0.5703
+    "grid_electricity_kg_co2_per_kwh": 0.5703,
+    "grid_electricity_note": "本字段 0.5703 为早期草稿沿用值，仅用于维持历史记录的数值连续性，不得作为电网因子引用；官方 2023 年全国电力平均因子见下一字段。",
+    "official_national_grid_kg_co2_per_kwh": 0.5306,
+    "official_national_grid_source": "生态环境部《2023年电力排放因子》全国平均值，与 src/engine/indirect_emission.py 中 GRID_EMISSION_FACTORS['全国平均'] 一致"
   },
   "cases": [
     {

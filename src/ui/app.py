@@ -6,6 +6,7 @@ from src.ui.views.advisory import render_policy_advisor, render_report
 from src.ui.views.overview import render_factors, render_home, render_inventory
 from src.ui.views.reduction import render_reduction
 from src.ui.views.validation import render_validation
+from src.ui.backend_status import render_backend_status
 from src.ui.theme import apply_theme, render_brand
 
 
@@ -54,5 +55,7 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
+    # 后端连通性：放在导航之后、核算边界说明之前，让"点了没反应"变成一眼可见的状态
+    render_backend_status()
 
 PAGES[page]()
