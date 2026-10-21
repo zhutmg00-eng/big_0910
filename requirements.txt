@@ -18,3 +18,5 @@ python-docx>=1.0
 lxml>=5.0
 pytest>=8.0
 python-pptx>=1.0     # scripts/generate_presentation_pptx.py 生成答辩幻灯片；不在 CI 路径，但缺它会 ModuleNotFoundError
+openpyxl>=3.1.2        # src/engine/fleet_import.py 原生支持 Excel (.xlsx) 台账直接解析
+
