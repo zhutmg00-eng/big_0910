@@ -124,7 +124,9 @@ def test_rag_pipeline():
     print("\n📋 步骤5: 无 LLM 降级回答")
     fallback_response = build_retrieval_answer(query, results)
     assert "政策原文摘录" in fallback_response
-    assert "物流运输行业目前未纳入" in fallback_response
+    # 适用性提示改为条件触发（命中其他行业履约规定时才提示），
+    # 见 src/rag/generator.py 的 _applicability_note。
+    assert "检索结论" in fallback_response
     print(fallback_response)
 
     print("\n" + "=" * 60)

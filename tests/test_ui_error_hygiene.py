@@ -13,6 +13,11 @@
 
 import io
 
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 import requests
 
@@ -279,3 +284,78 @@ class TestHumanizeDetailAgainstRealPydanticMessages:
         text = _humanize_detail(detail)
         assert "totally_unknown" in text
         assert "Field required" not in text
+
+class TestUiProcessReadsDotenv:
+    """第 11 轮评审的 P0-1：前端是独立进程，必须自己加载 .env。
+
+    实测复现路径：把 APP_API_KEY 写进 .env → 后端 API_KEY 非空、
+    /api/health 的 security.mode = protected；但 src/ui/api_client.py 直接
+    os.getenv，而全仓只有 src/config.py 调用 load_dotenv()、只有 src/api/main.py
+    导入 src.config → 前端拿到 None、API_HEADERS == {}，界面上每个请求 401，
+    且界面里没有任何一句解释。
+    """
+
+    def test_api_client_imports_config_so_dotenv_is_loaded(self):
+        source = (Path(__file__).resolve().parents[1] / "src" / "ui" / "api_client.py").read_text(
+            encoding="utf-8"
+        )
+        assert "import src.config" in source, "api_client 必须 import src.config 才会触发 load_dotenv()"
+        # 且必须在读 getenv 之前
+        assert source.index("import src.config") < source.index("API_BASE_URL = ")
+
+    def test_env_key_lands_in_headers_in_a_fresh_process(self, tmp_path):
+        """全新解释器里，只要进程环境有 APP_API_KEY，API_HEADERS 就必须带上它。
+
+        注意这里**不能**把 .env 本身当成被测对象：src/config.py 现在把 dotenv
+        锚定到仓库根目录的 .env（裸 load_dotenv() 会随 cwd 漂移），所以在任意
+        临时目录放一个 .env 是不该被读到的。.env → 进程环境这一段由
+        test_config_anchors_dotenv_to_repo_root 单独守。
+        """
+        repo = Path(__file__).resolve().parents[1]
+        script = (
+            "import os, sys\n"
+            f"sys.path.insert(0, r'{repo}')\n"
+            "from src.ui import api_client\n"
+            "assert 'X-API-Key' in api_client.API_HEADERS, api_client.API_HEADERS\n"
+            "assert api_client.API_HEADERS['X-API-Key'] == 'probe-key-should-be-in-header'\n"
+            "print('OK')\n"
+        )
+        probe = tmp_path / "probe.py"
+        probe.write_text(script, encoding="utf-8")
+        env = dict(os.environ)
+        env["APP_API_KEY"] = "probe-key-should-be-in-header"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
+        result = subprocess.run(
+            [sys.executable, str(probe)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=env,
+            cwd=str(tmp_path),
+        )
+        assert result.returncode == 0, result.stderr
+        assert "OK" in result.stdout
+
+    def test_auth_failure_has_actionable_hint(self):
+        from src.ui.api_client import _auth_failure_hint
+
+        for status in (401, 403):
+            hint = _auth_failure_hint(status)
+            assert "APP_API_KEY" in hint
+            assert ".env" in hint
+            assert "重启" in hint
+            assert "security.mode" in hint
+
+
+def test_config_anchors_dotenv_to_repo_root():
+    """``load_dotenv()`` 不带路径时是按当前工作目录往上层找 .env。
+
+    Streamlit / IDE / CI 的工作目录不一定是仓库根，实测只改 cwd 就会让
+    APP_API_KEY 读不到、前端每个接口 401，所以必须锚定到仓库根。
+    """
+    repo = Path(__file__).resolve().parents[1]
+    source = (repo / "src" / "config.py").read_text(encoding="utf-8")
+    assert "load_dotenv(dotenv_path=" in source
+    assert '.env' in source

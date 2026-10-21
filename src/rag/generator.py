@@ -108,12 +108,53 @@ def build_retrieval_answer(
         seen_sources.add(source)
         lines.append(f"- {source_label}：{excerpt}")
 
-    lines.extend([
-        "",
-        "【适用性提示】",
-        "物流运输行业目前未纳入全国碳市场配额管理。检索到的发电、钢铁等行业履约规定不能直接作为物流企业的法定义务；本系统的模拟碳预算仅用于科研情景比较。",
-    ])
+    applicability = _applicability_note(retrieved_chunks)
+    if applicability:
+        lines.extend(["", "【适用性提示】", applicability])
     return "\n".join(lines)
+
+
+#: 命中哪些来源时，才需要提醒「这些规定不适用于道路货运企业」。
+#: 判定依据是文件名，不是问题关键词 —— 问题问什么完全不影响「检索到的是谁的义务」。
+_OUT_OF_SCOPE_MARKERS = (
+    "发电",
+    "电网",
+    "钢铁",
+    "水泥",
+    "电解铝",
+    "温室气体排放核算与报告指南",
+    "温室气体排放核算和报告通则",
+    "核查技术指南",
+    "重点排放单位",
+    "配额总量和分配方案",
+    # 全国碳市场的工作通知 / 配额分配方案：命中的是其他行业的履约安排。
+    # 「上海碳排放管理办法」这类地方市场文件不算 —— 它谈的是地方试点，
+    # 与「全国碳市场是否纳管道路货运」不是同一件事。
+    "全国碳市场工作通知",
+)
+
+
+def _applicability_note(retrieved_chunks: List[Dict]) -> str:
+    """只在检索结果确实落在「其他行业履约规定」上时给出适用性提示。
+
+    历史问题：这段提示原先无条件拼在每条检索式回答末尾，所以「新能源重卡购置
+    补贴」「物流园区光伏算不算减排」这类与碳市场配额毫无关系的问题，答案尾部
+    也逐字相同 —— 读者会把一句与检索内容无关的模板误当成检索结论。第 11 轮评审
+    用 5 个互不相关的问题实测，答案尾部 hash 完全一致（unique tails = 1）。
+    """
+    sources = []
+    for chunk in retrieved_chunks[:5]:
+        source = str(chunk.get("metadata", {}).get("source", ""))
+        if source:
+            sources.append(source)
+    if not any(marker in source for source in sources for marker in _OUT_OF_SCOPE_MARKERS):
+        return ""
+    return (
+        "本次检索命中的文件里有针对发电、电网、钢铁、水泥、电解铝等"
+        "**全国碳市场重点排放行业**的履约与核算规定。"
+        "物流运输行业目前未纳入全国碳市场配额管理，因此这些条款不能直接作为"
+        "物流企业的法定义务；本系统的模拟碳预算仅用于科研情景比较，不是法定配额。"
+    )
 
 
 def call_llm(

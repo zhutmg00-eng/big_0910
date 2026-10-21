@@ -3,7 +3,11 @@ import os
 from pathlib import Path
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # 【必须给显式路径】裸 load_dotenv() 是从「当前工作目录」往上层找 .env，
+    # 而 Streamlit / 部分 IDE / CI 的工作目录不一定是仓库根目录。实测：在别的
+    # 目录下 `python -m streamlit run <repo>/src/ui/app.py`，或脚本里先 chdir，
+    # .env 就读不到，前端于是发裸请求、每个接口 401。这里锚定到仓库根。
+    load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 except ImportError:
     pass
 

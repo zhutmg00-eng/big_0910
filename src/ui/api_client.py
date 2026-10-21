@@ -6,6 +6,16 @@ from urllib.parse import urlparse
 import requests
 import streamlit as st
 
+import src.config  # noqa: F401  # 必须最先导入：src.config 是唯一调用 load_dotenv() 的地方
+
+# 【必须 import src.config，不能只读 os.getenv】
+# 前端是独立的 Streamlit 进程，此前全仓只有 src/api/main.py 一侧 import src.config，
+# 而 src/config.py 才是唯一调用 load_dotenv() 的地方。结果：用户照 README 把
+# APP_API_KEY 写进 .env 后，后端读到了（posture=protected），前端 `os.getenv`
+# 拿到 None、API_HEADERS == {}，于是界面上每个请求都 401，而界面上看不到任何解释。
+# 用 dotted import 而不是 from src.config import ...：保证 config 先于下面的
+# getenv 完成 load_dotenv，不依赖导入顺序。
+
 # 用 `or` 而非 getenv 默认值：环境变量存在但为空字符串（Compose 常见）时也回退到默认地址
 API_BASE_URL = (os.getenv("API_BASE_URL") or "http://localhost:8000").rstrip("/")
 API_TIMEOUT = float(os.getenv("API_TIMEOUT") or 60)
@@ -40,6 +50,12 @@ def show_api_error(response: requests.Response) -> None:
     if response.status_code in _BACKEND_MISSING_STATUS:
         st.error(_backend_missing_hint(response.status_code))
         return
+    if response.status_code in _AUTH_FAILURE_STATUS:
+        # 401/403 单独给话术：绝大多数情况下不是「代码错了」，而是前端与后端
+        # 用的 key 不一致（或前端根本没读到 .env）。原样渲染 detail 只会显示
+        # 「请求未完成（401）：Missing or invalid X-API-Key」，用户无从下手。
+        st.error(_auth_failure_hint(response.status_code))
+        return
     try:
         detail = response.json().get("detail", response.text)
     except ValueError:
@@ -65,6 +81,30 @@ def _describe_backend_down(exc: requests.RequestException) -> str:
         "`python -m uvicorn src.api.main:app --port 8000`；"
         "② 8000 端口被别的程序占用 —— 换端口启动后端，并设置环境变量 "
         "`API_BASE_URL` 指向新端口。"
+    )
+
+
+#: 鉴权失败。前端与后端的 key 不一致时几乎必然出现，且用户看不出原因。
+_AUTH_FAILURE_STATUS = (401, 403)
+
+
+def _auth_failure_hint(status_code: int) -> str:
+    """把 401/403 翻译成「前后端 key 不一致」的排查步骤。
+
+    实测场景：用户照 README 把 ``APP_API_KEY`` 写进 ``.env``，后端读到了
+    （``/api/health`` 的 security.mode = ``protected``），但前端进程没读到，
+    于是每个请求都 401，而界面只显示一句「请求未完成（401）」。
+    """
+    state = "已设置（应已随请求发送）" if APP_API_KEY else "未设置（请求里没有 X-API-Key 头）"
+    return (
+        f"核算服务拒绝了本次请求（HTTP {status_code}）。\n\n"
+        f"**当前界面发起请求时的 API key 状态：{state}**\n\n"
+        "前后端必须用同一个 APP_API_KEY：\n"
+        "1. 在项目根目录的 `.env` 里写 `APP_API_KEY=你的口令`（该文件已被 .gitignore 排除）；\n"
+        "2. **重启 Streamlit 与 uvicorn 两个进程**（.env 只在进程启动时读取）；\n"
+        f"3. 打开 {API_BASE_URL}/api/health，看 `security.mode` 是 `protected` 还是 `open_dev`；\n"
+        "4. 若后端是 `protected` 而界面仍报 401，说明界面进程没读到 `.env` —— "
+        "请确认是在项目根目录启动的 `python -m streamlit run src/ui/app.py`。"
     )
 
 

@@ -96,5 +96,8 @@ def test_retrieval_fallback_is_an_actual_sourced_answer():
     )
     assert "政策原文摘录" in answer
     assert "交通运输碳达峰实施方案.md" in answer
-    assert "物流运输行业目前未纳入" in answer
+    # 适用性提示已改为条件触发：只有命中发电/电网/钢铁等行业履约规定时才出现。
+    # 交通/重卡类文件的检索结果不该挂一段与问题无关的模板（见 tests/test_llm_resilience.py
+    # 的 TestApplicabilityNoteIsNotAConstantTail）。
+    assert "适用性提示" not in answer
     assert "请在 .env" not in answer
