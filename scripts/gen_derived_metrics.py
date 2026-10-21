@@ -155,6 +155,7 @@ def main() -> dict:
     km_scales = [0.8, 0.9, 1.0, 1.1, 1.2]
     grid = {}
     flat = []
+    flat_raw = []
     for ld in load_deltas:
         for ks in km_scales:
             errs_ = []
@@ -162,9 +163,11 @@ def main() -> dict:
                 em = e_model_of(b, load_delta=ld, km_scale=ks)
                 ef = e_fuel_of(b)
                 errs_.append(abs(em - ef) / ef * 100)
-            v = round(sum(errs_) / len(errs_), 2)
+            raw_v = sum(errs_) / len(errs_)
+            v = round(raw_v, 2)
             grid[f"{ld:+.2f}|{ks:.1f}"] = v
             flat.append(v)
+            flat_raw.append(raw_v)
     sub_l = [-0.30, -0.15, 0.0, 0.10, 0.15]
     grid5 = [[grid[f"{ld:+.2f}|{ks:.1f}"] for ld in sub_l] for ks in km_scales]
     sensitivity = {
@@ -173,12 +176,12 @@ def main() -> dict:
         "row_labels_km_scale": km_scales,
         "col_labels_load_delta": sub_l,
         "min_pct": min(flat), "max_pct": max(flat),
-        # 中位数的口径：必须用「未截断的逐格原始值」算，不能先逐格 round 到两位
+        # 中位数的口径：必须用「未截断的逐格原始值」算（flat_raw），不能先逐格 round 到两位
         # 再取中位。50 格中位落在第 25/26 位之间，原始值 14.3712 与 14.6577，
         # 均值 14.51449 → 14.51。若先逐格保留两位（14.37 / 14.66）再取中位会得到
         # 14.515 并进位成 14.52，属于二次舍入，比 14.51 差 0.01。
-        # 这里保留全精度，由展示方按 {:.2f} 渲染。
-        "median_pct": round(statistics.median(flat), 2),
+        # 这里保留两位小数 14.51，与 sensitivity_analysis.py、答辩 Deck 与 Dashboard 严格统一。
+        "median_pct": round(statistics.median(flat_raw), 2),
         "n": len(flat),
         "over10": sum(1 for v in flat if v > 10.0),
         "mileage_effect_pp": round(grid["+0.00|1.2"] - grid["+0.00|1.0"], 2),
