@@ -260,6 +260,7 @@ def analyze_reduction_scenario(
     baseline_fleet: List[VehicleGroupData],
     changes: dict,
     budget_reduction_target: float = DEFAULT_SCENARIO_REDUCTION_TARGET,
+    econ_params=None,
 ) -> ReductionAnalysis:
     """
     分析单个减排情景
@@ -268,6 +269,10 @@ def analyze_reduction_scenario(
         baseline_fleet: 基线车队
         changes: 减排措施 {"措施名称": 涉及车辆数}
         budget_reduction_target: 模拟预算所用的直接运营减排目标
+        econ_params: 可选 TCOEconomicParameters。留空则按默认买断口径计算；
+            传入 ``is_baas_mode=True`` 的参数即可得到车电分离口径的回收期。
+            早前该函数没有这个入口，导致 UI 只能看买断口径，而项目对外
+            主打的 BaaS 垫资对比只能靠脚本跑出来。
 
     Returns:
         ReductionAnalysis: 减排分析结果
@@ -359,7 +364,7 @@ def analyze_reduction_scenario(
                     "annual_co2_reduction_t": co2_red,
                 })
         if tco_replacements:
-            fleet_tco = calculate_fleet_tco(tco_replacements)
+            fleet_tco = calculate_fleet_tco(tco_replacements, econ_params=econ_params)
             tco_analysis_dict = fleet_tco.to_dict()
 
     # 生成建议

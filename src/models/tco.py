@@ -17,3 +17,11 @@ class VehicleTCORunRequest(BaseModel):
     electricity_price_yuan_per_kwh: Optional[float] = Field(None, gt=0, description="自定义综合电价")
     ev_vehicle_price_wan: Optional[float] = Field(None, gt=0, description="自定义新能源车单价(万元)")
     lifespan_years: Optional[int] = Field(5, ge=1, le=15, description="评估运营周期(年)")
+    # 车电分离（BaaS）模式。缺这三项时 API 只能算买断口径，
+    # 而项目对外主打的「初始垫资降 70%」正是 BaaS 口径——静默忽略会让
+    # 调用方拿到买断的 delta_capex 却以为是 BaaS 的，属于最危险的一类静默错误。
+    is_baas_mode: bool = Field(False, description="是否启用换电车电分离(BaaS)模式")
+    baas_chassis_discount_wan: Optional[float] = Field(
+        None, ge=0, description="剥离动力电池后的单车购置立减(万元/车)；留空按车型内置档位")
+    baas_annual_battery_rental_yuan: Optional[float] = Field(
+        None, ge=0, description="单车年电池租赁费(元/年/车)；留空按车型内置档位")

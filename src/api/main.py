@@ -423,6 +423,17 @@ def calculate_tco_endpoint(payload: VehicleTCORunRequest, api_key: str = Depends
         lifespan_years=(
             payload.lifespan_years if payload.lifespan_years is not None else 5
         ),
+        is_baas_mode=payload.is_baas_mode,
+        baas_chassis_discount_wan=(
+            payload.baas_chassis_discount_wan
+            if payload.baas_chassis_discount_wan is not None
+            else 0.0
+        ),
+        baas_annual_battery_rental_yuan=(
+            payload.baas_annual_battery_rental_yuan
+            if payload.baas_annual_battery_rental_yuan is not None
+            else 0.0
+        ),
     )
 
     res = calculate_single_vehicle_tco(

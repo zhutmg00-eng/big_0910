@@ -76,6 +76,27 @@ def render_reduction() -> None:
     )
     target_load = target_load_pct / 100
 
+    # 车电分离（BaaS）口径。项目对外主打的「初始垫资降约 70%」只在 BaaS 下成立，
+    # 但此前 UI 没有任何入口，评委在界面上复现不出来，只能看脚本结果。
+    # 注意这个比例是代数恒等式（车价差 + 充电桩 vs 车价差 − 电池立减），
+    # 与租金、里程、油价电价都无关，因此同时提示不要把它当敏感性结论。
+    st.markdown("### 购置口径")
+    baas_mode = st.checkbox(
+        "按车电分离（BaaS）口径计算回收期",
+        value=False,
+        help="勾选后初始投资只含不含电池的车身，电池按年租赁计入运营成本。",
+    )
+    baas_rental = 0.0
+    if baas_mode:
+        baas_rental = float(st.number_input(
+            "单车年电池租赁费（元/年/车）",
+            min_value=0.0,
+            max_value=200000.0,
+            value=0.0,
+            step=1000.0,
+            help="填 0 表示按车型内置档位（重卡 45,000 / 中型 22,000 / 轻型 12,000 / 其它 5,000）。",
+        ))
+
     invalid_overlap = replace_count + replace_load > type_count
     if invalid_overlap:
         st.error(f"两项措施合计涉及 {replace_count + replace_load} 辆，超过该车型的 {type_count} 辆。")
@@ -100,6 +121,8 @@ def render_reduction() -> None:
                 replace_count,
                 replace_load,
                 target_load,
+                baas_mode,
+                baas_rental,
             )
 
     scenario = st.session_state.get("reduction_result")
@@ -133,11 +156,14 @@ def _calculate_reduction(
     replace_count: int,
     replace_load: int,
     target_load: float,
+    baas_mode: bool = False,
+    baas_rental: float = 0.0,
 ) -> None:
     with st.spinner("正在计算减排情景…"):
         try:
             from src.engine.calculator import VehicleGroupData
             from src.engine.reduction import analyze_reduction_scenario
+            from src.engine.tco import TCOEconomicParameters
 
             # The engine applies measures in fleet order. Put the selected type first
             # so both measures stay within the target group validated by the UI.
@@ -165,6 +191,14 @@ def _calculate_reduction(
                 changes=changes,
                 budget_reduction_target=carbon_result.get("carbon_budget", {}).get(
                     "情景减排目标", 0.10
+                ),
+                econ_params=(
+                    TCOEconomicParameters(
+                        is_baas_mode=True,
+                        baas_annual_battery_rental_yuan=baas_rental,
+                    )
+                    if baas_mode
+                    else None
                 ),
             ).to_dict()
             scenario["selected_type"] = selected_type
