@@ -551,3 +551,44 @@ def test_deck_does_not_cite_kappa_as_reliability_evidence():
     assert "证明本评测金标集" not in text, f"{rel} 仍用 κ=1 论证金标集客观性"
     # 必须留下退化说明
     assert "数学退化" in text or "零变异" in text, f"{rel} 缺少 κ 退化的说明"
+
+
+# ---------------------------------------------------------------- 插件端点存在性
+
+PLUGIN_INDEX = "packages/dsh-plugin-carbon-asset/src/index.ts"
+
+
+def _plugin_pairs():
+    """从插件源码里抽出 (HTTP 端点, CLI 命令) 对。"""
+    src = _read(PLUGIN_INDEX)
+    return re.findall(r"bridge\.execute\('(/api[^']+)',\s*'([a-z-]+)'", src)
+
+
+def test_plugin_endpoints_are_registered_or_known_missing():
+    """/api/turnover 未实现，必须被显式登记为缺口，而不是悄悄留在插件里。"""
+    pairs = _plugin_pairs()
+    assert pairs, "无法从插件源码解析出 bridge.execute 调用"
+
+    known_gaps = Path("docs/known_gaps.md")
+    gap_text = known_gaps.read_text(encoding="utf-8") if known_gaps.exists() else ""
+
+    missing = []
+    for endpoint, _command in pairs:
+        if endpoint == "/api/turnover":
+            missing.append(endpoint)
+    for endpoint in missing:
+        assert endpoint in gap_text, (
+            f"插件调用了未实现的 {endpoint}，但 docs/known_gaps.md 未登记该缺口"
+        )
+
+
+def test_plugin_does_not_claim_mcp_support():
+    """本项目只交付 DeepSeek Harness 插件，未实现 MCP server，材料不得混称。"""
+    src = _read(PLUGIN_INDEX)
+    assert "MCP" not in src and "mcp_server" not in src
+    readme = _read("README.md")
+    for m in re.finditer(r"MCP", readme):
+        window = readme[max(0, m.start() - 120): m.start() + 200]
+        assert ("未实现" in window) or ("不是" in window) or ("没有" in window), (
+            f"README 提到 MCP 但未说明本项目未实现：{window!r}"
+        )
