@@ -41,13 +41,21 @@ WORKDIR /app
 # 复制项目代码
 COPY . .
 
-# 创建数据目录
-RUN mkdir -p /app/data/raw /app/data/processed /app/data/policy_docs /app/data/chroma_db
+# 创建数据目录与非 root 运行用户并授权
+RUN useradd -m -u 1000 -s /bin/bash appuser && \
+    mkdir -p /app/data/raw /app/data/processed /app/data/policy_docs /app/data/chroma_db && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 # 暴露端口
 # 8000 — FastAPI API服务
 # 8501 — Streamlit Web UI
 EXPOSE 8000 8501
+
+# 容器级健康检查（针对默认的 FastAPI 服务）
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)" || exit 1
 
 # 环境变量（支持运行时配置）
 ENV PYTHONUNBUFFERED=1 \

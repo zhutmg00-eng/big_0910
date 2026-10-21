@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -86,10 +87,14 @@ class TestPruneStaleCollections:
 
 class TestPruneScriptRefusesOnEmptyKb:
     def _run(self, *args: str, cwd: Path) -> subprocess.CompletedProcess:
+        env = dict(os.environ)
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
         return subprocess.run(
             [sys.executable, str(REPO_ROOT / "scripts" / "prune_kb_collections.py"), *args],
             cwd=str(cwd), capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=180,
+            env=env,
         )
 
     def test_refuses_when_current_collection_empty(self, tmp_path):

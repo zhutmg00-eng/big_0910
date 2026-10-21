@@ -29,6 +29,18 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# 确保在 Windows 默认 GBK 终端下直接运行或子进程调用时不会触发 Unicode 编码崩溃
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from src.engine.calculator import VehicleGroupData, calculate_emission  # noqa: E402
 
 DEFAULT_JSON = PROJECT_ROOT / "data" / "raw" / "real_fleets" / "benchmark_fleets.json"
@@ -149,10 +161,10 @@ def main():
     print("1. 误差方向在基准附近保持正偏（模型偏保守），适合排放筛选与预警；")
     if minus20 and plus20:
         print(f"2. 年均里程是主导敏感因子，但效应**不对称**：里程 +20% 使 MAPE 上升 "
-              f"{min(plus20):+.2f}~{max(plus20):+.2f} pp，里程 −20% 只上升 "
+              f"{min(plus20):+.2f}~{max(plus20):+.2f} pp，里程 -20% 只上升 "
               f"{min(minus20):+.2f}~{max(minus20):+.2f} pp。"
               f"不要笼统说「±20% 约 ±20 pp」——低里程方向明显钝化。")
-    print(f"3. 实载率效应弱于里程：固定里程时，实载率在 −0.30~+0.15 区间变动引起的 "
+    print(f"3. 实载率效应弱于里程：固定里程时，实载率在 -0.30~+0.15 区间变动引起的 "
           f"MAPE 变化约 {ld_effect:.2f} pp（同一里程行内极差 "
           f"{min(row_span.values()):.2f}~{max(row_span.values()):.2f} pp）。"
           f"它不是「1.3 pp」这样的单一常数，引用时必须说明所处的里程倍数。")
@@ -169,7 +181,7 @@ def main():
         if minus20 and plus20:
             mileage_clause = (
                 f"里程 +20% 使 MAPE 上升 {min(plus20):+.2f}~{max(plus20):+.2f} pp，"
-                f"里程 −20% 仅上升 {min(minus20):+.2f}~{max(minus20):+.2f} pp，"
+                f"里程 -20% 仅上升 {min(minus20):+.2f}~{max(minus20):+.2f} pp，"
                 f"效应**明显不对称**（低里程方向钝化）"
             )
         row_span_clause = ""

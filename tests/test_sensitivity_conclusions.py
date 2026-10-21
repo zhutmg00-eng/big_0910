@@ -13,6 +13,7 @@
 因此这里既测数值正确性，也测"结论串不得重新写死"。
 """
 import json
+import os
 import re
 import subprocess
 import sys
@@ -131,10 +132,14 @@ class TestRunsAndMatchesLedger:
     @pytest.fixture(scope="class")
     @classmethod
     def run_output(cls):
+        env = dict(os.environ)
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
         proc = subprocess.run(
             [sys.executable, str(SCRIPT)],
             cwd=str(REPO_ROOT), capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=300,
+            env=env,
         )
         assert proc.returncode == 0, f"脚本失败：{proc.stderr[-800:]}"
         return proc.stdout
@@ -164,7 +169,7 @@ class TestRunsAndMatchesLedger:
         """必须同时给出 +20% 与 −20% 两个方向，且不能是同一个数。"""
         m = re.search(
             r"里程 \+20% 使 MAPE 上升 \+([\d.]+)~\+([\d.]+) pp，"
-            r"里程 −20% 只上升 \+([\d.]+)~\+([\d.]+) pp",
+            r"里程 [−-]20% 只上升 \+([\d.]+)~\+([\d.]+) pp",
             run_output,
         )
         assert m, f"未输出不对称里程结论：{run_output[-500:]}"
