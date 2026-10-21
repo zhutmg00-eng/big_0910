@@ -731,3 +731,44 @@ def test_defense_materials_do_not_claim_double_blind_expert_review():
                 marker in window
                 for marker in ("非双盲", "不是双盲", "不构成", "单盲", "不使用")
             ), f"{rel}:{index + 1} 把专家意见写成双盲评审：{line.strip()[:80]}"
+
+
+LEDGER_PATH_FOR_GRID = "docs/derived_metrics.json"
+
+
+def _grid_heavy():
+    import json
+
+    return json.loads(_read(LEDGER_PATH_FOR_GRID))["grid"]["heavy"]
+
+
+def test_reversal_province_count_is_not_reported_as_a_single_fixed_number():
+    """「N 个省份重卡碳排放反超柴油车」必须同时给出两套电耗口径下的数。
+
+    同一个量随一个未声明的假设翻倍（140 kWh 下 6 个、150 kWh 下 10 个），
+    只报一个数就是把假设当结论。
+    """
+    heavy = _grid_heavy()
+    main_kwh = heavy["kwh_per_100km_main"]
+    alt_kwh = heavy["kwh_per_100km_alt"]
+    assert main_kwh == 140.0, "主口径必须与 TCO 基准一致（140 kWh/100km）"
+    assert alt_kwh == 150.0, "150 kWh/100km 应作为敏感性对照保留"
+    assert heavy["n_regions_negative_main"] == 6
+    assert heavy["n_regions_negative_alt"] == 10
+    assert len(heavy["regions_negative_at_alt_kwh"]) == 10
+    assert len(heavy["regions_above_threshold"]) == 6
+    alt = heavy["heavy_net_pct_at_alt_kwh"]
+    assert alt["天津"] < alt["陕西"], "150 kWh 口径下天津应比陕西更负"
+
+
+def test_deliverables_do_not_quote_the_reversal_count_without_the_assumption():
+    text = _read("scripts/package_deliverables.py")
+    assert "140 kWh" in text and "150 kWh" in text, (
+        "对外说明必须同时给出 140 与 150 两套电耗口径"
+    )
+    for line in text.splitlines():
+        if "反超" not in line:
+            continue
+        assert "140 kWh" in line or "150 kWh" in line, (
+            f"提及「反超」的行必须同时交代电耗口径：{line.strip()[:80]}"
+        )

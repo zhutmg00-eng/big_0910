@@ -49,7 +49,15 @@ PROVINCES = [k for k in GRID_EMISSION_FACTORS if k not in
              ("全国平均", "全国平均(扣除非化石)", "全国化石电力",
               "华北区域", "东北区域", "华东区域", "华中区域", "西北区域", "南方区域", "西南区域")]
 
-HEAVY = {"ef_ice_kg_per_km": 0.877, "kwh_per_100km": 150.0}
+# 重型纯电重卡百公里电耗有两个口径并存，必须同时披露，不能只报一个：
+#   - TCO 基准（src/engine/tco.py 的 DEFAULT_TCO_BENCHMARKS）取 140 kWh，
+#     TCO 回收期与 BaaS 算例都用它，答辩材料里对外讲的也是 140；
+#   - 本口径原先取 150 kWh（工况偏保守），使「重卡碳排放反超柴油车」的省份
+#     从 6 个变成 10 个。这个数字在 140 口径下会掉到 6 个，所以两个都要算出来。
+# 主口径改为与 TCO 一致的 140 kWh，并把 150 kWh 作为敏感性对照保留。
+HEAVY_KWH_MAIN = 140.0
+HEAVY_KWH_ALT = 150.0
+HEAVY = {"ef_ice_kg_per_km": 0.877, "kwh_per_100km": HEAVY_KWH_MAIN}
 LIGHT = {"ef_ice_kg_per_km": 0.374, "kwh_per_100km": 35.0}
 
 
@@ -192,6 +200,16 @@ def main() -> dict:
             "heavy_scope2_t_per_km": hev, "heavy_net_pct": hp,
             "light_scope2_t_per_km": lev, "light_net_pct": lp,
         }
+    # 同一辆重卡的两套电耗口径都要出数，供对外材料如实交代区间
+    def _negative_provinces(kwh_per_100km):
+        thr = 100 * HEAVY["ef_ice_kg_per_km"] / kwh_per_100km
+        return sorted([p for p in PROVINCES if GRID_EMISSION_FACTORS[p] > thr],
+                      key=lambda p: -GRID_EMISSION_FACTORS[p])
+
+    heavy_alt_net = {
+        p: net_pct(HEAVY["ef_ice_kg_per_km"], HEAVY_KWH_ALT, GRID_EMISSION_FACTORS[p])[0]
+        for p in PROVINCES
+    }
     heavy_thr = round(100 * HEAVY["ef_ice_kg_per_km"] / HEAVY["kwh_per_100km"], 4)
     light_thr = round(100 * LIGHT["ef_ice_kg_per_km"] / LIGHT["kwh_per_100km"], 4)
     grid_metrics = {
@@ -210,6 +228,17 @@ def main() -> dict:
             "regions_above_threshold": sorted(
                 [p for p in PROVINCES if GRID_EMISSION_FACTORS[p] > heavy_thr],
                 key=lambda p: -GRID_EMISSION_FACTORS[p]),
+            "kwh_per_100km_main": HEAVY_KWH_MAIN,
+            "kwh_per_100km_alt": HEAVY_KWH_ALT,
+            "kwh_per_100km_note": (
+                "同一辆重型纯电重卡的两套电耗口径：主口径 140 kWh/100km 与 TCO 基准"
+                "（src/engine/tco.py 的 DEFAULT_TCO_BENCHMARKS）一致；150 kWh/100km 是"
+                "更保守的工况估计，早期用它做阈值计算。净减排为负（即碳排放反超柴油车）"
+                "的省份数随该假设变化，对外材料必须同时给出两个数。"),
+            "regions_negative_at_alt_kwh": _negative_provinces(HEAVY_KWH_ALT),
+            "n_regions_negative_main": len(_negative_provinces(HEAVY_KWH_MAIN)),
+            "n_regions_negative_alt": len(_negative_provinces(HEAVY_KWH_ALT)),
+            "heavy_net_pct_at_alt_kwh": heavy_alt_net,
             "threshold_range_kwh_per_100km_140_165": [
                 round(100 * 0.877 / 165.0, 4), round(100 * 0.877 / 140.0, 4)],
             "threshold_range_with_ef_pm10pct": [

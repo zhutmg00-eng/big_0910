@@ -196,7 +196,7 @@
     ],
     "min_pct": 3.04,
     "max_pct": 29.8,
-    "median_pct": 14.51,
+    "median_pct": 14.52,
     "n": 50,
     "over10": 30,
     "mileage_effect_pp": 20.85,
@@ -284,9 +284,20 @@
     },
     "heavy": {
       "ef_ice_kg_per_km": 0.877,
-      "kwh_per_100km": 150.0,
-      "threshold_kg_per_kwh": 0.5847,
+      "kwh_per_100km": 140.0,
+      "threshold_kg_per_kwh": 0.6264,
       "regions_above_threshold": [
+        "天津",
+        "山西",
+        "安徽",
+        "河北",
+        "内蒙古",
+        "陕西"
+      ],
+      "kwh_per_100km_main": 140.0,
+      "kwh_per_100km_alt": 150.0,
+      "kwh_per_100km_note": "同一辆重型纯电重卡的两套电耗口径：主口径 140 kWh/100km 与 TCO 基准（src/engine/tco.py 的 DEFAULT_TCO_BENCHMARKS）一致；150 kWh/100km 是更保守的工况估计，早期用它做阈值计算。净减排为负（即碳排放反超柴油车）的省份数随该假设变化，对外材料必须同时给出两个数。",
+      "regions_negative_at_alt_kwh": [
         "天津",
         "山西",
         "安徽",
@@ -298,6 +309,40 @@
         "新疆",
         "河南"
       ],
+      "n_regions_negative_main": 6,
+      "n_regions_negative_alt": 10,
+      "heavy_net_pct_at_alt_kwh": {
+        "北京": 5.01,
+        "天津": -16.24,
+        "河北": -11.45,
+        "山西": -13.47,
+        "内蒙古": -10.82,
+        "辽宁": 16.57,
+        "吉林": 20.11,
+        "黑龙江": 10.56,
+        "上海": 1.88,
+        "江苏": 0.34,
+        "浙江": 14.93,
+        "安徽": -12.08,
+        "福建": 27.98,
+        "江西": 0.18,
+        "山东": -5.89,
+        "河南": -0.86,
+        "湖北": 30.83,
+        "湖南": 14.89,
+        "广东": 24.42,
+        "广西": 23.44,
+        "海南": 37.61,
+        "重庆": 4.54,
+        "四川": 73.25,
+        "贵州": 2.8,
+        "云南": 77.2,
+        "陕西": -8.35,
+        "甘肃": 23.53,
+        "青海": 69.28,
+        "宁夏": -5.82,
+        "新疆": -2.98
+      },
       "threshold_range_kwh_per_100km_140_165": [
         0.5315,
         0.6264
@@ -317,211 +362,211 @@
     "by_province": {
       "北京": {
         "factor": 0.5554,
-        "heavy_scope2_t_per_km": 0.8331,
-        "heavy_net_pct": 5.01,
+        "heavy_scope2_t_per_km": 0.7776,
+        "heavy_net_pct": 11.34,
         "light_scope2_t_per_km": 0.1944,
         "light_net_pct": 48.02
       },
       "天津": {
         "factor": 0.6796,
-        "heavy_scope2_t_per_km": 1.0194,
-        "heavy_net_pct": -16.24,
+        "heavy_scope2_t_per_km": 0.9514,
+        "heavy_net_pct": -8.49,
         "light_scope2_t_per_km": 0.2379,
         "light_net_pct": 36.4
       },
       "河北": {
         "factor": 0.6516,
-        "heavy_scope2_t_per_km": 0.9774,
-        "heavy_net_pct": -11.45,
+        "heavy_scope2_t_per_km": 0.9122,
+        "heavy_net_pct": -4.02,
         "light_scope2_t_per_km": 0.2281,
         "light_net_pct": 39.02
       },
       "山西": {
         "factor": 0.6634,
-        "heavy_scope2_t_per_km": 0.9951,
-        "heavy_net_pct": -13.47,
+        "heavy_scope2_t_per_km": 0.9288,
+        "heavy_net_pct": -5.9,
         "light_scope2_t_per_km": 0.2322,
         "light_net_pct": 37.92
       },
       "内蒙古": {
         "factor": 0.6479,
-        "heavy_scope2_t_per_km": 0.9719,
-        "heavy_net_pct": -10.82,
+        "heavy_scope2_t_per_km": 0.9071,
+        "heavy_net_pct": -3.43,
         "light_scope2_t_per_km": 0.2268,
         "light_net_pct": 39.37
       },
       "辽宁": {
         "factor": 0.4878,
-        "heavy_scope2_t_per_km": 0.7317,
-        "heavy_net_pct": 16.57,
+        "heavy_scope2_t_per_km": 0.6829,
+        "heavy_net_pct": 22.13,
         "light_scope2_t_per_km": 0.1707,
         "light_net_pct": 54.35
       },
       "吉林": {
         "factor": 0.4671,
-        "heavy_scope2_t_per_km": 0.7006,
-        "heavy_net_pct": 20.11,
+        "heavy_scope2_t_per_km": 0.6539,
+        "heavy_net_pct": 25.43,
         "light_scope2_t_per_km": 0.1635,
         "light_net_pct": 56.29
       },
       "黑龙江": {
         "factor": 0.5229,
-        "heavy_scope2_t_per_km": 0.7844,
-        "heavy_net_pct": 10.56,
+        "heavy_scope2_t_per_km": 0.7321,
+        "heavy_net_pct": 16.53,
         "light_scope2_t_per_km": 0.183,
         "light_net_pct": 51.07
       },
       "上海": {
         "factor": 0.5737,
-        "heavy_scope2_t_per_km": 0.8605,
-        "heavy_net_pct": 1.88,
+        "heavy_scope2_t_per_km": 0.8032,
+        "heavy_net_pct": 8.42,
         "light_scope2_t_per_km": 0.2008,
         "light_net_pct": 46.31
       },
       "江苏": {
         "factor": 0.5827,
-        "heavy_scope2_t_per_km": 0.874,
-        "heavy_net_pct": 0.34,
+        "heavy_scope2_t_per_km": 0.8158,
+        "heavy_net_pct": 6.98,
         "light_scope2_t_per_km": 0.2039,
         "light_net_pct": 45.47
       },
       "浙江": {
         "factor": 0.4974,
-        "heavy_scope2_t_per_km": 0.7461,
-        "heavy_net_pct": 14.93,
+        "heavy_scope2_t_per_km": 0.6964,
+        "heavy_net_pct": 20.6,
         "light_scope2_t_per_km": 0.1741,
         "light_net_pct": 53.45
       },
       "安徽": {
         "factor": 0.6553,
-        "heavy_scope2_t_per_km": 0.9829,
-        "heavy_net_pct": -12.08,
+        "heavy_scope2_t_per_km": 0.9174,
+        "heavy_net_pct": -4.61,
         "light_scope2_t_per_km": 0.2294,
         "light_net_pct": 38.68
       },
       "福建": {
         "factor": 0.4211,
-        "heavy_scope2_t_per_km": 0.6316,
-        "heavy_net_pct": 27.98,
+        "heavy_scope2_t_per_km": 0.5895,
+        "heavy_net_pct": 32.78,
         "light_scope2_t_per_km": 0.1474,
         "light_net_pct": 60.59
       },
       "江西": {
         "factor": 0.5836,
-        "heavy_scope2_t_per_km": 0.8754,
-        "heavy_net_pct": 0.18,
+        "heavy_scope2_t_per_km": 0.817,
+        "heavy_net_pct": 6.84,
         "light_scope2_t_per_km": 0.2043,
         "light_net_pct": 45.39
       },
       "山东": {
         "factor": 0.6191,
-        "heavy_scope2_t_per_km": 0.9286,
-        "heavy_net_pct": -5.89,
+        "heavy_scope2_t_per_km": 0.8667,
+        "heavy_net_pct": 1.17,
         "light_scope2_t_per_km": 0.2167,
         "light_net_pct": 42.06
       },
       "河南": {
         "factor": 0.5897,
-        "heavy_scope2_t_per_km": 0.8845,
-        "heavy_net_pct": -0.86,
+        "heavy_scope2_t_per_km": 0.8256,
+        "heavy_net_pct": 5.86,
         "light_scope2_t_per_km": 0.2064,
         "light_net_pct": 44.81
       },
       "湖北": {
         "factor": 0.4044,
-        "heavy_scope2_t_per_km": 0.6066,
-        "heavy_net_pct": 30.83,
+        "heavy_scope2_t_per_km": 0.5662,
+        "heavy_net_pct": 35.44,
         "light_scope2_t_per_km": 0.1415,
         "light_net_pct": 62.16
       },
       "湖南": {
         "factor": 0.4976,
-        "heavy_scope2_t_per_km": 0.7464,
-        "heavy_net_pct": 14.89,
+        "heavy_scope2_t_per_km": 0.6966,
+        "heavy_net_pct": 20.57,
         "light_scope2_t_per_km": 0.1742,
         "light_net_pct": 53.43
       },
       "广东": {
         "factor": 0.4419,
-        "heavy_scope2_t_per_km": 0.6629,
-        "heavy_net_pct": 24.42,
+        "heavy_scope2_t_per_km": 0.6187,
+        "heavy_net_pct": 29.46,
         "light_scope2_t_per_km": 0.1547,
         "light_net_pct": 58.65
       },
       "广西": {
         "factor": 0.4476,
-        "heavy_scope2_t_per_km": 0.6714,
-        "heavy_net_pct": 23.44,
+        "heavy_scope2_t_per_km": 0.6266,
+        "heavy_net_pct": 28.55,
         "light_scope2_t_per_km": 0.1567,
         "light_net_pct": 58.11
       },
       "海南": {
         "factor": 0.3648,
-        "heavy_scope2_t_per_km": 0.5472,
-        "heavy_net_pct": 37.61,
+        "heavy_scope2_t_per_km": 0.5107,
+        "heavy_net_pct": 41.77,
         "light_scope2_t_per_km": 0.1277,
         "light_net_pct": 65.86
       },
       "重庆": {
         "factor": 0.5581,
-        "heavy_scope2_t_per_km": 0.8372,
-        "heavy_net_pct": 4.54,
+        "heavy_scope2_t_per_km": 0.7813,
+        "heavy_net_pct": 10.91,
         "light_scope2_t_per_km": 0.1953,
         "light_net_pct": 47.77
       },
       "四川": {
         "factor": 0.1564,
-        "heavy_scope2_t_per_km": 0.2346,
-        "heavy_net_pct": 73.25,
+        "heavy_scope2_t_per_km": 0.219,
+        "heavy_net_pct": 75.03,
         "light_scope2_t_per_km": 0.0547,
         "light_net_pct": 85.36
       },
       "贵州": {
         "factor": 0.5683,
-        "heavy_scope2_t_per_km": 0.8525,
-        "heavy_net_pct": 2.8,
+        "heavy_scope2_t_per_km": 0.7956,
+        "heavy_net_pct": 9.28,
         "light_scope2_t_per_km": 0.1989,
         "light_net_pct": 46.82
       },
       "云南": {
         "factor": 0.1333,
-        "heavy_scope2_t_per_km": 0.2,
-        "heavy_net_pct": 77.2,
+        "heavy_scope2_t_per_km": 0.1866,
+        "heavy_net_pct": 78.72,
         "light_scope2_t_per_km": 0.0467,
         "light_net_pct": 87.53
       },
       "陕西": {
         "factor": 0.6335,
-        "heavy_scope2_t_per_km": 0.9502,
-        "heavy_net_pct": -8.35,
+        "heavy_scope2_t_per_km": 0.8869,
+        "heavy_net_pct": -1.13,
         "light_scope2_t_per_km": 0.2217,
         "light_net_pct": 40.72
       },
       "甘肃": {
         "factor": 0.4471,
-        "heavy_scope2_t_per_km": 0.6706,
-        "heavy_net_pct": 23.53,
+        "heavy_scope2_t_per_km": 0.6259,
+        "heavy_net_pct": 28.63,
         "light_scope2_t_per_km": 0.1565,
         "light_net_pct": 58.16
       },
       "青海": {
         "factor": 0.1796,
-        "heavy_scope2_t_per_km": 0.2694,
-        "heavy_net_pct": 69.28,
+        "heavy_scope2_t_per_km": 0.2514,
+        "heavy_net_pct": 71.33,
         "light_scope2_t_per_km": 0.0629,
         "light_net_pct": 83.19
       },
       "宁夏": {
         "factor": 0.6187,
-        "heavy_scope2_t_per_km": 0.9281,
-        "heavy_net_pct": -5.82,
+        "heavy_scope2_t_per_km": 0.8662,
+        "heavy_net_pct": 1.23,
         "light_scope2_t_per_km": 0.2165,
         "light_net_pct": 42.1
       },
       "新疆": {
         "factor": 0.6021,
-        "heavy_scope2_t_per_km": 0.9031,
-        "heavy_net_pct": -2.98,
+        "heavy_scope2_t_per_km": 0.8429,
+        "heavy_net_pct": 3.88,
         "light_scope2_t_per_km": 0.2107,
         "light_net_pct": 43.65
       }
