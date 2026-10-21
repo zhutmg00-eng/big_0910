@@ -6,6 +6,7 @@
 - 文件路径校验（防止路径遍历攻击）
 """
 import logging
+import math
 import os
 import secrets
 import time
@@ -13,6 +14,9 @@ import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Depends, Request, Security
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -60,12 +64,37 @@ app = FastAPI(
 )
 
 
+_FINITE_ENCODER = {float: lambda value: value if math.isfinite(value) else None}
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    """422 也必须能序列化：Pydantic 会把原始输入回填到 ``input``。
+
+    实测缺陷（第 9 轮评审）：请求体里写 ``NaN`` / ``Infinity`` 是合法 JSON
+    （``json.loads`` 与 Starlette 的 ``json()`` 都接受），校验失败后
+    ``input`` 字段里就是一个 ``float('nan')``；默认的 ``JSONResponse`` 用
+    ``json.dumps(..., allow_nan=False)`` 序列化，于是 422 变成
+    ``500 text/plain 'Internal Server Error'``，连 ``X-Request-ID`` 都没有，
+    日志里也查不到。这里用 ``jsonable_encoder`` 把非有限浮点换成 ``None``，
+    保证任何校验失败都能稳定返回 422 并带上请求 ID。
+    """
+    errors = jsonable_encoder(exc.errors(), custom_encoder=_FINITE_ENCODER)
+    return JSONResponse(status_code=422, content={"detail": errors})
+
+
 @app.middleware("http")
 async def request_context(request: Request, call_next):
     """为每个请求分配 X-Request-ID 并记录耗时，便于排查与性能评估。"""
     rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
     start = time.perf_counter()
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        # 不吞异常（仍交给 FastAPI 的 500 处理），但先把 rid 写进日志：
+        # 否则用户报「报错了」时，服务端没有任何线索能定位到那个请求。
+        logger.exception("未捕获异常 %s %s rid=%s", request.method, request.url.path, rid)
+        raise
     elapsed = (time.perf_counter() - start) * 1000
     response.headers["X-Request-ID"] = rid
     response.headers["X-Process-Time-ms"] = f"{elapsed:.1f}"
@@ -176,6 +205,12 @@ def safe_resolve_path(file_path: str, base_dir: Path) -> Path:
 # ============================================================
 from src.api.routes_compare import router as compare_router
 app.include_router(compare_router)
+
+# 车队台账导入：把「逐条手填四个框」换成上传 CSV。
+# 放在 main.py 末尾导入会形成循环（routes_fleet 需要校验函数），
+# 因此延后到 verify_api_key 定义之后注册。
+from src.api.routes_fleet import router as fleet_router  # noqa: E402
+app.include_router(fleet_router)
 
 
 # ========== 数据模型 ==========

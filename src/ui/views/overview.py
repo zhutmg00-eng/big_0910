@@ -5,7 +5,15 @@ from __future__ import annotations
 import requests
 import streamlit as st
 
-from src.ui.api_client import API_BASE_URL, api_post, show_api_error
+from src.ui.api_client import (
+    API_BASE_URL,
+    API_HEADERS,
+    API_TIMEOUT,
+    _describe_backend_down,
+    api_get,
+    api_post,
+    show_api_error,
+)
 from src.ui.components.charts import (
     plot_emission_pie,
     plot_quota_comparison,
@@ -109,6 +117,95 @@ def render_home() -> None:
     )
 
 
+def _import_fleet_csv(upload) -> None:
+    """把上传的 CSV 台账交给后端解析，并把结果载入当前车队。
+
+    设计取舍：解析放在后端（``POST /api/fleet/import``）而不是前端，
+    这样 CLI、插件、脚本与 UI 共用同一套容错规则，不会出现「网页能导、
+    脚本不能导」的两套口径。
+
+    成功后 ``fleet_data`` 会被整体替换并保留 ``import_warnings``，
+    让用户在「当前车队」表格上方看到每一处自动纠正（车型识别、数量取整、
+    实载率按百分数理解…），核对无误再点计算。
+    """
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/fleet/import",
+            files={"file": (upload.name, upload.getvalue(), "text/csv")},
+            headers=API_HEADERS,
+            timeout=API_TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        st.error(_describe_backend_down(exc))
+        return
+    if response.status_code != 200:
+        try:
+            detail = response.json().get("detail")
+        except ValueError:
+            detail = response.text
+        st.error(f"台账未能解析：{detail}")
+        return
+
+    payload = response.json()
+    groups = payload.get("groups") or []
+    if not groups:
+        st.error("台账里没有可用的车型分组。")
+        return
+    st.session_state.fleet_data = [
+        {
+            "vehicle_type": group["vehicle_type"],
+            "count": int(group["count"]),
+            "annual_km": int(round(float(group["annual_km"]))),
+            "load_factor": float(group["load_factor"]),
+        }
+        for group in groups
+    ]
+    st.session_state["fleet_import_notes"] = list(payload.get("notes") or [])
+    st.session_state["fleet_import_warnings"] = list(payload.get("warnings") or [])
+    st.session_state["fleet_import_summary"] = {
+        "filename": payload.get("filename"),
+        "total_vehicles": payload.get("total_vehicles"),
+        "rows_read": payload.get("rows_read"),
+        "detected_columns": payload.get("detected_columns") or {},
+    }
+    for key in ("carbon_result", "reduction_result", "report_path", "uncertainty_result"):
+        st.session_state.pop(key, None)
+
+
+def _render_import_report() -> None:
+    """展示上一次台账导入的识别结果与逐条纠正记录。
+
+    刻意把纠正写全（而不是静默处理）：台账里的「75」到底是 75% 还是 0.75、
+    「100000」是年里程还是月里程，只有用户自己能判断。宁可多一行提示，
+    也不要用户拿着错的排放数去做投资决策。
+    """
+    summary = st.session_state.get("fleet_import_summary")
+    warnings = st.session_state.get("fleet_import_warnings") or []
+    notes = st.session_state.get("fleet_import_notes") or []
+    if not summary:
+        return
+    columns = summary.get("detected_columns") or {}
+    mapping = "、".join(f"{k}→{v}" for k, v in columns.items()) or "无"
+    st.success(
+        f"已从「{summary.get('filename')}」读入 {summary.get('rows_read')} 行，"
+        f"合并为 {len(st.session_state.fleet_data)} 个车型分组、共 {summary.get('total_vehicles')} 辆。"
+        f"识别到的列：{mapping}。请核对下表后再计算。"
+    )
+    for note in notes:
+        st.info(note)
+    if warnings:
+        with st.expander(f"导入时的自动纠正（{len(warnings)} 条，请逐条核对）", expanded=True):
+            st.dataframe(
+                [{"行号": w.get("row"), "字段": w.get("field"), "说明": w.get("message")} for w in warnings],
+                width="stretch",
+                hide_index=True,
+            )
+    if st.button("清除导入提示", help="确认无误后清掉这些提示"):
+        for key in ("fleet_import_summary", "fleet_import_warnings", "fleet_import_notes"):
+            st.session_state.pop(key, None)
+        st.rerun()
+
+
 def render_inventory() -> None:
     page_header(
         "核算 · 第一步",
@@ -138,6 +235,38 @@ def render_inventory() -> None:
     scenario_reduction_target = scenario_reduction_target_pct / 100
 
     st.markdown("## 添加车队记录")
+
+    # ---- 上传台账（评审核心意见：真正的企业没有耐心点 170 次表单）----
+    with st.expander("从 Excel/CSV 台账批量导入（推荐）", expanded=not st.session_state.fleet_data):
+        st.caption(
+            "台账只需四列：车型、数量、年均里程(km)、实载率。列名有常见同义词容错"
+            "（如「车辆类型／台数／年行驶里程／里程利用率」），也支持 GBK 编码、分号或制表符分隔；"
+            "同一车型多行会按车辆数加权合并。"
+        )
+        tpl_col, up_col = st.columns([1, 2])
+        with tpl_col:
+            # 模板由后端生成，保证与因子表里的规范车型名始终一致
+            try:
+                tpl = api_get("/api/fleet/template")
+                tpl_bytes = tpl.content if tpl.status_code == 200 else None
+            except requests.RequestException:
+                tpl_bytes = None
+            st.download_button(
+                "下载导入模板",
+                data=tpl_bytes or "车型,数量,年均里程(km),实载率\n重型柴油货车,50,100000,0.75\n".encode("utf-8-sig"),
+                file_name="fleet_template.csv",
+                mime="text/csv",
+                width="stretch",
+                help="含 4 行示例数据与全部可选车型名，Excel 打开不乱码",
+            )
+        upload = up_col.file_uploader(
+            "上传车队台账", type=["csv", "txt"], key="fleet_csv",
+            help="Excel 文件请先「另存为 → CSV UTF-8」；单文件上限 2 MB",
+        )
+        if upload is not None and st.button("解析台账并载入", type="primary"):
+            _import_fleet_csv(upload)
+            st.rerun()
+
     with st.form("fleet_entry", clear_on_submit=False):
         c1, c2 = st.columns(2)
         vehicle_type = c1.selectbox("车型", VEHICLE_TYPES)
@@ -170,6 +299,7 @@ def render_inventory() -> None:
 
     fleet = st.session_state.fleet_data
     st.markdown("## 当前车队")
+    _render_import_report()
     if fleet:
         rows = [
             {
@@ -230,7 +360,7 @@ def _calculate_inventory(company_name: str, reduction_target: float) -> None:
             st.session_state.pop("reduction_result", None)
             st.session_state.pop("report_path", None)
         except requests.RequestException as exc:
-            st.error(f"无法连接核算服务（{API_BASE_URL}）：{exc}")
+            st.error(_describe_backend_down(exc))
 
 
 def _render_inventory_result(result: dict) -> None:
@@ -343,7 +473,7 @@ def _render_uncertainty_section() -> None:
             else:
                 st.session_state.uncertainty_result = resp.json()
         except requests.RequestException as exc:
-            st.error(f"无法连接核算服务（{API_BASE_URL}）：{exc}")
+            st.error(_describe_backend_down(exc))
 
     u = st.session_state.get("uncertainty_result")
     if not u:
