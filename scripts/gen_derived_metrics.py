@@ -165,8 +165,11 @@ def main() -> dict:
         "row_labels_km_scale": km_scales,
         "col_labels_load_delta": sub_l,
         "min_pct": min(flat), "max_pct": max(flat),
-        # 50 格中位落在第 25/26 位之间（14.37 与 14.66），中位数 14.515，
-        # round(14.515, 2) 得 14.52（银行家舍入恰好进位）。写 14.51 是错的。
+        # 中位数的口径：必须用「未截断的逐格原始值」算，不能先逐格 round 到两位
+        # 再取中位。50 格中位落在第 25/26 位之间，原始值 14.3712 与 14.6577，
+        # 均值 14.51449 → 14.51。若先逐格保留两位（14.37 / 14.66）再取中位会得到
+        # 14.515 并进位成 14.52，属于二次舍入，比 14.51 差 0.01。
+        # 这里保留全精度，由展示方按 {:.2f} 渲染。
         "median_pct": round(statistics.median(flat), 2),
         "n": len(flat),
         "over10": sum(1 for v in flat if v > 10.0),

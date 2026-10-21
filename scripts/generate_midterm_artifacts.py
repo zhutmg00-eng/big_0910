@@ -53,6 +53,15 @@ KB_BADGE = (
     else "全量知识库: 未建库（先运行 scripts/ingest_policy_docs.py）"
 )
 LF_NO_BIAS_MAPE = MAPE["equal_weight_no_lf_pct"]
+# 【口径】中位数取自台账 sensitivity.median_pct，它由「未截断的逐格原始值」算出
+# （14.3712 与 14.6577 的均值 14.51449 → 14.51）。图表里禁止再写死 14.52：
+# 那是先逐格保留两位再取中位的二次舍入结果，会让图与正文打架。
+SENS = LEDGER["sensitivity"]
+_MEDIAN = f"{SENS['median_pct']:.2f}"
+SENS_LO = f"{SENS['min_pct']:.2f}"
+SENS_HI = f"{SENS['max_pct']:.2f}"
+SENS_N = SENS["n"]
+SENS_OVER10 = SENS["over10"]
 
 # 统一设计主题规范（学术审慎绿/深灰/琥珀金）
 INK = "#1a2521"
@@ -206,7 +215,7 @@ def generate_svg_rq3():
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
   <rect width="900" height="500" fill="#fcfdfc" rx="8"/>
   <text x="40" y="45" font-size="20" font-weight="bold" fill="{INK}">RQ3: 运营参数（年均里程缩放 × 实载率偏移）敏感性矩阵</text>
-  <text x="40" y="70" font-size="13" fill="{MUTED}">分析在实载率 (-0.30~+0.15) 与年里程 (±20%) 扰动下模型误差的传导规律 (中位数 14.52%)</text>
+  <text x="40" y="70" font-size="13" fill="{MUTED}">分析在实载率 (-0.30~+0.15) 与年里程 (±20%) 扰动下模型误差的传导规律 (中位数 {_MEDIAN}%)</text>
 
   <!-- 纵坐标轴说明 (里程缩放) -->
   <text x="110" y="270" font-size="14" font-weight="bold" fill="{INK}" text-anchor="middle" transform="rotate(-90, 110, 270)">年均里程缩放 (kd)</text>
@@ -390,7 +399,7 @@ def build_all_artifacts():
         colorbar=dict(title="MAPE (%)"),
     ))
     fig3.update_layout(
-        title="RQ3: 运营参数（年均里程缩放 × 实载率偏移）敏感性矩阵 (3.04%~29.80%, 中位数 14.52%)",
+        title="RQ3: 运营参数（年均里程缩放 × 实载率偏移）敏感性矩阵 ({SENS_LO}%~{SENS_HI}%, 中位数 {_MEDIAN}%)",
         xaxis_title="实载率设定偏移量 (Δl)",
         yaxis_title="年均里程缩放系数 (kd)",
         font=dict(family="Segoe UI, Microsoft YaHei", size=13),
@@ -466,13 +475,13 @@ def build_all_artifacts():
       <h2>RQ3: 运营参数扰动下的敏感性矩阵与不确定性边界</h2>
       <div>
         <span class="stats-badge">扰动网格: 实载率 (-0.30 ~ +0.15) × 里程 (±20%)</span>
-        <span class="stats-badge">误差扫描区间: [3.04%, 29.80%] (中位数 14.52%)</span>
+        <span class="stats-badge">误差扫描区间: [{SENS_LO}%, {SENS_HI}%] (中位数 {_MEDIAN}%)</span>
       </div>
       <div class="chart-container">
         {generate_svg_rq3()}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：参数扰动表明年均里程是一阶主导因子，但效应<b>强不对称</b>——+20% 使 MAPE 上升 +20.72~+21.63 pp，−20% 仅上升 +5.30~+13.55 pp；实载率引起的 MAPE 变化约 4.59 pp（行内极差 3.67~5.50 pp），不是可跨里程倍数通用的常数。全网格 50 组中 30 组超过 10%，中位数 14.51%。
+        <strong>实证发现</strong>：参数扰动表明年均里程是一阶主导因子，但效应<b>强不对称</b>——+20% 使 MAPE 上升 +20.72~+21.63 pp，−20% 仅上升 +5.30~+13.55 pp；实载率引起的 MAPE 变化约 4.59 pp（行内极差 3.67~5.50 pp），不是可跨里程倍数通用的常数。全网格 {SENS_N} 组中 {SENS_OVER10} 组超过 10%，中位数 {_MEDIAN}%。
       </div>
     </div>
   </div>

@@ -196,7 +196,7 @@
     ],
     "min_pct": 3.04,
     "max_pct": 29.8,
-    "median_pct": 14.52,
+    "median_pct": 14.51,
     "n": 50,
     "over10": 30,
     "mileage_effect_pp": 20.85,
@@ -745,7 +745,10 @@
             0.55,
             0.85
           ],
-          "Negative_Rejection_Accuracy": 0.5
+          "Negative_Retrieval_HitRate": 0.5,
+          "Negative_Retrieval_HitCount": "2/4",
+          "Negative_Rejection_Accuracy": 0.5,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         },
         "vector": {
           "MRR": 0.2589,
@@ -766,7 +769,10 @@
             0.425,
             0.725
           ],
-          "Negative_Rejection_Accuracy": 0.0
+          "Negative_Retrieval_HitRate": 0.0,
+          "Negative_Retrieval_HitCount": "0/4",
+          "Negative_Rejection_Accuracy": 0.0,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         },
         "hybrid": {
           "MRR": 0.4905,
@@ -787,7 +793,10 @@
             0.575,
             0.85
           ],
-          "Negative_Rejection_Accuracy": 0.5
+          "Negative_Retrieval_HitRate": 0.5,
+          "Negative_Retrieval_HitCount": "2/4",
+          "Negative_Rejection_Accuracy": 0.5,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         },
         "bm25": {
           "MRR": 0.4251,
@@ -808,7 +817,10 @@
             0.525,
             0.825
           ],
-          "Negative_Rejection_Accuracy": 0.5
+          "Negative_Retrieval_HitRate": 0.5,
+          "Negative_Retrieval_HitCount": "2/4",
+          "Negative_Rejection_Accuracy": 0.5,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         },
         "rrf": {
           "MRR": 0.439,
@@ -829,7 +841,10 @@
             0.55,
             0.825
           ],
-          "Negative_Rejection_Accuracy": 0.5
+          "Negative_Retrieval_HitRate": 0.5,
+          "Negative_Retrieval_HitCount": "2/4",
+          "Negative_Rejection_Accuracy": 0.5,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         },
         "rrf3": {
           "MRR": 0.492,
@@ -850,7 +865,10 @@
             0.675,
             0.9
           ],
-          "Negative_Rejection_Accuracy": 0.5
+          "Negative_Retrieval_HitRate": 0.5,
+          "Negative_Retrieval_HitCount": "2/4",
+          "Negative_Rejection_Accuracy": 0.5,
+          "Negative_Rejection_Accuracy_note": "该键为历史遗留名称，实际含义是『负例题的检索命中率』，不是拒答率；检索层无拒答实现，请勿在对外材料中称为拒答率"
         }
       },
       "statistical_significance": {
