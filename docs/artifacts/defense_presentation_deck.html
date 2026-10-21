@@ -267,7 +267,7 @@
           <div class="academic-card border-secondary" style="padding: 12px;">
             <div style="font-size: 18px; font-weight: 800; color: var(--secondary);">4.23% MAPE</div>
             <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">加权平均相对误差</div>
-            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">[+1.66%, +7.27%] 恒定保守正偏</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">[+1.66%, +7.27%]；8 条记录 6 条低估，方向不一致</div>
           </div>
           <div class="academic-card border-accent" style="padding: 12px;">
             <div style="font-size: 18px; font-weight: 800; color: var(--accent);">40 题 / 281 切片</div>
@@ -275,7 +275,7 @@
             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">39 份政策文件切分 281 切片（Kappa 在零变异下退化为 1，不作信度证据）</div>
           </div>
           <div class="academic-card border-primary" style="padding: 12px;">
-            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">256 项全绿</div>
+            <div style="font-size: 18px; font-weight: 800; color: var(--primary);">258 项全绿</div>
             <div style="font-size: 11px; font-weight: 700; color: var(--text); margin-top: 2px;">自动化回归测试全部通过</div>
             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">物理守恒断言与 PEP 540 防死锁</div>
           </div>
@@ -351,7 +351,7 @@
               <b>【数据来源】</b>：针对中小物流缺乏发票台账问题，采用吕晨、蔡博峰2021分省排放因子与GB 30510标准，对比顺丰/中通等4家企业披露的真实燃油消耗台账。
             </div>
             <div style="background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid var(--primary); padding: 8px; border-radius: 4px; font-size: 11px; color: var(--text); margin-top: auto;">
-              <b>【实证推导结论】</b>：加权 MAPE 为 4.23%；全样本相对误差恒定呈现 [+1.66%, +7.27%] 的微幅正偏。依《GHG Protocol》审慎保守准则，正偏高估避免了低估漂绿合规风险，形成上限安全垫。
+              <b>【实证推导结论】</b>：等权 MAPE 为 4.23%（按排放量加权为 2.38%，两个口径不可混用）。四个车队相对误差落在 [+1.66%, +7.27%]；但实测 8 条车队记录中有 6 条为低估，方向不具一致性，因此不主张任何保守性保证，也不把正偏包装成「上限安全垫」。
             </div>
           </div>
           <div class="academic-card border-secondary">
@@ -458,7 +458,7 @@
             </div>
             <div class="academic-card border-primary" style="padding: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--primary);">[4] 工程质量与规范保障</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">全仓编写 256 项全自动化回归测试；强制注入 PEP 540 UTF-8 环境，配置 30 秒超时熔断，防范跨平台挂起。</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">全仓编写 258 项全自动化回归测试；强制注入 PEP 540 UTF-8 环境，配置 30 秒超时熔断，防范跨平台挂起。</div>
             </div>
           </div>
         </div>
@@ -534,7 +534,7 @@
         <div class="slide-header">
           <div class="slide-header-left">
             <div class="slide-category">06 RQ1 实证 · 精度检验</div>
-            <div class="slide-title">RQ1 实证结果：51,990 辆真实车队复核与“恒定保守正偏”理论发现</div>
+            <div class="slide-title">RQ1 实证结果：51,990 辆真实车队复核与误差方向结构</div>
           </div>
           <div class="slide-page-num">07 / 16</div>
         </div>
@@ -562,7 +562,7 @@
             <div class="academic-card border-accent" style="padding: 10px;">
               <div style="font-size: 12px; font-weight: 700; color: var(--accent);">[3] 正偏保守性机理阐释</div>
               <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
-                依《GHG Protocol》审慎原则，高估远比低估安全。低估会导致企业面临合规审计与“漂绿”指控，轻微正偏为缺乏发票的中小车队筑牢了“合规排放上限安全垫”。
+                早期草稿曾据《GHG Protocol》审慎原则把正偏解释为「合规排放上限安全垫」，该解释已被实测否证：扩展到 8 条车队记录后有 6 条为低估。本项目只主张误差量级（等权 MAPE 4.23%、最大 7.27%），不主张任何保守性保证。
               </div>
             </div>
             <div class="academic-card border-primary" style="padding: 10px;">
@@ -903,7 +903,7 @@
               <tr>
                 <td><b>工程测试与质量保障</b></td>
                 <td>编写基础代码测试</td>
-                <td>256 项自动化测试全部通过，封装 Cordis 官方微内核插件</td>
+                <td>258 项自动化测试全部通过，封装 Cordis 官方微内核插件</td>
                 <td style="text-align: center; font-weight: 700; color: var(--accent);">100%</td>
                 <td style="text-align: center; font-weight: 700; color: var(--secondary);">规范达标</td>
               </tr>
@@ -934,7 +934,7 @@
             </div>
             <div style="font-size: 11px; line-height: 1.5; color: var(--text); margin-bottom: 8px;">
               <b>【核心学术评语】</b>：<br>
-              “课题组展现了良好的学术训练素养，脱离了简单套壳大模型的低质模式。四车队 51,990 辆的实证复核与恒定正偏保守性发现具备理论价值；消融实验充分，非参数统计检验严谨，研究边界声明清醒负责。”
+              “课题组展现了良好的学术训练素养，脱离了简单套壳大模型的低质模式。四车队 51,990 辆的实证复核与误差方向诊断具备工程价值；消融实验充分，非参数统计检验严谨（含 Holm 多重比较校正），研究边界声明清醒负责。”
             </div>
             <div style="font-size: 10.5px; line-height: 1.5; color: var(--secondary); background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--secondary); padding: 6px; border-radius: 4px; margin-top: auto;">
               <b>【整改采纳落地】</b>：<br>

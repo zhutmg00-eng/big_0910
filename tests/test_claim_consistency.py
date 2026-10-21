@@ -234,6 +234,8 @@ def _read_defense(rel):
 # 被证伪的表述允许以「撤回台账」的形式留在材料里（这是学术诚信的体现，
 # 不是缺陷）。判定标准是它所在的那一行有没有撤回标记。
 RETRACT_MARKERS = (
+    "包装成",
+    "不把",
     "撤回", "不成立", "已删除", "无数据支持", "非拒答", "不是",
     "已更正", "属循环定义", "旧稿", "旧快照", "早期材料", "早期草稿", "曾把",
 )
@@ -483,3 +485,36 @@ def test_deck_does_not_call_capex_ratio_a_sensitivity_finding():
     text = _read_defense(rel)
     if "69.7%" in text or "降幅 70%" in text:
         assert "代数恒等式" in text, f"{rel} 引用垫资降幅却未声明其为代数恒等式"
+
+
+# ---------------------------------------------------------------- 4.23% 口径与保守性主张
+
+# 4.23% 是四案例等权 MAPE；按排放量加权是 2.38%。两个数都真实，但不可互换。
+WEIGHTED_LABEL_WHITELIST = ("加权 2.38", "加权为 2.38", "按排放量加权 2.38", "加权口径 2.38")
+
+
+def test_4223_is_not_called_weighted_mape():
+    """4.23% 不得被称作「加权 MAPE」。
+
+    线上真实事故：Slide 3 与 PPT 生成器都写「加权 MAPE 4.23%」，
+    而按排放量加权其实是 2.38%，等于把一个较小的数披上了较大的名头。
+    """
+    for rel in GENERATOR_SCRIPTS + ("docs/artifacts/defense_presentation_deck.html",):
+        text = _read_defense(rel)
+        for m in re.finditer(r"加权[^。；\n]{0,12}4\.23", text):
+            window = text[max(0, m.start() - 60): m.start() + 80]
+            assert any(w in window for w in WEIGHTED_LABEL_WHITELIST), (
+                f"{rel} 把 4.23% 称为「加权 MAPE」，实测加权值为 2.38%：{window!r}"
+            )
+
+
+def test_no_conservatism_padding_claim():
+    """「安全垫 / 保守正偏」被 8 条记录中 6 条低估的数据否证，不得作为结论陈述。"""
+    for rel in GENERATOR_SCRIPTS + ("docs/artifacts/defense_presentation_deck.html",):
+        text = _read_defense(rel)
+        _assert_no_unretracted(
+            text,
+            ("上限安全垫", "安全垫", "恒定正偏", "保守正偏"),
+            rel,
+            "仍把正偏差包装成「保守性安全垫」",
+        )
