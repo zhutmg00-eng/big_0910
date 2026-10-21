@@ -9,22 +9,17 @@
 
 ---
 
-## GAP-1 `/api/turnover` —— 插件与 CLI 声明了，HTTP 层未实现
+## GAP-1 `/api/turnover` —— 插件与 CLI 声明了，HTTP 层未实现（已修复）
 
 - **声称位置**：`packages/dsh-plugin-carbon-asset/src/index.ts:346`
   `bridge.execute('/api/turnover', 'turnover', args)`，
   工具名 `carbon_turnover_evaluate`（周转量碳强度评估）。
-- **实际状态**：FastAPI 应用未注册该路由。实测
-  `TestClient(app).post('/api/turnover', json={})` → **404**。
-- **降级路径可用**：`scripts/cli_bridge.py:228` 的 choices 里有 `turnover`，
-  `handle_turnover()`（`:205`）直接调用 `calculate_turnover_and_intensity()`，
-  所以 CLI 子进程通路是通的；只有 HTTP 通路缺。
-- **影响**：插件以 HTTP 优先、失败才降级 CLI，因此每次都先打一次 404 再降级，
-  功能最终可用但会多一次失败请求与日志噪声；若部署环境禁子进程，则功能不可用。
-- **修复计划**：在 `src/api/routes_compare.py`（或新建 `routes_turnover.py`）
-  补 `POST /api/turnover`，复用 `handle_turnover` 的同一份模型与计算函数，
-  从而 HTTP 与 CLI 共用单一实现。
-- **状态**：未修复（HTTP 通路缺失）。
+- **历史状态**：FastAPI 应用此前未注册该路由，实测 `POST /api/turnover` 报 404，
+  依赖 CLI 降级通道运行。
+- **现已修复**：新建 `src/api/routes_turnover.py` 并在 `src/api/main.py` 挂载
+  `POST /api/turnover`，输入输出对齐插件 Schema，复用 `src/engine/indirect_emission.py`
+  的计算函数，并提供针对输入边界与鉴权的测试 `tests/test_api_turnover.py`。
+- **状态**：**已修复**（HTTP 接口与 CLI 桥接完全一致，共用底层计算引擎）。
 
 ## GAP-2 未实现 MCP server
 

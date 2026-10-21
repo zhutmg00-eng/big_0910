@@ -212,6 +212,10 @@ app.include_router(compare_router)
 from src.api.routes_fleet import router as fleet_router  # noqa: E402
 app.include_router(fleet_router)
 
+# 运输周转量与 Scope 2 碳强度核算（GAP-1 修复：对齐 dsh-plugin-carbon-asset 插件契约）
+from src.api.routes_turnover import router as turnover_router  # noqa: E402
+app.include_router(turnover_router)
+
 
 # ========== 数据模型 ==========
 

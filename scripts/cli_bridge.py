@@ -215,8 +215,15 @@ def handle_turnover(payload: dict) -> dict:
         )
         for v in fleet_raw
     ]
-    scope2_res = calculate_scope2_emission(fleet, region, green_ratio)
-    turnover_res = calculate_turnover_and_intensity(fleet, scope2_emission_t=scope2_res.scope2_emission_t)
+    scope2_res = calculate_scope2_emission(
+        fleet=fleet,
+        region_or_province=region,
+        green_electricity_ratio=green_ratio,
+    )
+    turnover_res = calculate_turnover_and_intensity(
+        fleet=fleet,
+        scope2_emission_t=scope2_res.scope2_emission_t,
+    )
     return {
         "scope2": asdict(scope2_res),
         "turnover_and_intensity": asdict(turnover_res),
