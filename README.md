@@ -14,7 +14,8 @@
 
 > v0.4（2026-10 中期优化）新增：中文 BGE 嵌入 + jieba BM25 + RRF 多路融合检索、蒙特卡洛排放不确定性分析、证据溯源展示、「方法与验证」页、ruff+覆盖率 CI。详见 `docs/优化说明_v0.4.md`。
 
-- 车队直接运营排放核算，支持 6 类内置车型及 CSV 扩展
+- 车队直接运营排放核算，覆盖排放因子表里的全部车型（16 类），可手工逐条添加
+- **车队台账批量导入**：上传 Excel 另存的 CSV（或 GBK/分号/制表符分隔的表），列名支持同义词（车型／车辆类型、数量／台数、年均里程／年行驶里程、满载率／实载率），口语车型（重卡／轻卡／牵引车／LNG重卡…）自动映射到规范名，同一车型多行按车辆数加权合并；每一处自动纠正都会列出来让你核对
 - 蒙特卡洛不确定性分析（IPCC 2006 Approach 2）：P5/P50/P95 区间与方差贡献排序
 - 模拟碳预算差额与碳价对标情景
 - 新能源替代、满载率提升和组合减排情景
@@ -71,12 +72,22 @@ python scripts/ingest_policy_docs.py --force
 启动后端和前端：
 
 ```powershell
-# 终端 1
-uvicorn src.api.main:app --reload --port 8000
+# 终端 1（必须用 venv 里的解释器；直接敲 uvicorn 可能命中系统里的另一个版本）
+python -m uvicorn src.api.main:app --reload --port 8000
 
 # 终端 2
-streamlit run src/ui/app.py
+python -m streamlit run src/ui/app.py
 ```
+
+> ⚠️ 如果终端 1 启动后报 `[Errno 10048]`／`address already in use`，说明 8000 端口
+> 被别的程序占着，而 uvicorn 只会打一行日志就退出。此时前端仍能连上那个陌生服务，
+> 界面会提示「核算服务返回 404，说明该地址上跑的不是本项目后端」。
+> 换端口并让前端跟着改：
+>
+> ```powershell
+> python -m uvicorn src.api.main:app --port 8010
+> $env:API_BASE_URL="http://localhost:8010"; python -m streamlit run src/ui/app.py
+> ```
 
 - Web：`http://localhost:8501`
 - API 文档：`http://localhost:8000/docs`
