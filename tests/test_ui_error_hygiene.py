@@ -203,3 +203,79 @@ def test_factor_table_source_keeps_numeric_column_clean():
     assert '"油耗参考（L/100km）": data.get("fuel_consumption_l_per_100km") or "' not in source
     assert "油耗说明" in source
     assert "NumberColumn" in source
+
+class TestHumanizeDetailAgainstRealPydanticMessages:
+    """回归：翻译必须覆盖 Pydantic v2 的真实 msg 文本，而不是我臆想的措辞。
+
+    下面这些 detail 都是从运行中的 ``/api/calculate`` 抓下来的原样结构。
+    """
+
+    def test_empty_list_says_item_count_not_character_count(self):
+        detail = [
+            {
+                "type": "too_short",
+                "loc": ["body", "fleet"],
+                "msg": "List should have at least 1 item after validation, not 0",
+                "input": [],
+                "ctx": {"field_type": "List", "min_length": 1, "actual_length": 0},
+            }
+        ]
+        text = _humanize_detail(detail)
+        assert text == "车队清单至少需要 1 项"
+        assert "字符" not in text
+
+    def test_field_required_is_translated(self):
+        detail = [
+            {
+                "type": "missing",
+                "loc": ["body", "fleet"],
+                "msg": "Field required",
+                "input": {"company_name": "测试"},
+            }
+        ]
+        assert _humanize_detail(detail) == "缺少必填项：车队清单"
+
+    def test_value_error_prefix_is_stripped(self):
+        detail = [
+            {
+                "type": "value_error",
+                "loc": ["body", "fleet", 0, "vehicle_type"],
+                "msg": "Value error, 不支持的车型: 飞碟",
+                "input": "飞碟",
+            }
+        ]
+        text = _humanize_detail(detail)
+        assert text == "不支持的车型: 飞碟"
+        assert "Value error" not in text
+
+    def test_numeric_bounds_read_as_sentences(self):
+        detail = [
+            {"loc": ["body", "fleet", 0, "annual_km"], "msg": "Input should be less than or equal to 300000.0", "ctx": {"le": 300000.0}},
+            {"loc": ["body", "fleet", 0, "count"], "msg": "Input should be greater than 0", "ctx": {"gt": 0}},
+        ]
+        text = _humanize_detail(detail)
+        assert "年均里程不能超过 300000.0" in text
+        assert "车辆数必须大于 0" in text
+
+    def test_input_and_ctx_are_never_echoed(self):
+        secret = "张三物流" * 40
+        detail = [
+            {
+                "type": "string_too_long",
+                "loc": ["body", "company_name"],
+                "msg": "String should have at most 100 characters",
+                "input": secret,
+                "ctx": {"max_length": 100},
+            }
+        ]
+        text = _humanize_detail(detail)
+        assert secret not in text
+        assert text == "企业名称最多 100 个字符"
+
+    def test_unmapped_field_still_readable(self):
+        detail = [
+            {"loc": ["body", "totally_unknown"], "msg": "Field required"},
+        ]
+        text = _humanize_detail(detail)
+        assert "totally_unknown" in text
+        assert "Field required" not in text

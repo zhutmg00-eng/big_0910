@@ -117,6 +117,11 @@ def _humanize_detail(detail) -> str:
             if "at most" in msg:
                 limit = (item.get("ctx") or {}).get("max_length")
                 msg = f"{label}最多 {limit} 个字符" if limit else f"{label}过长"
+            elif "field required" in msg.lower() or "missing" in msg:
+                msg = f"缺少必填项：{label}"
+            elif "at least" in msg and "list" in msg.lower():
+                limit = (item.get("ctx") or {}).get("min_length")
+                msg = f"{label}至少需要 {limit} 项" if limit else f"{label}不能为空"
             elif "at least" in msg:
                 limit = (item.get("ctx") or {}).get("min_length")
                 msg = f"{label}至少 {limit} 个字符" if limit else f"{label}过短"
@@ -124,10 +129,24 @@ def _humanize_detail(detail) -> str:
                 msg = f"{label}必须大于 {(item.get('ctx') or {}).get('gt', 0)}"
             elif "less than or equal" in msg:
                 msg = f"{label}不能超过 {(item.get('ctx') or {}).get('le', '')}".strip()
-            elif "missing" in msg:
-                msg = f"缺少必填项：{label}"
+            elif msg.startswith("Value error, "):
+                # Pydantic v2 会把 ValueError 的原文前置这段英文，
+                # 例如「Value error, 不支持的车型: 飞碟」，用户看不懂。
+                msg = msg[len("Value error, ") :].strip()
+            elif "valid list" in msg or "valid tuple" in msg:
+                msg = f"{label}格式不正确，应为一个列表"
+            elif "valid integer" in msg:
+                msg = f"{label}应为整数"
+            elif "valid number" in msg or "valid float" in msg:
+                msg = f"{label}应为数字"
             else:
                 msg = f"{label}：{msg}"
+        elif "field required" in msg.lower() or "missing" in msg:
+            # 未登记字段也要说清「缺哪一项」，不能只丢一句 Field required。
+            hint = ".".join(loc) or "请求体"
+            msg = f"缺少必填项：{hint}"
+        elif msg.startswith("Value error, "):
+            msg = msg[len("Value error, ") :].strip() or "提交的内容未通过校验"
         elif msg:
             msg = f"参数格式不正确：{msg}"
         if msg:
