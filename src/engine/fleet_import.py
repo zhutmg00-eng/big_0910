@@ -12,8 +12,10 @@
 三条硬约束：
 
 1. 不引入新依赖。``xlsx`` 除了 pandas 还需要 openpyxl，本项目没有它，
-   所以遇到 Excel 时给出明确提示（另存为 CSV 或安装 openpyxl），而不是
-   ``ModuleNotFoundError``。
+   所以遇到 Excel 时给出明确提示（另存为 CSV UTF-8），而不是
+   ``ModuleNotFoundError``。注意不要承诺「装了 openpyxl 就能读」——
+   本项目没有任何读取 xlsx 的代码路径，装了也不会改变行为
+   （早期文案这么承诺过，被评审实测证伪后删除）。
 2. 不静默丢数据。认不出的车型、为 0 或负数的车辆数、缺失的里程都会变成
    ``ImportWarning`` 级别的提示，用户在预览表上逐条改。
 3. 同车型多行自动合并（合计车辆数、按车辆数加权平均里程与实载率），
@@ -275,7 +277,10 @@ def _read_rows(content: str) -> List[Dict[str, str]]:
                 break
     reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
     if not reader.fieldnames:
-        raise FleetImportError("文件没有表头行，无法识别列。请参考 data/templates/fleet_template.csv。")
+        raise FleetImportError(
+            "文件没有表头行，无法识别列。可以下载模板（GET /api/fleet/template，"
+            "或在界面里点「下载 CSV 模板」）照着填。"
+        )
     return [row for row in reader]
 
 
@@ -310,7 +315,7 @@ def parse_fleet_table(
         raise FleetImportError(
             "缺少必需列：" + "、".join(cn[m] for m in missing)
             + "。已识别的列：" + ("、".join(columns.values()) or "无")
-            + "。请参考 data/templates/fleet_template.csv 的表头。"
+            + "。表头写法见下载模板（GET /api/fleet/template）。"
         )
     if "annual_km" not in columns:
         result.notes.append(
@@ -437,8 +442,7 @@ def parse_fleet_file(
     name = (filename or "").lower()
     if name.endswith((".xlsx", ".xlsm", ".xls")):
         raise FleetImportError(
-            "暂不支持直接读取 Excel。请在 Excel 里「另存为 → CSV UTF-8（逗号分隔）」后再上传，"
-            "或在服务端安装 openpyxl 后重试。"
+            "暂不支持直接读取 Excel。请在 Excel 里「另存为 → CSV UTF-8（逗号分隔）」后再上传。"
         )
     if not name.endswith((".csv", ".txt", "")):
         raise FleetImportError(f"不支持的文件类型：{filename}。请上传 .csv 文件。")

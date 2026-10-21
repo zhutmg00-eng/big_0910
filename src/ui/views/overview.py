@@ -239,7 +239,7 @@ def render_inventory() -> None:
     st.markdown("## 添加车队记录")
 
     # ---- 上传台账（评审核心意见：真正的企业没有耐心点 170 次表单）----
-    with st.expander("从 Excel/CSV 台账批量导入（推荐）", expanded=not st.session_state.fleet_data):
+    with st.expander("从 CSV 台账批量导入（推荐）", expanded=not st.session_state.fleet_data):
         st.caption(
             "台账只需四列：车型、数量、年均里程(km)、实载率。列名有常见同义词容错"
             "（如「车辆类型／台数／年行驶里程／里程利用率」），也支持 GBK 编码、分号或制表符分隔；"
