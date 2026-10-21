@@ -34,13 +34,13 @@ class ScenarioCost(BaseModel):
 
 class CarbonResult(BaseModel):
     """完整碳排放计算结果"""
-    company_name: str
-    total_emission_t: float
-    total_vehicles: int
-    emission_by_type: dict
-    carbon_budget: dict
-    scenario_cost: dict
-    methodology_note: str
+    company_name: str = Field(..., description="企业名称")
+    total_emission_t: float = Field(..., description="年度直接运营排放总量 (tCO2e)")
+    total_vehicles: int = Field(..., description="车队总车辆数")
+    emission_by_type: dict = Field(default_factory=dict, description="分车型排放明细")
+    carbon_budget: dict = Field(default_factory=dict, description="模拟碳预算分析结果")
+    scenario_cost: dict = Field(default_factory=dict, description="碳价对标情景金额分析结果")
+    methodology_note: str = Field(..., description="方法学说明与口径声明")
 
 
 # 兼容早期导入名称；新代码应使用 CarbonBudget 和 ScenarioCost。

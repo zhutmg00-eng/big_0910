@@ -34,9 +34,9 @@ class RetrievedSource(BaseModel):
 
 class PolicyAnswer(BaseModel):
     """政策问答输出"""
-    question: str
-    retrieved_sources: list[RetrievedSource]
-    answer: str
+    question: str = Field(..., description="原始提问")
+    retrieved_sources: list[RetrievedSource] = Field(default_factory=list, description="检索到的政策依据片段")
+    answer: str = Field(..., description="合规问答结论或溯源建议")
     evidence_count: int = Field(
         0,
         description=(
