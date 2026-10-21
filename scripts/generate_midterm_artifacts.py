@@ -133,6 +133,13 @@ def generate_svg_rq1(fleets, ledgers, estimates, errors):
 </svg>"""
     return svg
 
+# 当前默认检索模式是 rrf3（三路加权融合）；hybrid 是 v0.3 遗留方案。
+# 只要它不再是默认值，图里就不能再拿它当「本方案」比较，否则会出现
+# 图上 49.05% 与正文 0.4920 两个数并存。
+FUSION_KEY = "rrf3"
+FUSION_SIG_KEY = "rrf3_vs_keyword"
+
+
 def generate_svg_rq2(summary, stats):
     """生成高质量纯矢量 SVG 格式的 RQ2 图表"""
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
@@ -167,7 +174,7 @@ def generate_svg_rq2(summary, stats):
 
     kw_vals = [summary["keyword"]["MRR"], summary["keyword"]["Recall@3"], summary["keyword"]["Recall@5"], summary["keyword"]["Recall@10"], summary["keyword"]["Negative_Rejection_Accuracy"]]
     vec_vals = [summary["vector"]["MRR"], summary["vector"]["Recall@3"], summary["vector"]["Recall@5"], summary["vector"]["Recall@10"], summary["vector"]["Negative_Rejection_Accuracy"]]
-    hyb_vals = [summary["hybrid"]["MRR"], summary["hybrid"]["Recall@3"], summary["hybrid"]["Recall@5"], summary["hybrid"]["Recall@10"], summary["hybrid"]["Negative_Rejection_Accuracy"]]
+    hyb_vals = [summary[FUSION_KEY][k] for k in ("MRR", "Recall@3", "Recall@5", "Recall@10", "Negative_Rejection_Accuracy")]
 
     for i, (m_name, xc) in enumerate(zip(metrics, x_positions)):
         h_kw = int(kw_vals[i] * 320)
@@ -187,15 +194,18 @@ def generate_svg_rq2(summary, stats):
 
   <text x="{xc}" y="445" font-size="12" font-weight="600" fill="{INK}" text-anchor="middle">{m_name}</text>
 """
-    p_vec = stats["hybrid_vs_vector"]["p_value"]
+    _sig = stats[FUSION_SIG_KEY]
+    p_vec = _sig["p_value"]
+    p_holm = _sig["p_holm"]
+    _verdict = "显著" if p_holm < 0.05 else "不显著"
     svg += f"""
   <!-- 显著性标识卡片 -->
   <rect x="520" y="70" width="320" height="40" fill="#eef7f2" stroke="{GREEN_PRIMARY}" rx="5"/>
-  <text x="535" y="95" font-size="12" font-weight="bold" fill="{GREEN_PRIMARY}">Wilcoxon 显著性检验: p = {p_vec:.5f} (p &lt; 0.001***)</text>
+  <text x="535" y="95" font-size="12" font-weight="bold" fill="{GREEN_PRIMARY}">Wilcoxon（三路融合 vs 纯关键词）: p = {p_vec:.4f}，Holm 校正 {p_holm:.4f}（{_verdict}）</text>
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：同一语料同一中文嵌入下，纯关键词 MRR 0.4879 / 纯向量 0.2589 / 三路加权融合 0.4920；真实增量在 Recall@10（80.0% vs 70.0%），相对纯关键词不显著（Holm 0.961）。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：同一语料同一中文嵌入下，纯关键词 MRR {summary["keyword"]["MRR"]:.4f} / 纯向量 {summary["vector"]["MRR"]:.4f} / 三路加权融合 {summary[FUSION_KEY]["MRR"]:.4f}；真实增量在 Recall@10（{summary[FUSION_KEY]["Recall@10"]:.1%} vs {summary["keyword"]["Recall@10"]:.1%}），相对纯关键词的 MRR 差异不显著（Holm {p_holm:.3f}）。</text>
 </svg>"""
     return svg
 
@@ -264,6 +274,7 @@ def build_all_artifacts():
     print("🎨 正在生成大创中期答辩科研实证图表与展示产物")
     print("=" * 70)
 
+
     # === 1. 数据读取与准备 ===
     # 真实车队数据
     real_fleets_path = PROJECT_ROOT / "data" / "raw" / "real_fleets" / "benchmark_fleets.json"
@@ -300,6 +311,12 @@ def build_all_artifacts():
     eval_data = json.loads(eval_path.read_text(encoding="utf-8"))
     summary = eval_data["summary_metrics"]
     stats = eval_data["statistical_significance"]
+    # 显著性徽标用现算值：历史上这里写死过 p < 0.001***，而实测最小 p 是 0.00171，
+    # 相对纯关键词那组更是 p=0.3203（Holm 校正后 0.9608，完全不显著）。
+    _sig_block = stats[FUSION_SIG_KEY]
+    _SIG_P = _sig_block["p_value"]
+    _SIG_PHOLM = _sig_block["p_holm"]
+    _SIG_VERDICT = "显著" if _SIG_PHOLM < 0.05 else "不显著"
 
     # === 2. 导出纯矢量 SVG 格式（适用于 PPT/报告） ===
     svg1_path = ARTIFACTS_DIR / "fig1_rq1_real_fleet_validation.svg"
@@ -370,7 +387,7 @@ def build_all_artifacts():
         marker_color=GREEN_PRIMARY,
     ))
     fig2.update_layout(
-        title=f"RQ2: 40题基准集三组检索对照实验 (Wilcoxon 检验 p = {stats['hybrid_vs_vector']['p_value']:.5f} < 0.001***)",
+        title=f"RQ2: 40题基准集三组检索对照实验 (Wilcoxon 融合 vs 纯关键词: p = {stats[FUSION_SIG_KEY]['p_value']:.4f}，Holm {stats[FUSION_SIG_KEY]['p_holm']:.4f})",
         barmode="group",
         yaxis_tickformat=".0%",
         font=dict(family="Segoe UI, Microsoft YaHei", size=13),
@@ -460,7 +477,7 @@ def build_all_artifacts():
       <div>
         <span class="stats-badge">自建评测集: 40 题标准基准 (含 4 负例)</span>
         <span class="stats-badge">{KB_BADGE}</span>
-        <span class="stats-badge">Wilcoxon 检验: p &lt; 0.001***</span>
+        <span class="stats-badge">Wilcoxon（融合 vs 纯关键词）: p = {_SIG_P:.4f}，Holm {_SIG_PHOLM:.4f}（{_SIG_VERDICT}）</span>
       </div>
       <div class="chart-container">
         {generate_svg_rq2(summary, stats)}

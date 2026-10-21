@@ -238,6 +238,7 @@ RETRACT_MARKERS = (
     "不把",
     "撤回", "不成立", "已删除", "无数据支持", "非拒答", "不是",
     "已更正", "属循环定义", "旧稿", "旧快照", "早期材料", "早期草稿", "曾把",
+    "早期版本", "写反", "方向相反", "更正",
 )
 
 
@@ -447,6 +448,66 @@ def test_public_materials_do_not_claim_refusal_rate():
 # ---------------------------------------------------------------- 生成器文本口径
 
 # 旧口径仓库不只在 html 里，更在生成 html/pdf/pptx 的脚本里。只守 html 等于守门不守源。
+# build_defense_pdfs.py 的敏感性表与结论段必须从 docs/derived_metrics.json 现算。
+# 历史事故：那张 5x5 表原为逐格手抄（+1.22% ~ +7.80%），结论写「满载率是主误差源」，
+# 而台账 50 格扫描的真实包络是 3.04%~29.80%，且里程才是主导因子（+20.72~26.76 pp）。
+RAG3_HARDCODED_PERCENT = ("+1.22%", "+1.89%", "+2.54%", "+3.20%", "+3.85%",
+                          "+2.88%", "+3.60%", "+5.12%", "+5.89%",
+                          "+4.38%", "+5.25%", "+6.10%", "+7.01%", "+7.80%",
+                          "2.63%", "3.01%")
+def _strip_docstrings(text: str) -> str:
+    """去掉模块/函数 docstring，只留真正会执行的代码行。
+
+    只剥注释是不够的：docstring 里常写「原先硬编码 +1.22%」这样的历史说明，
+    守卫若连它一起命中，就会逼着后来的人删掉有价值的事故记录。
+    """
+    import re as _re
+
+    pattern = _re.compile(r'(?s)("""|\'\'\').*?\1')
+    return pattern.sub("", text)
+
+
+def _code_lines(text: str) -> str:
+    """去掉整行注释，避免守卫命中注释里引用的坏字符串。"""
+    kept = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        kept.append(line)
+    return "\n".join(kept)
+
+
+SENSITIVITY_WRITER = "scripts/build_defense_pdfs.py"
+MAIN_SOURCE_CLAIMS = ("满载率是主误差源", "满载率基准假设是主误差源", "满载率是可控主误差源")
+
+
+def test_defense_pipeline_rq3_table_is_computed_from_ledger():
+    code = _strip_docstrings(_code_lines(_read(SENSITIVITY_WRITER)))
+    assert "grid_5x5" in code, (
+        "敏感性表必须逐格取自台账 sensitivity.grid_5x5，不能手抄"
+    )
+    hit = [needle for needle in RAG3_HARDCODED_PERCENT if needle in code]
+    assert not hit, (
+        f"{SENSITIVITY_WRITER} 的代码里仍在手抄敏感性百分比 {hit}；"
+        "该表必须从 docs/derived_metrics.json 的 sensitivity.grid_5x5 现算"
+    )
+
+
+def test_defense_pipeline_does_not_blame_load_factor_as_main_source():
+    lines = _strip_docstrings(_code_lines(_read(SENSITIVITY_WRITER))).splitlines()
+    for index, line in enumerate(lines):
+        for needle in MAIN_SOURCE_CLAIMS:
+            if needle not in line:
+                continue
+            # 撤回句常把坏说法放在引号里并在同句或邻句否定，故看前后各两行
+            window = "\n".join(lines[max(0, index - 2): index + 3])
+            assert any(marker in window for marker in RETRACT_MARKERS), (
+                f"{SENSITIVITY_WRITER} 把实载率说成主误差源：{line.strip()[:80]}；"
+                "台账实测年均里程才是一阶主导因子（约 5~9 倍）"
+            )
+
+
 GENERATOR_SCRIPTS = (
     "scripts/generate_presentation_pptx.py",
     "scripts/build_defense_pdfs.py",

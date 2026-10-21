@@ -1,8 +1,59 @@
 #!/usr/bin/env python3
-"""生成系统技术架构全景矢量图"""
+"""生成系统技术架构全景矢量图。
+
+图上的所有数字都必须现取，不能手抄：
+- 测试总数：运行时 `pytest --collect-only` 收集到的条数（本轮从 248 更正为实时值）；
+- MRR 与显著性：docs/rag_benchmark/rag_retrieval_experiment_results.json 的 rrf3 段。
+历史事故：fig0 曾长期印着「全量 248 项自动化测试全部通过」（真实值是它的 1.6 倍）
+与「MRR 0.5036 (Wilcoxon p &lt; 0.001***)」（v0.3 遗留值，实测 0.4920 且不显著）。
+"""
+import json
+import re
+import subprocess
+import sys
 from pathlib import Path
 
-svg_path = Path(__file__).parent.parent / "docs" / "artifacts" / "fig0_system_architecture.svg"
+ROOT = Path(__file__).parent.parent
+svg_path = ROOT / "docs" / "artifacts" / "fig0_system_architecture.svg"
+
+
+def _collected_test_count() -> int:
+    """取运行时真实收集到的测试条数；失败时返回 0，让图上的说明自动降级。"""
+    try:
+        out = subprocess.run(
+            [sys.executable, "-m", "pytest", "--collect-only", "-q", "--ignore=tmp"],
+            cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=300,
+        ).stdout
+    except Exception:
+        return 0
+    match = re.search(r"(\d+)\s+tests?\s+collected", out)
+    return int(match.group(1)) if match else 0
+
+
+def _rag_headline() -> tuple[str, str]:
+    """取 rrf3 的 MRR 与相对纯关键词的 Holm 校正 p 值。"""
+    path = ROOT / "docs" / "rag_benchmark" / "rag_retrieval_experiment_results.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return "MRR 见评测报告", "显著性见评测报告"
+    mrr = payload["summary_metrics"]["rrf3"]["MRR"]
+    sig = payload.get("statistical_significance", {}).get("rrf3_vs_keyword", {})
+    p_holm = sig.get("p_holm")
+    if p_holm is None:
+        return f"MRR {mrr:.4f}", "Holm 校正见报告"
+    verdict = "显著" if p_holm < 0.05 else "不显著"
+    return f"MRR {mrr:.4f}", f"vs 纯关键词 Holm={p_holm:.4f}（{verdict}）"
+
+
+TEST_COUNT = _collected_test_count()
+RAG_MRR_TEXT, RAG_SIG_TEXT = _rag_headline()
+TEST_LINE = (
+    f"工程规范：全仓本地环境运行 | 全量 {TEST_COUNT} 项自动化测试（运行时收集）"
+    if TEST_COUNT
+    else "工程规范：全仓本地环境运行 | 测试数以运行时收集为准 | 严格遵循情景模拟与非纳管边界"
+)
 svg_path.parent.mkdir(parents=True, exist_ok=True)
 
 INK = '#1a2521'
@@ -75,8 +126,9 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="365" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="500" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ2: 40题基准集与检索检验</text>
-  <text x="500" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">背靠背审校基准 (含4负例)</text>
-  <text x="500" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">MRR 0.5036 (Wilcoxon p &lt; 0.001***)</text>
+  <text x="500" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">40 题自建基准集 (含4负例，双人独立审校)</text>
+  <text x="500" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">{RAG_MRR_TEXT}（三路加权融合）</text>
+  <text x="500" y="470" font-size="9" fill="{MUTED}" text-anchor="middle">{RAG_SIG_TEXT}</text>
 
   <rect x="670" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="805" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ3: 参数扰动敏感性网格</text>
@@ -84,7 +136,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
   <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">50组扫描：3.04% ~ 29.80%</text>
 
   <!-- 底部规范声明 -->
-  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">工程规范：全仓本地环境运行 | 全量 248 项自动化测试全部通过 | 严格遵循情景模拟与非纳管边界</text>
+  <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">{TEST_LINE} | 严格遵循情景模拟与非纳管边界</text>
 </svg>'''
 
 svg_path.write_text(svg, encoding="utf-8")

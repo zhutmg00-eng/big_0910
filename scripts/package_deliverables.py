@@ -106,7 +106,7 @@ def main():
 
 ### 📁 05_系统源代码与工程规范（代码资产）
 - **`src/`**：包含直接运营排放核算引擎、TCO/BaaS 模型、Scope 2 电网因子与周转量强度引擎、RAG 向量检索管线、FastAPI 微服务与 Streamlit 交互前端。
-- **`tests/`**：包含全量 **248 项自动化回归测试**，本地已全部验证通过（100% 绿灯）。
+- **`tests/`**：回归测试覆盖全仓（具体条数以 `python -m pytest --collect-only -q` 的实时输出为准，不在文档里固化数字——历史上出现过 105~399 之间十几种互相冲突的写法）。
 - **`scripts/`**：包含数据派生 (`gen_derived_metrics.py`)、台账一致性核验 (`check_fleet_ledger_consistency.py`)、TCO 敏感性分析 (`tco_sensitivity.py`)、图表渲染等全套科研复现脚本。
 - **`packages/dsh-plugin-carbon-asset/`**：DeepSeek Harness 官方微内核生态插件源码（注册 6 项专业工具，支持 HTTP / 本地 CLI 降级双模）。
 - **`README.md`** 与 **`系统架构设计说明_architecture.md`**：完整的工程部署与技术说明。

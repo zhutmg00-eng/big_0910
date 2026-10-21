@@ -34,6 +34,34 @@ from reportlab.pdfgen import canvas
 # v0.4 之前这里只查 Windows 字体路径，在 macOS 答辩机上会直接报错。
 from src.ui.components.report import FONT_NAME  # noqa: E402
 
+
+def _sensitivity_ledger() -> dict:
+    """读取唯一数字台账的 sensitivity 段；PDF 里的敏感性表与结论必须由它现算。
+
+    历史问题（第 10 轮评审实测）：这里原先硬编码了一张 5×5 表（+1.22% ~ +7.80%）
+    和一句「满载率基准假设是主误差源」。而台账 50 格扫描的真实包络是 3.04%~29.80%，
+    且年均里程才是主导因子（里程 ±20% 使 MAPE 上升 20.72~26.76 pp，实载率行内极差
+    只有 3.67~5.50 pp）。`+1.22%` 在 50 格里根本不存在，方向也与 deck 的更正声明相反。
+    """
+    import json
+
+    path = Path(__file__).resolve().parent.parent / "docs" / "derived_metrics.json"
+    return json.loads(path.read_text(encoding="utf-8"))["sensitivity"]
+
+
+SENSITIVITY = _sensitivity_ledger()
+
+
+def _sens_grid_rows() -> tuple[list, float, float]:
+    """把台账 grid 摊成行内极差与误差范围，供段落文字引用。"""
+    grid = SENSITIVITY["grid"]
+    rows = {}
+    for key, value in grid.items():
+        load_delta, km_scale = key.split("|")
+        rows.setdefault(km_scale, []).append(value)
+    spans = [max(vals) - min(vals) for vals in rows.values()]
+    return spans, min(grid.values()), max(grid.values())
+
 # ============================================================
 # 测试数：运行时收集，禁止手写
 # ============================================================
@@ -290,7 +318,7 @@ def build_manual_pdf(out_path: Path):
         [Paragraph("研究主线", styles["TableHeader"]), Paragraph("紧扣活动水平法误差溯源 (RQ1)、垂直法规检索长尾弥散与重排 (RQ2)、运营参数扰动敏感性机理 (RQ3) 三大科学问题", styles["TableCellLeft"])],
         [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链共 51,990 辆真实台账复核 (MAPE 4.23%) | 40 题人工标注评测集 | 检索差异经 Holm 校正后不显著", styles["TableCellLeft"])],
         [Paragraph("扩展引擎", styles["TableHeader"]), Paragraph("集成2025年47号公告31省电网因子 (Scope 2) + 货运周转量碳排放强度 (gCO2/t·km) + DeepSeek Harness 生态插件", styles["TableCellLeft"])],
-        [Paragraph("学术背书", styles["TableHeader"]), Paragraph("非结构化专家咨询访谈（不评分） | 248 项自动化测试全通过 | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
+        [Paragraph("学术背书", styles["TableHeader"]), Paragraph(f"非结构化专家咨询访谈（不评分） | {TEST_COUNT} 项自动化测试（运行时收集） | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
     ]
     t_meta = Table(meta_data, colWidths=[28 * mm, 146 * mm])
     t_meta.setStyle(TableStyle([
@@ -535,14 +563,22 @@ def build_manual_pdf(out_path: Path):
         story.append(Image(str(png3_path), width=155 * mm, height=86.1 * mm))
         story.append(Paragraph("图 3：运营参数（满载率 × 年均里程）扰动敏感性矩阵热力图", styles["FigCaption"]))
 
-    rq3_table_data = [
-        [Paragraph("满载率 \\ 里程扰动", styles["TableHeader"]), Paragraph("-20%", styles["TableHeader"]), Paragraph("-10%", styles["TableHeader"]), Paragraph("基准 (0%)", styles["TableHeader"]), Paragraph("+10%", styles["TableHeader"]), Paragraph("+20%", styles["TableHeader"])],
-        [Paragraph("满载率 -20%", styles["TableCellLeft"]), Paragraph("+1.22%", styles["TableCell"]), Paragraph("+1.89%", styles["TableCell"]), Paragraph("+2.54%", styles["TableCell"]), Paragraph("+3.20%", styles["TableCell"]), Paragraph("+3.85%", styles["TableCell"])],
-        [Paragraph("满载率 -10%", styles["TableCellLeft"]), Paragraph("+2.05%", styles["TableCell"]), Paragraph("+2.84%", styles["TableCell"]), Paragraph("+3.55%", styles["TableCell"]), Paragraph("+4.28%", styles["TableCell"]), Paragraph("+5.01%", styles["TableCell"])],
-        [Paragraph("满载率 基准 (0%)", styles["TableCellLeft"]), Paragraph("+2.88%", styles["TableCell"]), Paragraph("+3.60%", styles["TableCell"]), Paragraph("<b>+4.23% (基准)</b>", styles["TableCell"]), Paragraph("+5.12%", styles["TableCell"]), Paragraph("+5.89%", styles["TableCell"])],
-        [Paragraph("满载率 +10%", styles["TableCellLeft"]), Paragraph("+3.65%", styles["TableCell"]), Paragraph("+4.45%", styles["TableCell"]), Paragraph("+5.20%", styles["TableCell"]), Paragraph("+6.02%", styles["TableCell"]), Paragraph("+6.82%", styles["TableCell"])],
-        [Paragraph("满载率 +20%", styles["TableCellLeft"]), Paragraph("+4.38%", styles["TableCell"]), Paragraph("+5.25%", styles["TableCell"]), Paragraph("+6.10%", styles["TableCell"]), Paragraph("+7.01%", styles["TableCell"]), Paragraph("+7.80%", styles["TableCell"])],
-    ]
+    # 表体由台账 docs/derived_metrics.json 的 sensitivity.grid_5x5 现算，禁止手抄。
+    _row_labels = SENSITIVITY["row_labels_km_scale"]
+    _col_labels = SENSITIVITY["col_labels_load_delta"]
+    _header = [Paragraph("里程缩放 \\ 实载率偏移", styles["TableHeader"])]
+    for _ld in _col_labels:
+        _label = "基准 (0%)" if abs(float(_ld)) < 1e-9 else f"{float(_ld) * 100:+.0f}%"
+        _header.append(Paragraph(_label, styles["TableHeader"]))
+    rq3_table_data = [_header]
+    for _ks, _row in zip(_row_labels, SENSITIVITY["grid_5x5"]):
+        _cells = [Paragraph(f"里程 ×{_ks:g}", styles["TableCellLeft"])]
+        for _ld, _val in zip(_col_labels, _row):
+            _text = f"{_val:.2f}%"
+            if abs(float(_ld)) < 1e-9 and abs(float(_ks) - 1.0) < 1e-9:
+                _text = f"<b>{_text} (基准)</b>"
+            _cells.append(Paragraph(_text, styles["TableCell"]))
+        rq3_table_data.append(_cells)
     t_rq3 = Table(rq3_table_data, colWidths=[35 * mm, 27 * mm, 27 * mm, 27 * mm, 27 * mm, 27 * mm])
     t_rq3.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), C_PRIMARY),
@@ -554,10 +590,20 @@ def build_manual_pdf(out_path: Path):
     ]))
     story.append(t_rq3)
 
+    _spans, _lo, _hi = _sens_grid_rows()
+    _load_effect = abs(SENSITIVITY["load_effect_pp"])
+    _km_effect = abs(SENSITIVITY["mileage_effect_pp"])
     story.append(Paragraph(
-        "<b>敏感性机理结论</b>：在广泛运营波动下，相对误差恒定约束在 <b>[+1.22%, +7.80%]</b> 区间内，全域正偏。<br/>"
-        "满载率扰动带来的误差波动幅度为 2.63%，里程扰动带来的误差波动幅度为 3.01%，两者斜率平缓，"
-        "量化证实了满载率基准假设是主误差源但完全可控，保障了新能源替换 TCO 投资回收期核算的物理稳健性。",
+        "<b>敏感性机理结论</b>：50 组参数扰动下，案例等权 MAPE 介于 "
+        f"<b>[{_lo:.2f}%, {_hi:.2f}%]</b>，中位数 {SENSITIVITY['median_pct']:.2f}%。"
+        "同一里程倍数下、实载率在 -30%~+15% 区间变动引起的误差极差为 "
+        f"{min(_spans):.2f}%~{max(_spans):.2f}%（跨度约 {_load_effect:.2f} 个百分点）；"
+        "同一实载率偏移下、里程 ±20% 引起的误差极差约 "
+        f"{_km_effect:.2f} 个百分点。<br/>"
+        "结论：<b>年均里程是一阶主导误差源</b>（约为实载率的 5~9 倍），实载率是次要项。"
+        "早期版本曾把误差写成「恒定约束在 1~8% 之间」，并称满载率是主误差源；"
+        "这与台账 50 格扫描结果方向相反，已按上表现算结果更正。"
+        "误差方向也不宜笼统称「全域正偏」——扩展到更多车队台账后方向并不稳定。",
         styles["DocBody"]
     ))
 
@@ -655,7 +701,7 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("评委类型", styles["TableHeader"]), Paragraph("典型背景特征", styles["TableHeader"]), Paragraph("核心关注痛点与设问方向", styles["TableHeader"]), Paragraph("制胜应对话术与得分策略", styles["TableHeader"])],
         [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23%（等权）与单案例误差区间，并主动说明方向不一致（6/8 低估），不作保守性主张。", styles["TableCellLeft"])],
         [Paragraph("2. 经管/商业类专家", styles["TableCell"]), Paragraph("管理学院博导、投资人评委", styles["TableCellLeft"]), Paragraph("商业模式是否成立、企业凭什么买单、TCO 投资回报与边际减排成本 (MAC)", styles["TableCellLeft"]), Paragraph("强调物流微观管理与国际绿色供应链 Scope 3 倒逼，用 TCO 静态回收期（年）与 MAC 算清财务经济账。", styles["TableCellLeft"])],
-        [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库、揭示纯向量 MRR 0.0411 弥散机理，出具 Wilcoxon p < 0.001 极显著检验证据，体现算法深度。", styles["TableCellLeft"])],
+        [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库与三档递进基线（纯关键词 MRR 0.4879 / 中文纯向量 0.2589 / 三路加权融合 0.4920），并如实交代显著性：融合相对中文纯向量显著（W=76.0, p=0.0023, Holm 0.0138）、相对纯关键词不显著（W=42.0, p=0.3203, Holm 0.9608）；不要引用 p<0.001，实测最小 p 是 0.00171。", styles["TableCellLeft"])],
         [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 51,990 辆台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
     ]
     t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 54 * mm, 60 * mm])
@@ -691,7 +737,7 @@ def build_guide_pdf(out_path: Path):
 
         ("Slide 4 (02:30~03:45) RQ1 真实车队基准检验 ── 引用图 1",
          "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 51,990 辆台账复算对比表。<br/>"
-         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 51,990 辆运营车辆的台账进行复核。结果为：四案例**等权** MAPE 4.23%（按排放量加权 2.38%），单案例相对误差 +1.66% ~ +7.27%；方向并**不**一致（8 条记录中 6 条低估），故不主张任何保守性保证。”"),
+         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 51,990 辆运营车辆的台账进行复核。结果为：四案例**等权** MAPE 4.23%（按排放量加权 2.38%），单案例相对误差 +1.66% ~ +7.27%；四个案例的方向**一致为正**（+1.66% ~ +7.27%）——但观测单元只有这 4 个车队（n=4），不足以支撑「恒定为正」的结论，故不主张任何保守性保证。”"),
 
         ("Slide 5 (03:45~05:00) RQ2 40题基准库与检索对照实验 ── 引用图 2",
          "【展示内容】：RAG 检索对照图 (fig2_rq2_rag_benchmark_comparison.png) 与 Wilcoxon 显著性检验卡片。<br/>"
@@ -699,11 +745,11 @@ def build_guide_pdf(out_path: Path):
 
         ("Slide 6 (05:00~06:00) RQ3 运营参数网格敏感性与扩展核算 ── 引用图 3",
          "【展示内容】：参数敏感性热力图 (fig3_rq3_sensitivity_heatmap.png) 与 Scope 2 电网因子。<br/>"
-         "【演讲台词】：“针对科学问题三，我们建立了满载率与里程双向 ±20% 的扰动热力网格。实证发现：在广泛波动下相对误差始终闭环在 [+1.22%, +7.80%] 内，量化证明了满载率是可控主误差源。在此基础上，我们进一步集成了生态环境部 2025 年 47 号公告 31 个省级行政区电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
+         "【演讲台词】：“针对科学问题三，我们建立了实载率 -30%~+15% 与年均里程 ±20% 的 50 组扰动网格。实证发现：误差包络是 3.04%~29.80%（中位数 14.51%），**年均里程是一阶主导因子**——里程 ±20% 使 MAPE 上升 20.72~26.76 个百分点，而实载率的行内极差只有 3.67~5.50 个百分点。这一点早期材料写反过，已按扫描结果更正。在此基础上，我们集成了生态环境部 2025 年第 47 号公告30 个有数据省级行政区（全国共 31 个）的电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
 
         ("Slide 7 (06:00~07:00) 专家咨询访谈与结题就绪",
          "【展示内容】：专家 A（高校博导）与专家 B（物流总监）打分表与闭环采纳台账。<br/>"
-         "【演讲台词】：“为确保结论不靠自说自话，我们邀请了高校交通低碳博导与头部物流企业车队总监做非结构化咨询访谈（不是双盲同行评议，本项目不引用任何评分数字）。两位专家特别肯定了 TCO 财务逻辑的落地性，并指出应如实披露误差方向不一致（8 条记录中 6 条低估）而非包装成保守性设计。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
+         "【演讲台词】：“为确保结论不靠自说自话，我们邀请了高校交通低碳博导与头部物流企业车队总监做非结构化咨询访谈（不是双盲同行评议，本项目不引用任何评分数字）。两位专家特别肯定了 TCO 财务逻辑的落地性，并指出应如实披露样本量（观测单元是 4 个车队而非 51,990 辆）而非把一致性检验讲成外部验证。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
 
         ("Slide 8 (07:00~08:00) 总结、致谢与合规免责重申",
          f"【展示内容】：成果清单、{TEST_COUNT} 项测试全绿、免责声明。<br/>"
@@ -742,7 +788,7 @@ def build_guide_pdf(out_path: Path):
          "<b>回答策略</b>：数据全部源自上市公司法定公开发布渠道（顺丰控股可持续发展报告、中通 ESG 报告、京东物流社会责任报告及冷链车载终端公开实测集）。代码库内置 `scripts/verify_real_fleets.py`，评委可现场一键复现，100% 真实透明。"),
 
         ("质询 8：“满载率惩罚系数 0.15 的取值依据是什么？会不会太主观？”",
-         "<b>回答策略</b>：0.15 取值源自道路货运能耗经验曲线与敏感性网格校准。我们在 RQ3 中建立了 ±20% 扰动网格，实证证明无论满载率如何波动，相对误差始终闭环于 [+1.22%, +7.80%]，表现出高度的数值收敛性与鲁棒性。"),
+         "<b>回答策略</b>：0.15 是载荷惩罚系数，只在满载率低于 0.75 时线性生效（0.75 以上封顶为 1.0）。我们在 RQ3 中做了 50 组扰动扫描，需要如实说明两点：① 误差包络是 3.04%~29.80%，并非「无论怎么波动都很小」；② 主导误差源是年均里程（±20% 对应 20.72~26.76 个百分点），实载率是次要项（行内极差 3.67~5.50 个百分点）。早期材料写成「始终闭环于 1~8%」是错的，已更正。"),
 
         ("质询 9：“这个项目跟市面上的碳盘查商业软件相比，核心优势是什么？”",
          "<b>回答策略</b>：市面软件要么针对工业厂房（不适合动态货运），要么需要输入详尽燃油发票。我们针对中小车队‘无发票’痛点，以活动水平法实现 4.23% 保守核算，并联动 TCO 经济账与垂直政策 RAG，是专为交通运输打造的决策工具。"),
@@ -772,7 +818,7 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("车队配额盈余可以在市场上卖钱", styles["TableCell"]), Paragraph("技术减排带来的情景结余与成本节约", styles["TableCellLeft"]), Paragraph("严禁虚构配额金融交易属性", styles["TableCellLeft"])],
         [Paragraph("电动货车可以开发 CCER 赚钱", styles["TableCell"]), Paragraph("新能源车队实现自发减排与绿电消纳", styles["TableCellLeft"]), Paragraph("现行自愿减排未放开纯电车队", styles["TableCellLeft"])],
         [Paragraph("我们训练了一个大模型来做解读", styles["TableCell"]), Paragraph("垂直小样本混合重排 RAG 引擎", styles["TableCellLeft"]), Paragraph("诚实表达重排机制，不虚夸训练", styles["TableCellLeft"])],
-        [Paragraph("我们的模型没有任何误差", styles["TableCell"]), Paragraph("等权平均相对误差 4.23%（加权 2.38%）", styles["TableCellLeft"]), Paragraph("误差方向不一致（8 条记录 6 条低估），不主张保守性", styles["TableCellLeft"])],
+        [Paragraph("我们的模型没有任何误差", styles["TableCell"]), Paragraph("等权平均相对误差 4.23%（加权 2.38%）", styles["TableCellLeft"]), Paragraph("四案例误差方向一致为正（+1.66%~+7.27%），但观测单元仅 4 个车队，不主张保守性", styles["TableCellLeft"])],
         [Paragraph("纯电动车是绝对零排放的", styles["TableCell"]), Paragraph("直接排放为零，外购电间接排放计入最新电网因子", styles["TableCellLeft"]), Paragraph("严格区分范围 1 与范围 2", styles["TableCellLeft"])],
     ]
     t_avoid = Table(avoid_data, colWidths=[42 * mm, 60 * mm, 72 * mm])
