@@ -439,6 +439,67 @@ class PolicyVectorStore:
             out.setdefault(meta.get("source", ""), meta.get("doc_hash", ""))
         return out
 
+    def prune_stale_collections(self, dry_run: bool = True) -> Dict:
+        """清理同一 persist_dir 下不再被当前配置读取的历史 collection。
+
+        换嵌入模型会让 collection 名跟着变（见 ``health`` 的说明），旧 collection
+        本体、它的向量索引目录、以及它对应的 ``*_fallback_docs.json`` 都会留在
+        磁盘上。它们不影响检索正确性，但会持续占盘、并且让 ``health`` 的
+        other_collections 越来越长——排查「库为什么空了」时反而更难看清。
+
+        Args:
+            dry_run: 默认 True，只返回计划不删除。删除不可逆，必须显式传 False。
+
+        Returns:
+            dict，含 kept（当前 collection 名）、removed（已删/待删的
+            collection 名 → 块数）、freed_bytes、dry_run。
+        """
+        out: Dict = {
+            "kept": self.collection_name,
+            "removed": {},
+            "freed_bytes": 0,
+            "dry_run": dry_run,
+        }
+        if not self._chroma_ok:
+            out["error"] = f"ChromaDB 不可用（{self._degrade_reason}）"
+            return out
+
+        stale: Dict[str, int] = {}
+        try:
+            for col in self.client.list_collections():
+                name = col if isinstance(col, str) else getattr(col, "name", str(col))
+                if name == self.collection_name:
+                    continue
+                try:
+                    stale[name] = self.client.get_collection(name).count()
+                except Exception:  # pragma: no cover
+                    stale[name] = -1
+        except Exception as exc:  # pragma: no cover
+            out["error"] = f"列举 collection 失败：{exc}"
+            return out
+
+        out["removed"] = stale
+        if dry_run or not stale:
+            return out
+
+        persist = Path(self.persist_dir)
+        for name in stale:
+            try:
+                self.client.delete_collection(name)
+            except Exception as exc:  # pragma: no cover
+                logger.warning("删除 collection %s 失败：%s", name, exc)
+                continue
+            # 该 collection 的 BM25 回退缓存同样失效
+            cache = persist / f"{name}_fallback_docs.json"
+            if cache.exists():
+                try:
+                    out["freed_bytes"] += cache.stat().st_size
+                    cache.unlink()
+                except OSError:  # pragma: no cover
+                    pass
+        self._invalidate_caches()
+        return out
+
     def remove_source(self, doc_source: str):
         if self._chroma_ok:
             self.collection.delete(where={"source": doc_source})
