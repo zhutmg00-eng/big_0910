@@ -11,6 +11,12 @@ dist/
 !packages/dsh-plugin-carbon-asset/dist/
 build/
 
+# 交付快照与压缩包（big_0910_v0.4.1.zip 曾把整个源码树再打包一份进仓库，
+# 导致 1.7MB 冗余对象且内容与 HEAD 不一致；交付方式走 git tag + release）
+*.zip
+*.7z
+*.rar
+
 # 环境变量
 .env
 

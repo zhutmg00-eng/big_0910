@@ -30,7 +30,7 @@
 要求 Python 3.10 及以上版本。
 
 ```powershell
-git clone https://github.com/zhutmg00-eng/-.git carbon-logistics-assistant
+git clone https://github.com/zhutmg00-eng/big_0910.git carbon-logistics-assistant
 cd carbon-logistics-assistant
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
