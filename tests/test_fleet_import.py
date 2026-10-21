@@ -326,3 +326,34 @@ st.write(st.session_state["fleet_data"])
         assert at.session_state["fleet_import_notes"]
         assert at.session_state["fleet_import_warnings"]
         assert at.session_state["fleet_import_summary"]["total_vehicles"] == 70
+
+
+class TestChineseUnitsAndDiagnostics:
+    def test_parse_number_supports_chinese_units(self):
+        from src.engine.fleet_import import _parse_number
+        assert _parse_number("4万公里", is_int=False) == 40000.0
+        assert _parse_number("3.5万", is_int=False) == 35000.0
+        assert _parse_number("8千", is_int=False) == 8000.0
+        assert _parse_number("1.2w", is_int=False) == 12000.0
+        assert _parse_number("50K", is_int=False) == 50000.0
+        assert _parse_number("2万台", is_int=True) == 20000.0
+
+    def test_import_table_with_chinese_mileage_units(self):
+        from src.engine.fleet_import import parse_fleet_table
+        csv_data = "车型,数量,年均里程,实载率\n重型柴油货车,10,4万公里,80%\n轻型柴油货车,20,3.5万,75%"
+        res = parse_fleet_table(csv_data)
+        assert len(res.groups) == 2
+        assert res.groups[0].annual_km == 40000.0
+        assert res.groups[1].annual_km == 35000.0
+        # 不应有里程为空的警告
+        empty_km_warnings = [w for w in res.warnings if "里程为空" in w.message]
+        assert not empty_km_warnings
+
+    def test_unparseable_mileage_gives_specific_warning(self):
+        from src.engine.fleet_import import parse_fleet_table
+        csv_data = "车型,数量,年均里程,实载率\n重型柴油货车,10,不详,80%"
+        res = parse_fleet_table(csv_data, default_annual_km=80000.0)
+        assert len(res.groups) == 1
+        assert res.groups[0].annual_km == 80000.0
+        unparseable = [w for w in res.warnings if "无法解析" in w.message and "不详" in w.message]
+        assert len(unparseable) == 1

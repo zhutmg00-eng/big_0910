@@ -182,7 +182,7 @@ def _detect_columns(headers: Iterable[str]) -> Dict[str, str]:
 
 
 def _parse_number(raw: object, *, is_int: bool) -> Optional[float]:
-    """把「1,200」「1 200」「1200km」「80,000 km/年」「75%」解析成数字。"""
+    """把「1,200」「1 200」「1200km」「80,000 km/年」「75%」「4万公里」「8千」解析成数字。"""
     if raw is None:
         return None
     if isinstance(raw, (int, float)):
@@ -192,12 +192,19 @@ def _parse_number(raw: object, *, is_int: bool) -> Optional[float]:
     if not text:
         return None
     percent = text.endswith("%")
-    text = text.replace("%", "").replace(",", "").replace("，", "")
-    text = re.sub(r"(km/年|km/年|公里/年|km|公里|辆|台|年|/年)", "", text, flags=re.IGNORECASE)
+    text = text.replace("%", "").replace(",", "").replace("，", "").replace(" ", "")
+    text = re.sub(r"(km/年|公里/年|km|公里|辆|台|年|/年)", "", text, flags=re.IGNORECASE)
     text = text.strip()
+    multiplier = 1.0
+    if text.endswith(("万", "w", "W")):
+        multiplier = 10000.0
+        text = text[:-1].strip()
+    elif text.endswith(("千", "k", "K")):
+        multiplier = 1000.0
+        text = text[:-1].strip()
     if not text or not re.fullmatch(r"[-+]?\d*\.?\d+", text):
         return None
-    value = float(text)
+    value = float(text) * multiplier
     if percent:
         value = value / 100.0
     return value if value == value else None
@@ -356,7 +363,8 @@ def parse_fleet_table(
             )
             count = round(count)
 
-        km = _parse_number(row.get(columns.get("annual_km", "")), is_int=False) if "annual_km" in columns else None
+        raw_km = row.get(columns.get("annual_km", "")) if "annual_km" in columns else None
+        km = _parse_number(raw_km, is_int=False) if "annual_km" in columns else None
         if km is None:
             if default_annual_km is None:
                 result.warnings.append(
@@ -365,9 +373,15 @@ def parse_fleet_table(
                 continue
             km = float(default_annual_km)
             if "annual_km" in columns:
-                result.warnings.append(
-                    ImportWarning(index, "annual_km", f"第 {index} 行里程为空，按默认 {km:,.0f} km/年 计算。")
-                )
+                raw_str = "" if raw_km is None else str(raw_km).strip()
+                if raw_str:
+                    result.warnings.append(
+                        ImportWarning(index, "annual_km", f"第 {index} 行里程「{raw_str}」无法解析，按默认 {km:,.0f} km/年 计算。")
+                    )
+                else:
+                    result.warnings.append(
+                        ImportWarning(index, "annual_km", f"第 {index} 行里程为空，按默认 {km:,.0f} km/年 计算。")
+                    )
         if km > MAX_ANNUAL_KM:
             result.warnings.append(
                 ImportWarning(
