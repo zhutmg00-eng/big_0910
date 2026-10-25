@@ -1,44 +1,265 @@
 {
-  "total_count": 30,
+  "total_count": 31,
   "categories": {
     "全国碳市场法规": [
-      {"title": "碳排放权交易管理暂行条例", "url": "https://www.beijing.gov.cn/zhengce/zhengcefagui/qtwj/202402/t20240207_3559201.html", "issuer": "国务院", "date": "2024-01-25", "type": "行政法规", "notes": "国务院令第775号，2024年5月1日施行，碳市场首部专门行政法规"},
-      {"title": "碳排放权交易管理办法(试行)", "url": "https://baike.baidu.com/item/碳排放权交易管理办法（试行）/55710056", "issuer": "生态环境部", "date": "2020-12-31", "type": "部门规章", "notes": "生态环境部令第19号，2021年2月1日施行，已被条例替代"},
-      {"title": "碳排放权交易管理暂行办法", "url": "https://baike.baidu.com/item/碳排放权交易管理暂行办法/16389132", "issuer": "国家发改委", "date": "2014-12-10", "type": "部门规章(已废止)", "notes": "发改委令第17号，2021年废止"},
-      {"title": "全国碳排放权交易管理办法(试行)编制说明", "url": "https://www.gov.cn/hudong/2020-11/05/5557519/files/cf2b2bac52dc408db9a5dab418e8f2a2.pdf", "issuer": "生态环境部", "date": "2020-11-05", "type": "编制说明", "notes": "PDF文件，办法的编制背景和依据"}
+      {
+        "title": "碳排放权交易管理暂行条例",
+        "url": "https://www.beijing.gov.cn/zhengce/zhengcefagui/qtwj/202402/t20240207_3559201.html",
+        "issuer": "国务院",
+        "date": "2024-01-25",
+        "type": "行政法规",
+        "notes": "国务院令第775号，2024年5月1日施行，碳市场首部专门行政法规"
+      },
+      {
+        "title": "碳排放权交易管理办法(试行)",
+        "url": "https://baike.baidu.com/item/碳排放权交易管理办法（试行）/55710056",
+        "issuer": "生态环境部",
+        "date": "2020-12-31",
+        "type": "部门规章",
+        "notes": "生态环境部令第19号，2021年2月1日施行，已被条例替代"
+      },
+      {
+        "title": "碳排放权交易管理暂行办法",
+        "url": "https://baike.baidu.com/item/碳排放权交易管理暂行办法/16389132",
+        "issuer": "国家发改委",
+        "date": "2014-12-10",
+        "type": "部门规章(已废止)",
+        "notes": "发改委令第17号，2021年废止"
+      },
+      {
+        "title": "全国碳排放权交易管理办法(试行)编制说明",
+        "url": "https://www.gov.cn/hudong/2020-11/05/5557519/files/cf2b2bac52dc408db9a5dab418e8f2a2.pdf",
+        "issuer": "生态环境部",
+        "date": "2020-11-05",
+        "type": "编制说明",
+        "notes": "PDF文件，办法的编制背景和依据"
+      }
     ],
     "配额分配方案": [
-      {"title": "全国碳排放权交易配额总量设定与分配实施方案(发电行业)", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2020-12-30", "type": "配额方案", "notes": "首个全国碳市场配额分配方案"},
-      {"title": "2023-2024年全国碳排放权交易配额总量设定与分配方案", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2024", "type": "配额方案", "notes": "最新配额分配方案，覆盖发电行业"},
-      {"title": "全国碳市场覆盖行业扩展(钢铁、水泥、铝冶炼)", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2025", "type": "行业扩展", "notes": "2025年起碳市场扩展至钢铁、水泥、铝冶炼行业"}
+      {
+        "title": "全国碳排放权交易配额总量设定与分配实施方案(发电行业)",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2020-12-30",
+        "type": "配额方案",
+        "notes": "首个全国碳市场配额分配方案"
+      },
+      {
+        "title": "2023-2024年全国碳排放权交易配额总量设定与分配方案",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2024",
+        "type": "配额方案",
+        "notes": "最新配额分配方案，覆盖发电行业"
+      },
+      {
+        "title": "全国碳市场覆盖行业扩展(钢铁、水泥、铝冶炼)",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2025",
+        "type": "行业扩展",
+        "notes": "2025年起碳市场扩展至钢铁、水泥、铝冶炼行业"
+      }
     ],
     "MRV指南": [
-      {"title": "企业温室气体排放核算方法与报告指南 发电设施", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2022", "type": "核算指南", "notes": "发电行业温室气体核算方法"},
-      {"title": "企业温室气体排放报告核查指南(试行)", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2021", "type": "核查指南", "notes": "MRV核查规范"},
-      {"title": "碳排放权交易管理暂行条例-政策解读", "url": "https://baike.baidu.com/item/碳排放权交易管理暂行条例/56606129", "issuer": "司法部/生态环境部", "date": "2024", "type": "政策解读", "notes": "条例的官方解读"}
+      {
+        "title": "企业温室气体排放核算方法与报告指南 发电设施",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2022",
+        "type": "核算指南",
+        "notes": "发电行业温室气体核算方法"
+      },
+      {
+        "title": "企业温室气体排放报告核查指南(试行)",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2021",
+        "type": "核查指南",
+        "notes": "MRV核查规范"
+      },
+      {
+        "title": "碳排放权交易管理暂行条例-政策解读",
+        "url": "https://baike.baidu.com/item/碳排放权交易管理暂行条例/56606129",
+        "issuer": "司法部/生态环境部",
+        "date": "2024",
+        "type": "政策解读",
+        "notes": "条例的官方解读"
+      }
     ],
     "试点市场规则": [
-      {"title": "北京碳排放权交易管理办法", "url": "https://www.cbeex.com.cn/article/flfg/", "issuer": "北京市政府", "date": "2020", "type": "地方规章", "notes": "北京试点市场交易规则"},
-      {"title": "上海碳排放权交易管理暂行办法", "url": "https://www.cneeex.com.cn/xxfw/zcfg/", "issuer": "上海市政府", "date": "2020", "type": "地方规章", "notes": "上海试点市场交易规则"},
-      {"title": "广东碳排放权交易管理办法", "url": "https://www.cnemission.com/article/zcfg/", "issuer": "广东省政府", "date": "2020", "type": "地方规章", "notes": "广东试点市场交易规则"},
-      {"title": "深圳碳排放权交易管理办法", "url": "https://www.szets.com/", "issuer": "深圳市政府", "date": "2020", "type": "地方规章", "notes": "深圳试点市场交易规则"},
-      {"title": "天津碳排放权交易管理办法", "url": "https://www.tjets.com/", "issuer": "天津市政府", "date": "2020", "type": "地方规章", "notes": "天津试点市场交易规则"},
-      {"title": "湖北碳排放权交易管理办法", "url": "https://www.hbets.cn/", "issuer": "湖北省政府", "date": "2020", "type": "地方规章", "notes": "湖北试点市场交易规则"},
-      {"title": "重庆碳排放权交易管理办法", "url": "https://www.cqets.com/", "issuer": "重庆市政府", "date": "2020", "type": "地方规章", "notes": "重庆试点市场交易规则"},
-      {"title": "福建碳排放权交易管理办法", "url": "https://www.fjets.com/", "issuer": "福建省政府", "date": "2020", "type": "地方规章", "notes": "福建试点市场交易规则"}
+      {
+        "title": "北京碳排放权交易管理办法",
+        "url": "https://www.cbeex.com.cn/article/flfg/",
+        "issuer": "北京市政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "北京试点市场交易规则"
+      },
+      {
+        "title": "上海碳排放权交易管理暂行办法",
+        "url": "https://www.cneeex.com.cn/xxfw/zcfg/",
+        "issuer": "上海市政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "上海试点市场交易规则"
+      },
+      {
+        "title": "广东碳排放权交易管理办法",
+        "url": "https://www.cnemission.com/article/zcfg/",
+        "issuer": "广东省政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "广东试点市场交易规则"
+      },
+      {
+        "title": "深圳碳排放权交易管理办法",
+        "url": "https://www.szets.com/",
+        "issuer": "深圳市政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "深圳试点市场交易规则"
+      },
+      {
+        "title": "天津碳排放权交易管理办法",
+        "url": "https://www.tjets.com/",
+        "issuer": "天津市政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "天津试点市场交易规则"
+      },
+      {
+        "title": "湖北碳排放权交易管理办法",
+        "url": "https://www.hbets.cn/",
+        "issuer": "湖北省政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "湖北试点市场交易规则"
+      },
+      {
+        "title": "重庆碳排放权交易管理办法",
+        "url": "https://www.cqets.com/",
+        "issuer": "重庆市政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "重庆试点市场交易规则"
+      },
+      {
+        "title": "福建碳排放权交易管理办法",
+        "url": "https://www.fjets.com/",
+        "issuer": "福建省政府",
+        "date": "2020",
+        "type": "地方规章",
+        "notes": "福建试点市场交易规则"
+      }
     ],
     "交通碳达峰": [
-      {"title": "交通运输碳达峰实施方案", "url": "https://www.mot.gov.cn/", "issuer": "交通运输部", "date": "2022", "type": "实施方案", "notes": "交通领域碳达峰路线图"},
-      {"title": "绿色交通十四五规划", "url": "https://www.mot.gov.cn/", "issuer": "交通运输部", "date": "2021", "type": "规划", "notes": "十四五绿色交通发展目标"},
-      {"title": "公路水路营业性运输工具碳排放核算方法(征求意见稿)", "url": "https://www.mot.gov.cn/", "issuer": "交通运输部", "date": "2024", "type": "核算标准", "notes": "运输工具碳排放核算方法"}
+      {
+        "title": "交通运输碳达峰实施方案",
+        "url": "https://www.mot.gov.cn/",
+        "issuer": "交通运输部",
+        "date": "2022",
+        "type": "实施方案",
+        "notes": "交通领域碳达峰路线图"
+      },
+      {
+        "title": "绿色交通十四五规划",
+        "url": "https://www.mot.gov.cn/",
+        "issuer": "交通运输部",
+        "date": "2021",
+        "type": "规划",
+        "notes": "十四五绿色交通发展目标；已由十五五规划接续；已由十五五规划接续；已由十五五规划接续；已由十五五规划接续"
+      },
+      {
+        "title": "绿色交通发展“十五五”规划（官方解读）",
+        "url": "https://www.mot.gov.cn/xinwen/jiaotongyaowen/202610/t20261010_4225628.html",
+        "issuer": "交通运输部 国家铁路局 中国民用航空局 国家邮政局",
+        "date": "2026-10-10",
+        "type": "规划",
+        "notes": "新版（2026—2030）：一达峰、二下降、三提升；2030 年全面淘汰国三及以下营运车辆；正文未公开，收录官方解读"
+      },
+      {
+        "title": "绿色交通发展“十五五”规划（官方解读）",
+        "url": "https://www.mot.gov.cn/xinwen/jiaotongyaowen/202610/t20261010_4225628.html",
+        "issuer": "交通运输部 国家铁路局 中国民用航空局 国家邮政局",
+        "date": "2026-10-10",
+        "type": "规划",
+        "notes": "新版（2026—2030）：一达峰、二下降、三提升；2030 年全面淘汰国三及以下营运车辆；正文未公开，收录官方解读"
+      },
+      {
+        "title": "绿色交通发展“十五五”规划（官方解读）",
+        "url": "https://www.mot.gov.cn/xinwen/jiaotongyaowen/202610/t20261010_4225628.html",
+        "issuer": "交通运输部 国家铁路局 中国民用航空局 国家邮政局",
+        "date": "2026-10-10",
+        "type": "规划",
+        "notes": "新版（2026—2030）：一达峰、二下降、三提升；2030 年全面淘汰国三及以下营运车辆；正文未公开，收录官方解读"
+      },
+      {
+        "title": "绿色交通发展“十五五”规划（官方解读）",
+        "url": "https://www.mot.gov.cn/xinwen/jiaotongyaowen/202610/t20261010_4225628.html",
+        "issuer": "交通运输部 国家铁路局 中国民用航空局 国家邮政局",
+        "date": "2026-10-10",
+        "type": "规划",
+        "notes": "新版（2026—2030）：一达峰、二下降、三提升；2030 年全面淘汰国三及以下营运车辆；正文未公开，收录官方解读"
+      },
+      {
+        "title": "公路水路营业性运输工具碳排放核算方法(征求意见稿)",
+        "url": "https://www.mot.gov.cn/",
+        "issuer": "交通运输部",
+        "date": "2024",
+        "type": "核算标准",
+        "notes": "运输工具碳排放核算方法"
+      }
     ],
     "行业核算标准": [
-      {"title": "GB 30510-2024 重型商用车辆燃料消耗量限值(第四阶段)", "url": "https://openstd.samr.gov.cn/", "issuer": "国家市场监督管理总局", "date": "2024", "type": "国家标准", "notes": "最新重型商用车油耗限值标准"},
-      {"title": "GB 30510-2018 重型商用车辆燃料消耗量限值(第三阶段)", "url": "https://openstd.samr.gov.cn/", "issuer": "国家市场监督管理总局", "date": "2018", "type": "国家标准", "notes": "第三阶段油耗限值标准"},
-      {"title": "省级温室气体清单编制指南(2025年版)", "url": "https://www.mee.gov.cn/", "issuer": "生态环境部", "date": "2025", "type": "编制指南", "notes": "省级温室气体清单编制方法"},
-      {"title": "IPCC 2019修订版-移动源排放因子(Volume 2, Chapter 3)", "url": "https://www.ipcc-nggip.iges.or.jp/EFDB/", "issuer": "IPCC", "date": "2019", "type": "国际指南", "notes": "IPCC移动源排放因子数据库"},
-      {"title": "GLEC框架3.0-中国默认排放系数", "url": "https://www.smartfreightcentre.org/", "issuer": "智慧货运中心", "date": "2024", "type": "行业框架", "notes": "全球物流排放核算框架"},
-      {"title": "中国分省道路交通二氧化碳排放因子", "url": "https://www.cnki.net/", "issuer": "中国环境科学", "date": "2021", "type": "学术论文", "notes": "蔡博峰等，核心排放因子数据来源"}
+      {
+        "title": "GB 30510-2024 重型商用车辆燃料消耗量限值(第四阶段)",
+        "url": "https://openstd.samr.gov.cn/",
+        "issuer": "国家市场监督管理总局",
+        "date": "2024",
+        "type": "国家标准",
+        "notes": "最新重型商用车油耗限值标准"
+      },
+      {
+        "title": "GB 30510-2018 重型商用车辆燃料消耗量限值(第三阶段)",
+        "url": "https://openstd.samr.gov.cn/",
+        "issuer": "国家市场监督管理总局",
+        "date": "2018",
+        "type": "国家标准",
+        "notes": "第三阶段油耗限值标准"
+      },
+      {
+        "title": "省级温室气体清单编制指南(2025年版)",
+        "url": "https://www.mee.gov.cn/",
+        "issuer": "生态环境部",
+        "date": "2025",
+        "type": "编制指南",
+        "notes": "省级温室气体清单编制方法"
+      },
+      {
+        "title": "IPCC 2019修订版-移动源排放因子(Volume 2, Chapter 3)",
+        "url": "https://www.ipcc-nggip.iges.or.jp/EFDB/",
+        "issuer": "IPCC",
+        "date": "2019",
+        "type": "国际指南",
+        "notes": "IPCC移动源排放因子数据库"
+      },
+      {
+        "title": "GLEC框架3.0-中国默认排放系数",
+        "url": "https://www.smartfreightcentre.org/",
+        "issuer": "智慧货运中心",
+        "date": "2024",
+        "type": "行业框架",
+        "notes": "全球物流排放核算框架"
+      },
+      {
+        "title": "中国分省道路交通二氧化碳排放因子",
+        "url": "https://www.cnki.net/",
+        "issuer": "中国环境科学",
+        "date": "2021",
+        "type": "学术论文",
+        "notes": "蔡博峰等，核心排放因子数据来源"
+      }
     ]
   },
   "download_priority": [

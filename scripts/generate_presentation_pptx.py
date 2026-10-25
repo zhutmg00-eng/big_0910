@@ -45,6 +45,7 @@ def set_slide_background(slide, prs):
 
 # Slide 2 底部「政策与市场背景」条：只写有出处的事实，措辞以来源原文为准。
 SLIDE2_BACKGROUND_FACTS = [
+    "【政策】《绿色交通发展“十五五”规划》（交通运输部等四部门，2026）：到 2030 年实现“一达峰、二下降、三提升”——交通运输领域总体碳达峰；污染排放强度、主要污染物排放量持续下降；新能源营运交通工具规模、基础设施绿色化水平、绿色运输方式比例大幅提升；新能源重卡规模化应用加快突破，2030 年全面淘汰国三及以下排放标准营运车辆（据交通运输部 2026-10-10 解读）。",
     "【碳市场】截至 2026-10-20，全国碳市场配额累计成交量突破 10 亿吨；当日收盘价 98.11 元/吨（中国新闻网 2026-10-21，生态环境部国新办发布会）。道路货运仍未纳入配额管理。",
 ]
 
@@ -229,7 +230,7 @@ def create_deck():
     ]
     for idx, p_item in enumerate(pains):
         left = Inches(0.8 + idx * 3.95)
-        box = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(1.58), Inches(3.75), Inches(3.9))
+        box = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(1.58), Inches(3.75), Inches(3.75))
         box.fill.solid()
         box.fill.fore_color.rgb = COLOR_BG_CARD
         box.line.color.rgb = COLOR_BORDER_STRONG
@@ -264,7 +265,7 @@ def create_deck():
         p.font.color.rgb = COLOR_ACCENT
 
     # 政策与市场背景条（事实均有出处，见 data/raw/carbon_price_sources.json → context_for_slides）
-    bg = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(5.58), Inches(11.733), Inches(0.5))
+    bg = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(5.40), Inches(11.733), Inches(0.76))
     bg.fill.solid()
     bg.fill.fore_color.rgb = COLOR_BG_CARD
     bg.line.color.rgb = COLOR_BORDER
@@ -277,7 +278,7 @@ def create_deck():
         p_bg.font.color.rgb = COLOR_TEXT_MAIN
 
     # 底部学术红线与边界声明横幅
-    strip = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(6.18), Inches(11.733), Inches(0.8))
+    strip = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(6.22), Inches(11.733), Inches(0.78))
     strip.fill.solid()
     strip.fill.fore_color.rgb = COLOR_BG_LIGHT
     strip.line.color.rgb = COLOR_BORDER
@@ -595,7 +596,7 @@ def create_deck():
     p.space_after = Pt(8)
 
     q_dims = [
-        ("法规知识库预处理", "• 收集 39 份国家发改委、生态环境部及交通运输部政策文件；\n• 采用滑动窗口切分为 281 个规范切片，建立物理唯一 gold_chunk_id。"),
+        ("法规知识库预处理", "• 收集 39 份国家发改委、生态环境部及交通运输部政策文件；\n• 采用滑动窗口切分为 281 个规范切片，建立物理唯一 gold_chunk_id。\n• 注：RQ2 评测在 2026-10-21 冻结的 39 份/281 块快照上完成；2026-10-25 加入《绿色交通发展“十五五”规划》官方解读后知识库为 40 份/287 块，同一 40 题复测三路融合 MRR 0.492→0.478、R@10 仍为 80%（金标未重标，详见检索实验报告附录）。"),
         ("40 题测试集六大主题分布", "1. 全国碳市场配额分配与扩围规则：8 题\n2. 国务院暂行条例法律效力与罚则：5 题\n3. 重点排放单位 MRV 核查与数据质量：6 题\n4. CCER 自愿减排方法学与造林/可再生：6 题\n5. 地方碳市场试点规则（上海/广东/北京）：6 题\n6. 交通商用车能耗强标 (GB 30510-2024)：9 题"),
         ("4 道反事实合规负例设计（考核抗幻觉能力）", "• Q04: 公路货运企业是否属于全国碳市场强制履约纳管主体？(否)\n• Q24: 物流车队能否将自建纯电重卡开发为 CCER 卖钱？(否)\n• Q29: 企业自备电厂是否需要重复承担配额履约？(否)\n• Q30: 广东碳市场是否将小型货运车辆纳入配额管理？(否)")
     ]

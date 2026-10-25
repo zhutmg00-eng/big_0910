@@ -29,6 +29,7 @@ data/policy_docs/*
 # 与 README/论文声明的 39 份/281 块不符。新增语料请同步登记在这里。
 !data/policy_docs/GB20997-2024_轻型商用车辆燃料消耗量限值_实施公告.md
 !data/policy_docs/推动新能源重卡规模化应用实施方案_2026.md
+!data/policy_docs/绿色交通发展十五五规划_官方解读_2026.md
 data/chroma_db/
 data/models/
 data/reports/*.pdf
