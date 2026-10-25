@@ -94,7 +94,7 @@ def main():
 - **`真实车队台账一致性核验_fleet_ledger_consistency.json`**：顺丰、中通、京东、冷链 4 组车队等效能耗比值（0.93~1.11）与单车反推百公里油耗合理性核验。
 - **`TCO电价与里程敏感性分析报告_tco_sensitivity_report.md`**：充换电单价 × 年里程对 BaaS 回收期影响的双向敏感性网格。
 - **`车队实证复核报告_real_fleet_validation_report.md`**：51,990 辆车队级基准案例复核详细报告（等权 MAPE 4.23%、加权 2.38%）。
-- **`参数扰动敏感性报告_sensitivity_report.md`**：50 组参数扰动网格扫描报告（3.04% ~ 29.80%，中位数 14.52%）。
+- **`参数扰动敏感性报告_sensitivity_report.md`**：50 组参数扰动网格扫描报告（3.04% ~ 29.80%，中位数 14.51%）。
 - **`真实车队原始数据集/`**：涵盖顺丰、中通、京东、冷链公开 ESG 报告数据的 `benchmark_fleets.json` 与 `benchmark_fleets.csv`。
 
 ### 📁 04_双碳政策RAG知识库与评测集（知识推理成果）
