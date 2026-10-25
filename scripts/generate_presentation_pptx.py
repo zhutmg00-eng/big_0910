@@ -43,6 +43,12 @@ def set_slide_background(slide, prs):
     rect.line.fill.background()
     return rect
 
+# Slide 2 底部「政策与市场背景」条：只写有出处的事实，措辞以来源原文为准。
+SLIDE2_BACKGROUND_FACTS = [
+    "【碳市场】截至 2026-10-20，全国碳市场配额累计成交量突破 10 亿吨；当日收盘价 98.11 元/吨（中国新闻网 2026-10-21，生态环境部国新办发布会）。道路货运仍未纳入配额管理。",
+]
+
+
 def add_academic_header(slide, title_text, section_tag="国家级大学生创新创业训练计划 · 中期汇报", slide_num=1, total_slides=16):
     """标准学术页眉：上方导航微标、大标题、下方细分割线与页码"""
     # 顶部细彩条（黛蓝）
@@ -223,7 +229,7 @@ def create_deck():
     ]
     for idx, p_item in enumerate(pains):
         left = Inches(0.8 + idx * 3.95)
-        box = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(1.58), Inches(3.75), Inches(4.3))
+        box = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(1.58), Inches(3.75), Inches(3.9))
         box.fill.solid()
         box.fill.fore_color.rgb = COLOR_BG_CARD
         box.line.color.rgb = COLOR_BORDER_STRONG
@@ -257,8 +263,21 @@ def create_deck():
         p.font.size = Pt(9)
         p.font.color.rgb = COLOR_ACCENT
 
+    # 政策与市场背景条（事实均有出处，见 data/raw/carbon_price_sources.json → context_for_slides）
+    bg = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(5.58), Inches(11.733), Inches(0.5))
+    bg.fill.solid()
+    bg.fill.fore_color.rgb = COLOR_BG_CARD
+    bg.line.color.rgb = COLOR_BORDER
+    tf_bg = bg.text_frame
+    tf_bg.word_wrap = True
+    for i, line in enumerate(SLIDE2_BACKGROUND_FACTS):
+        p_bg = tf_bg.paragraphs[0] if i == 0 else tf_bg.add_paragraph()
+        p_bg.text = line
+        p_bg.font.size = Pt(9)
+        p_bg.font.color.rgb = COLOR_TEXT_MAIN
+
     # 底部学术红线与边界声明横幅
-    strip = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(6.05), Inches(11.733), Inches(0.85))
+    strip = s2.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(6.18), Inches(11.733), Inches(0.8))
     strip.fill.solid()
     strip.fill.fore_color.rgb = COLOR_BG_LIGHT
     strip.line.color.rgb = COLOR_BORDER

@@ -1,3 +1,6 @@
+# ⚠ 已停用（2026-10-25）：本脚本只生成 2026-08-11 之前的周频序列（含大量插值），
+# 重跑会覆盖 data/raw/carbon_price_history.csv 中 2026-06-10—2026-10-23 的逐日真实成交与「来源链接」列。
+# 当前数据的来源与补齐说明见 data/raw/carbon_price_sources.json → daily_backfill_2026。
 #!/usr/bin/env python3
 """
 Generate carbon_price_history.csv for the national carbon market (全国碳市场).
