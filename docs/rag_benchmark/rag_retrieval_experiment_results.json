@@ -54,7 +54,7 @@
       "绿色交通十四五发展规划.md",
       "绿色交通发展十五五规划_官方解读_2026.md"
     ],
-    "kb_fingerprint": "7a189e98f88a"
+    "kb_fingerprint": "807c7b8b35c5"
   },
   "mode_labels": {
     "keyword": "A 字面启发式(旧)",
@@ -73,13 +73,13 @@
       ],
       "nDCG@10": 0.4293,
       "Recall@1": 0.375,
-      "Source_Hit@1": 0.625,
+      "Source_Hit@1": 0.675,
       "Recall@3": 0.5,
-      "Source_Hit@3": 0.75,
+      "Source_Hit@3": 0.825,
       "Recall@5": 0.65,
-      "Source_Hit@5": 0.825,
+      "Source_Hit@5": 0.875,
       "Recall@10": 0.7,
-      "Source_Hit@10": 0.825,
+      "Source_Hit@10": 0.875,
       "Recall@10_CI95": [
         0.55,
         0.85
@@ -97,13 +97,13 @@
       ],
       "nDCG@10": 0.2661,
       "Recall@1": 0.1,
-      "Source_Hit@1": 0.525,
+      "Source_Hit@1": 0.575,
       "Recall@3": 0.275,
-      "Source_Hit@3": 0.825,
+      "Source_Hit@3": 0.875,
       "Recall@5": 0.425,
-      "Source_Hit@5": 0.85,
+      "Source_Hit@5": 0.9,
       "Recall@10": 0.575,
-      "Source_Hit@10": 0.925,
+      "Source_Hit@10": 0.95,
       "Recall@10_CI95": [
         0.425,
         0.725
@@ -121,13 +121,13 @@
       ],
       "nDCG@10": 0.4372,
       "Recall@1": 0.35,
-      "Source_Hit@1": 0.625,
+      "Source_Hit@1": 0.7,
       "Recall@3": 0.5,
-      "Source_Hit@3": 0.725,
+      "Source_Hit@3": 0.8,
       "Recall@5": 0.625,
-      "Source_Hit@5": 0.825,
+      "Source_Hit@5": 0.875,
       "Recall@10": 0.725,
-      "Source_Hit@10": 0.825,
+      "Source_Hit@10": 0.875,
       "Recall@10_CI95": [
         0.575,
         0.85
@@ -145,9 +145,9 @@
       ],
       "nDCG@10": 0.4072,
       "Recall@1": 0.3,
-      "Source_Hit@1": 0.6,
+      "Source_Hit@1": 0.625,
       "Recall@3": 0.525,
-      "Source_Hit@3": 0.825,
+      "Source_Hit@3": 0.85,
       "Recall@5": 0.575,
       "Source_Hit@5": 0.9,
       "Recall@10": 0.625,
@@ -169,7 +169,7 @@
       ],
       "nDCG@10": 0.4135,
       "Recall@1": 0.325,
-      "Source_Hit@1": 0.65,
+      "Source_Hit@1": 0.7,
       "Recall@3": 0.5,
       "Source_Hit@3": 0.85,
       "Recall@5": 0.55,
@@ -193,13 +193,13 @@
       ],
       "nDCG@10": 0.4557,
       "Recall@1": 0.375,
-      "Source_Hit@1": 0.675,
+      "Source_Hit@1": 0.725,
       "Recall@3": 0.5,
-      "Source_Hit@3": 0.8,
+      "Source_Hit@3": 0.85,
       "Recall@5": 0.575,
-      "Source_Hit@5": 0.8,
+      "Source_Hit@5": 0.85,
       "Recall@10": 0.8,
-      "Source_Hit@10": 0.925,
+      "Source_Hit@10": 0.975,
       "Recall@10_CI95": [
         0.675,
         0.9
@@ -657,10 +657,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
@@ -1010,7 +1010,7 @@
         },
         "source_hits_at_k": {
           "1": false,
-          "3": false,
+          "3": true,
           "5": true,
           "10": true
         },
@@ -1041,10 +1041,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
@@ -2131,10 +2131,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "核算指南技术要求更新内容.md_1",
@@ -2323,9 +2323,9 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
+          "1": true,
+          "3": true,
+          "5": true,
           "10": true
         },
         "top_retrieved_ids": [
@@ -3221,10 +3221,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
@@ -3573,8 +3573,8 @@
           "10": false
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
+          "1": true,
+          "3": true,
           "5": true,
           "10": true
         },
@@ -3605,10 +3605,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
@@ -4503,7 +4503,7 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
+          "1": true,
           "3": true,
           "5": true,
           "10": true
@@ -4888,7 +4888,7 @@
         },
         "source_hits_at_k": {
           "1": false,
-          "3": false,
+          "3": true,
           "5": true,
           "10": true
         },
@@ -5785,7 +5785,7 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
+          "1": true,
           "3": true,
           "5": true,
           "10": true
@@ -6169,7 +6169,7 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
+          "1": true,
           "3": true,
           "5": true,
           "10": true
@@ -7067,10 +7067,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
@@ -7451,10 +7451,10 @@
           "10": true
         },
         "source_hits_at_k": {
-          "1": false,
-          "3": false,
-          "5": false,
-          "10": false
+          "1": true,
+          "3": true,
+          "5": true,
+          "10": true
         },
         "top_retrieved_ids": [
           "2025-2026年度配额总量和分配方案_征求意见稿.md_11",
