@@ -81,10 +81,12 @@ def map_all_gold_chunks():
         ids = [d["id"] for d in vs._fallback_docs]
         metas = [d.get("metadata", {}) for d in vs._fallback_docs]
     file_chunks = {}
+    chunk_source = {}
     for i, cid in enumerate(ids):
         src = metas[i]["source"]
         idx = metas[i]["chunk_index"]
         txt = docs[i]
+        chunk_source[cid] = src
         if src not in file_chunks:
             file_chunks[src] = []
         file_chunks[src].append((cid, idx, txt))
@@ -136,6 +138,19 @@ def map_all_gold_chunks():
             primary_src = q["source_files"][0]
             if primary_src in file_chunks and file_chunks[primary_src]:
                 matched_gold_chunks.append(file_chunks[primary_src][0][0])
+
+        # gold_anchor 里常写着多个文件（如「A.md-第二十九条；B.md-五、（二）」），
+        # 映射会把它们的 chunk 一并收进 gold_chunk_ids，但 source_files 仍只抄自
+        # 题库 Markdown 的来源栏。两边不一致时 Source_Hit@k 会漏算：检索命中了
+        # B.md 的第一名也不算命中来源。这里按 gold chunk 的真实来源反向补齐。
+        gold_sources = []
+        for cid in matched_gold_chunks:
+            src = chunk_source.get(cid)
+            if src and src not in gold_sources:
+                gold_sources.append(src)
+        for src in gold_sources:
+            if src not in q["source_files"]:
+                q["source_files"].append(src)
 
         q["gold_chunk_ids"] = matched_gold_chunks
         dataset.append(q)
