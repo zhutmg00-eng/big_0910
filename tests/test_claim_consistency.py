@@ -292,6 +292,18 @@ def test_rag_defense_docs_use_measured_mrr_values():
     for setting in archive["embedding_ablation"].values():
         for metrics in setting.values():
             measured.add(round(metrics["MRR"], 4))
+    # 39 份 / 281 块冻结快照（archive_kb39_281_results.json）是 RQ2 的正式结果口径：
+    # 2026-10-25 加入十五五解读后，金标未重标，新库复测只作敏感性参考。
+    # 因此该快照里的读数是合法引用的，前提是材料里注明快照来源。
+    for snapshot in ("archive_kb39_281_results.json",):
+        frozen = json.loads(
+            (ROOT / "docs" / "rag_benchmark" / snapshot).read_text(encoding="utf-8")
+        )
+        for metrics in frozen["summary_metrics"].values():
+            measured.add(round(metrics["MRR"], 4))
+        for setting in (frozen.get("embedding_ablation") or {}).values():
+            for metrics in (setting or {}).values():
+                measured.add(round(metrics["MRR"], 4))
     for rel in DEFENSE_DOCS:
         text = _read_defense(rel)
         for token in re.findall(r"MRR[^0-9]{0,12}(0\.\d{4})", text):
