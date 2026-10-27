@@ -47,10 +47,17 @@
 - `carbon_price.py` — 碳价对标情景换算（不是履约成本或实际收益）
 
 ### RAG政策助手 (`src/rag/`) — 自研RAG链路（未使用LangChain）
-- `crawler.py` — 政策文档爬取
 - `parser.py` — 文档解析(PDF/DOCX/HTML) + 清洗 + 切分
 - `vector_store.py` — 向量知识库管理（ChromaDB优先，TF-IDF fallback）
+- `bm25.py` — jieba 分词 Okapi BM25 检索路
+- `embeddings.py` — 嵌入模型选择与本地缓存
+- `reranker.py` — 交叉编码器精排（默认关闭，CPU 上指标反而下降）
 - `generator.py` — Prompt模板 + LLM调用（含错误处理与降级）
+
+> 政策语料不通过自动爬虫获取：`data/policy_docs/` 由人工从各官网「信息公开」
+> 栏目下载后整理，来源与抓取时间记录在文件的 `来源:` 与 `抓取时间:` 字段。
+> 早期存在过 `crawler.py`，因始终未接入主流程、且使用浏览器 UA 且未检查
+> robots.txt，已删除（见 `docs/迭代队列.md` I-1）。
 
 ### API层 (`src/api/`)
 - `main.py` — FastAPI应用入口
