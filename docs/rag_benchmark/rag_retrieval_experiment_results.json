@@ -254,6 +254,80 @@
       "is_significant_005": true
     }
   },
+  "negative_suite": {
+    "keyword": {
+      "n_questions": 30,
+      "MRR": 0.2781,
+      "Recall@1": 0.2333,
+      "Recall@3": 0.3,
+      "Recall@5": 0.3333,
+      "Recall@10": 0.4,
+      "Recall@5_CI95": [
+        0.1667,
+        0.5
+      ]
+    },
+    "vector": {
+      "n_questions": 30,
+      "MRR": 0.1029,
+      "Recall@1": 0.0667,
+      "Recall@3": 0.1,
+      "Recall@5": 0.1667,
+      "Recall@10": 0.2667,
+      "Recall@5_CI95": [
+        0.0333,
+        0.3
+      ]
+    },
+    "hybrid": {
+      "n_questions": 30,
+      "MRR": 0.2746,
+      "Recall@1": 0.2,
+      "Recall@3": 0.3,
+      "Recall@5": 0.4,
+      "Recall@10": 0.4667,
+      "Recall@5_CI95": [
+        0.2333,
+        0.5667
+      ]
+    },
+    "bm25": {
+      "n_questions": 30,
+      "MRR": 0.2067,
+      "Recall@1": 0.1333,
+      "Recall@3": 0.3,
+      "Recall@5": 0.3333,
+      "Recall@10": 0.3333,
+      "Recall@5_CI95": [
+        0.1667,
+        0.5
+      ]
+    },
+    "rrf": {
+      "n_questions": 30,
+      "MRR": 0.2389,
+      "Recall@1": 0.1667,
+      "Recall@3": 0.3333,
+      "Recall@5": 0.3333,
+      "Recall@10": 0.3333,
+      "Recall@5_CI95": [
+        0.1667,
+        0.5
+      ]
+    },
+    "rrf3": {
+      "n_questions": 30,
+      "MRR": 0.2317,
+      "Recall@1": 0.1667,
+      "Recall@3": 0.2667,
+      "Recall@5": 0.3,
+      "Recall@10": 0.4,
+      "Recall@5_CI95": [
+        0.1333,
+        0.4667
+      ]
+    }
+  },
   "embedding_ablation": null,
   "detailed_results": {
     "keyword": [

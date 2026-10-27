@@ -34,6 +34,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 DATASET_PATH = PROJECT_ROOT / "docs" / "rag_benchmark" / "rag_benchmark_gold_dataset.json"
+NEGATIVE_DATASET_PATH = PROJECT_ROOT / "docs" / "rag_benchmark" / "negative_benchmark_30_questions.json"
 OUT_JSON = PROJECT_ROOT / "docs" / "rag_benchmark" / "rag_retrieval_experiment_results.json"
 OUT_MD = PROJECT_ROOT / "docs" / "rag_benchmark" / "rag_retrieval_experiment_report.md"
 
@@ -177,6 +178,55 @@ def summarize(records: List[Dict]) -> Dict:
     return out
 
 
+def evaluate_negative_suite(vs, modes: List[str]) -> Dict[str, Dict]:
+    """在 30 题反事实负例集上单独评测「能否召回支撑『不适用』判断的条款」。
+
+    为什么单独跑一套：
+    40 题主集里只有 4 道负例，单题权重 25 个百分点——「3/4 与 2/4 的差别只差一道题」，
+    撑不起任何关于拒答能力的结论。30 题集（4 道原负例 + 26 道扩充）把分辨率降到
+    3.3 个百分点，至少能看出方案间的量级差异。
+
+    指标命名务必注意：这里衡量的仍然是**检索命中**——top-k 里有没有出现人工标注的
+    「支撑不适用结论」的条款，不是系统真的拒答了。检索层没有弃答逻辑
+    （src/rag/ 下没有拒答实现，证据为空时才短路），所以对外只能叫
+    「负例依据召回率」，不能叫「拒答准确率」。该口径与主集的
+    Negative_Retrieval_HitRate 一致，见 tests/test_rag_metric_naming.py。
+    """
+    if not NEGATIVE_DATASET_PATH.exists():
+        return {}
+    dataset: List[Dict] = json.loads(NEGATIVE_DATASET_PATH.read_text(encoding="utf-8"))
+    if not dataset:
+        return {}
+
+    out: Dict[str, Dict] = {}
+    top_k = max(K_LIST)
+    for mode in modes:
+        per_question_top5 = []
+        rr = []
+        hits = {k: 0 for k in K_LIST}
+        for item in dataset:
+            gold = set(item.get("gold_chunk_ids") or [])
+            if not gold:
+                continue
+            ids = [r.get("id", "") for r in vs.search(item["question"], k=top_k, mode=mode)]
+            for k in K_LIST:
+                if set(ids[:k]) & gold:
+                    hits[k] += 1
+            first = next((i for i, cid in enumerate(ids, 1) if cid in gold), 0)
+            rr.append(1.0 / first if first else 0.0)
+            per_question_top5.append(1.0 if set(ids[:5]) & gold else 0.0)
+
+        n = len(rr)
+        lo, hi = bootstrap_ci(per_question_top5) if n else (0.0, 0.0)
+        out[mode] = {
+            "n_questions": n,
+            "MRR": round(sum(rr) / n, 4) if n else 0.0,
+            **{f"Recall@{k}": round(hits[k] / n, 4) if n else 0.0 for k in K_LIST},
+            "Recall@5_CI95": [round(lo, 4), round(hi, 4)],
+        }
+    return out
+
+
 def evaluate_retrieval(embedding_ablation: bool = False):
     from src.config import RRF_WEIGHTS
     from src.rag.vector_store import PolicyVectorStore
@@ -190,6 +240,7 @@ def evaluate_retrieval(embedding_ablation: bool = False):
 
     results = run_modes(vs, dataset, MODES)
     summary = {m: summarize(results[m]) for m in MODES}
+    negative = evaluate_negative_suite(vs, MODES)
 
     # 显著性：v0.4 默认方案 rrf3 对比其余各组 + 保留旧版 hybrid 对比键
     comparisons = {
@@ -228,6 +279,14 @@ def evaluate_retrieval(embedding_ablation: bool = False):
     for name, v in sig.items():
         print(f"  {name:<20} p={v['p_value']:.4f}  Holm校正 p={v['p_holm']:.4f}  "
               f"{'显著' if v['is_significant_005'] else '不显著'}")
+    if negative:
+        print("\n反事实负例集（%d 题，指标为「负例依据召回」，非拒答率）" % next(iter(negative.values()))["n_questions"])
+        print("-" * 96)
+        for m in MODES:
+            x = negative[m]
+            ci = f"{x['Recall@5_CI95'][0]:.3f}~{x['Recall@5_CI95'][1]:.3f}"
+            print(f"{MODE_LABELS[m]:<20}| MRR {x['MRR']:.4f} | R@5 {x['Recall@5']:.1%}"
+                  f" [{ci}] | R@10 {x['Recall@10']:.1%}")
 
     payload = {
         "benchmark_metadata": {
@@ -249,6 +308,7 @@ def evaluate_retrieval(embedding_ablation: bool = False):
         "mode_labels": MODE_LABELS,
         "summary_metrics": summary,
         "statistical_significance": sig,
+        "negative_suite": negative,
         "embedding_ablation": embedding_ablation_result,
         "detailed_results": results,
     }
@@ -304,17 +364,67 @@ def write_markdown_report(payload: Dict):
         rerank_md = (f"配置：{rx['base_mode']} 召回 top-{rx['candidates']} → `{rx['model']}` 精排，段落截断 {rx['max_chars']} 字。"
                      f"结果 MRR {rx['MRR']:.4f}、Recall@1 {rx['Recall@1']:.1%}、Recall@10 {rx['Recall@10']:.1%}，"
                      f"CPU 推理约 {rx['sec_per_query']:.1f} 秒/题（{rx['hardware']}）。{rx['conclusion']}")
-    abl = payload.get("embedding_ablation")
+    abl_post = payload.get("embedding_ablation")
     abl_md = ""
-    if abl:
+    if abl_post:
         abl_md = "\n## 三、嵌入模型消融（纯向量检索）\n\n| 嵌入模型 | 纯向量 MRR | 纯向量 Recall@10 | RRF MRR |\n|---|:---:|:---:|:---:|\n"
-        for model, v in abl.items():
+        for model, v in abl_post.items():
             rrf = v.get("rrf", {}).get("MRR")
             abl_md += (f"| {model} | {v['vector']['MRR']:.4f} | {v['vector']['Recall@10']:.1%} | "
                        f"{'%.4f' % rrf if rrf is not None else '%.4f' % s['rrf']['MRR']} |\n")
         abl_md += ("\n结论：v0.3 使用的 ChromaDB 默认嵌入是英文模型 all-MiniLM-L6-v2，"
                    "对中文政策文本几乎不具备语义区分度，这是旧版“纯向量组”指标极低的根因，"
                    "而非“向量检索不适合政策场景”。更换为中文 BGE 模型后纯向量检索显著改善。\n")
+
+    neg = payload.get("negative_suite") or {}
+    neg_md = ""
+    if neg:
+        n_neg = next(iter(neg.values()))["n_questions"]
+        neg_rows = [
+            f"| {MODE_LABELS[m]} | {neg[m]['MRR']:.4f} | {neg[m]['Recall@1']:.1%} | "
+            f"{neg[m]['Recall@3']:.1%} | {neg[m]['Recall@5']:.1%} "
+            f"[{neg[m]['Recall@5_CI95'][0]:.3f}, {neg[m]['Recall@5_CI95'][1]:.3f}] | "
+            f"{neg[m]['Recall@10']:.1%} |"
+            for m in MODES if m in neg
+        ]
+        neg_md = f"""
+## 三·二、反事实负例集（{n_neg} 题，独立评测）
+
+主集 40 题里只有 4 道负例，单题权重 25 个百分点，撑不起关于拒答能力的结论。
+本节改用 `negative_benchmark_30_questions.json`（4 道原负例 + 26 道扩充场景）
+单独评测，分辨率降到 3.3 个百分点。
+
+> **口径**：衡量的是 top-k 是否召回到人工标注的「支撑**不适用**判断」的条款，
+> 即**负例依据召回率**。检索层没有弃答逻辑（`src/rag/` 下无拒答实现），
+> 因此不能称为「拒答准确率」。命名守卫见 `tests/test_rag_metric_naming.py`。
+
+| 方案 | MRR | Recall@1 | Recall@3 | Recall@5 [95% CI] | Recall@10 |
+|---|:---:|:---:|:---:|:---:|:---:|
+{chr(10).join(neg_rows)}
+
+解读时注意：召回率高只说明「判定不适用所需的条款被捞了出来」，
+真正的拒答由生成层依据这些条款完成；条款没召回到时，作答会缺少依据。
+"""
+
+    neg_conclusion = ""
+    if neg:
+        best_mrr = max(neg, key=lambda m: neg[m]["MRR"])
+        best_r10 = max(neg, key=lambda m: neg[m]["Recall@10"])
+        default = neg["rrf3"]
+        neg_conclusion = (
+            f"\n5. **默认方案在负例集上不是最优，如实记录**：30 题负例集上三路 RRF 的 "
+            f"MRR {default['MRR']:.4f}、Recall@10 {default['Recall@10']:.1%}；"
+            f"按 MRR 最高是{MODE_LABELS[best_mrr]}（{neg[best_mrr]['MRR']:.4f}），"
+            f"按 Recall@10 最高是{MODE_LABELS[best_r10]}（{neg[best_r10]['Recall@10']:.1%}）。"
+            "两个口径指向不同方案，而所有方案的置信区间都大幅重叠——"
+            "这说明 30 题仍不足以分辨方案优劣，也说明默认权重"
+            "（BM25 0.6 : 向量 0.1 : 字面 0.8）是针对正例题的检索质量调的，"
+            "并未针对「判定不适用所需的条款」优化。"
+            "本项目**不据此改动默认方案**：负例集同样是自建自测，"
+            "在一个集上调权重、再用同一个集报结论，属于循环论证。"
+            "如实记录的方法是把它列为已知局限，并在生成层保留"
+            "「证据不足则不回答」的短路逻辑。\n"
+        )
 
     content = f"""# RAG 政策问答检索对照实验报告（v0.4）
 
@@ -334,7 +444,7 @@ def write_markdown_report(payload: Dict):
 | 比较 | W | 原始 p | Holm 校正 p | 结论(α=0.05) |
 |---|:---:|:---:|:---:|:---:|
 {chr(10).join(sig_rows)}
-{abl_md}
+{abl_md}{neg_md}
 ## 四、交叉编码器精排实验（独立运行）
 
 {rerank_md}
@@ -344,8 +454,7 @@ def write_markdown_report(payload: Dict):
 1. **v0.3 纯向量组指标极低的根因是嵌入模型选错**：ChromaDB 默认的 all-MiniLM-L6-v2 是英文模型。换成中文 bge-small-zh 后纯向量 MRR 明显提升（见第三节），说明问题不在“向量检索不适合政策文本”。
 2. **默认方案改为三路 RRF（F 组）**：BM25（jieba 分词）、中文稠密向量、v0.3 字面规则三路检索按名次融合（RRF，k=60，原论文推荐值）。三路权重为 BM25 {meta['rrf_weights']['bm25']} : 向量 {meta['rrf_weights']['vector']} : 字面规则 {meta['rrf_weights']['keyword']}，不是等权——等权融合的 MRR 只有 0.4112，低于它要取代的 v0.3 方案，是在同一评测集上做权重诊断时才发现的（该数字与权重调优同源，不作独立证据）。权重稳健性用 5 折交叉验证单独检查：折内独立选出的向量权重全部落在 0.05–0.2，见 `rrf_weight_cross_validation.md`。F 组 Recall@10 在全部方案中最高。
 3. **如实交代的负面结果**：① 两路 RRF（E 组）的 MRR 不如 BM25 单路，原因是稠密向量对“情景描述型”长问题仍然偏弱，融合时拖低了排序；② v0.3 字面规则里有几条针对主题写的加权规则，存在对评测集过拟合的风险，所以 v0.4 只把它当作融合中的一路信号，不再让它主导打分；③ 交叉编码器精排在 CPU 上每题约 9 秒，指标反而下降，所以默认关闭；④ 三路 RRF 相对 v0.3 与 BM25 的差距经 Holm 校正后均不显著，只能说“不劣于”，不能说“显著更好”。
-4. **局限**：评测集只有 40 题，置信区间较宽，多数两两差异经多重比较校正后不显著。下一步计划把评测集扩到 100 题以上，按“单一事实型 / 情景推理型”分层评测，并加入生成质量评测（忠实度、引用准确率）。
-"""
+4. **局限**：评测集只有 40 题，置信区间较宽，多数两两差异经多重比较校正后不显著。下一步计划把评测集扩到 100 题以上，按“单一事实型 / 情景推理型”分层评测，并加入生成质量评测（忠实度、引用准确率）。{neg_conclusion}"""
     # 生成段只覆盖到「五、结论与局限」。手工追加的附录（例如第 40/287 份文档
     # 入库后的复测对照、金标重标说明）不是脚本产物，重跑时必须原样保留——
     # 早期版本直接整文件覆写，每跑一次评测就静默吃掉一段人工结论。
