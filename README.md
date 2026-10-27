@@ -247,7 +247,10 @@ RAG 验收包含两项硬性相关性断言：
 
 PDF 测试会检查预算字段、科研免责声明、新能源核算边界、页码和字体兼容单位。
 
-`docs/ci-workflow-template.yml` 是尚未激活的 GitHub Actions 模板。启用时需将其移入 `.github/workflows/`，并使用具有 `workflow` 权限的 GitHub 凭据推送；只有远端实际运行通过后才能宣称 CI 已启用。
+CI 已在远端运行：`.github/workflows/ci.yml`（工作流 `Tests`）在每次 push 到 `main` 时
+执行 ruff、政策入库、全量测试与 RAG 基准回归，运行记录见
+`https://github.com/zhutmg00-eng/big_0910/actions`。`docs/ci-workflow-template.yml`
+是早期保留的简化模板，**不代表 CI 未启用**——判断依据只有远端运行记录。
 
 ## 实证验证进展（2026-09 更新）
 

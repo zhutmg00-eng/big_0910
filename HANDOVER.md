@@ -55,10 +55,14 @@
 
 - 请求模型拒绝空企业名、空车队、负车辆数、负里程、越界满载率和未知车型
 - 全生命周期及区域电网电动车因子只保留为CSV研究资料，不混入直接运营车型
-- 当前自动化测试共 61 项
+- 自动化测试数随每次提交变化，不在文档里写死；需要时执行
+  `python -m pytest --collect-only -q` 读最后一行，或用
+  `python scripts/sync_deck_test_count.py --check` 核对载体是否已同步
 - RAG 脚本对两条代表性查询执行首条命中断言
 - PDF 测试检查内容和页码
-- `docs/ci-workflow-template.yml` 保留 Python 3.11 的 CI 模板；当前远端未激活，需使用具有 `workflow` 权限的令牌移入 `.github/workflows/` 后再验证运行记录
+- `docs/ci-workflow-template.yml` 保留 Python 3.11 的 CI 模板；CI 实际已在远端运行
+  （`.github/workflows/ci.yml`，工作流 `Tests`），运行记录见
+  `https://github.com/zhutmg00-eng/big_0910/actions`
 
 ## 三、运行方式
 
