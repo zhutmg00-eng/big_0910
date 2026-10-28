@@ -415,18 +415,19 @@ class PolicyVectorStore:
             return out
 
         # 同库其它 collection：用于提示"你的语料在另一份 collection 里"
+        #
+        # 【必须只读 SQLite 元数据，不能 get_collection(name).count()】
+        # 实测（2026-10-29）：历史 collection 的向量索引目录可能已被清理
+        # （只剩 sqlite 里的元数据行），对它们调用 get_collection().count()
+        # 会让进程内的 Chroma Rust 客户端进入坏状态——此后**同一个进程里
+        # 新建**的任何 PolicyVectorStore 首次检索都会抛
+        #   InternalError: Error creating hnsw segment reader: Nothing found on disk
+        # 而 count() 本身还正常返回。表现为「单独跑某个测试通过、成组跑挂掉」，
+        # 极难定位（本次是通过二分 tests/ 才锁定到 /api/kb/health 这个只读接口）。
+        # 块数在 sqlite 里就能数出来，不需要实例化 collection。
         others: Dict[str, int] = {}
-        try:
-            for col in self.client.list_collections():
-                name = col if isinstance(col, str) else getattr(col, "name", str(col))
-                if name == self.collection_name:
-                    continue
-                try:
-                    others[name] = self.client.get_collection(name).count()
-                except Exception:  # pragma: no cover - 单份损坏不应影响整体自检
-                    others[name] = -1
-        except Exception as exc:  # pragma: no cover
-            logger.debug("列举 collection 失败：%s", exc)
+        others.update(self._count_collections_from_sqlite())
+        others.pop(self.collection_name, None)
         out["other_collections"] = others
 
         if count == 0:
@@ -454,6 +455,34 @@ class PolicyVectorStore:
         for _, meta in self._corpus()["by_id"].values():
             out.setdefault(meta.get("source", ""), meta.get("doc_hash", ""))
         return out
+
+    def _count_collections_from_sqlite(self) -> Dict[str, int]:
+        """直接读 chroma.sqlite3 数出每个 collection 的块数。
+
+        只读元数据表，不初始化任何 collection 对象——原因见 ``health()`` 里的
+        注释：实例化索引已损坏的历史 collection 会污染同进程的 Chroma 客户端。
+
+        sqlite 文件缺失或表结构变化时返回空字典，自检退化为「不显示历史库」，
+        不影响主流程。
+        """
+        db = Path(self.persist_dir) / "chroma.sqlite3"
+        if not db.exists():
+            return {}
+        try:
+            import sqlite3
+
+            with sqlite3.connect(f"file:{db}?mode=ro", uri=True) as con:
+                rows = con.execute(
+                    "SELECT c.name, COUNT(e.id) "
+                    "FROM collections c "
+                    "JOIN segments s ON s.collection = c.id "
+                    "JOIN embeddings e ON e.segment_id = s.id "
+                    "GROUP BY c.name"
+                ).fetchall()
+        except Exception as exc:  # pragma: no cover - 结构变化时静默降级
+            logger.debug("读取 chroma.sqlite3 失败：%s", exc)
+            return {}
+        return {str(name): int(n) for name, n in rows}
 
     def prune_stale_collections(self, dry_run: bool = True) -> Dict:
         """清理同一 persist_dir 下不再被当前配置读取的历史 collection。

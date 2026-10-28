@@ -1,6 +1,7 @@
 """RAG政策解析助手 - 完整调用链路"""
 import hashlib
 import logging
+import re
 from pathlib import Path
 
 from src.rag.vector_store import PolicyVectorStore, get_vector_store
@@ -248,7 +249,68 @@ def _excerpt(text: str, limit: int = 220) -> str:
     return body[:limit] + ("…" if len(body) > limit else "")
 
 
-def _guess_doc_date(name: str) -> str:
+#: 文档头部的**发布**日期字段。刻意不含「抓取时间」——那是我们爬取/整理的时间，
+#: 不是政策发布日；把抓取日当发布日期写进引用，等于给条款盖错时间戳。
+_PUBLISH_DATE = re.compile(
+    r"(?:发布时间|发布日期|成文日期|印发日期|发文日期)\**\s*[:：]\s*\**\s*"
+    r"([0-9]{4}\s*[-年./]\s*[0-9]{1,2}(?:\s*[-月./]\s*[0-9]{1,2})?)"
+)
+
+#: 政府网站 URL 里常内嵌日期，形如 /t20260209_1143900.html
+_URL_DATE = re.compile(r"/t(20\d{2})(\d{2})(\d{2})_")
+
+#: 抓取失败留下的错误页特征。这类文件必须挡在入库之外：
+#: 它们会把「页面不存在」「返回首页」这类导航文字切成政策分块，
+#: 检索命中后表现为「有条款依据」，实际全是门户导航。
+_ERROR_PAGE_MARKERS = (
+    "页面不存在",
+    "您访问的地址有错",
+    "404 Not Found",
+    "403 Forbidden",
+    "请开启JavaScript",
+)
+
+
+def detect_error_page(text: str) -> str:
+    """返回命中的错误页特征词；空字符串表示不像错误页。
+
+    判据只用「明确写着页面不存在」这类标记，不靠内容长度——
+    短文件也可能是合法的附件表格（例如排放因子附件只有 200 余汉字）。
+    """
+    head = text[:4000]
+    for marker in _ERROR_PAGE_MARKERS:
+        if marker in head:
+            return marker
+    return ""
+
+
+def _normalize_date(raw: str) -> str:
+    """把「2022年4月18日」「2022-4-18」统一成 ISO 的 YYYY-MM-DD。"""
+    nums = re.findall(r"\d+", raw)
+    if len(nums) >= 3:
+        return f"{int(nums[0]):04d}-{int(nums[1]):02d}-{int(nums[2]):02d}"
+    if len(nums) == 2:
+        return f"{int(nums[0]):04d}-{int(nums[1]):02d}"
+    return f"{int(nums[0]):04d}" if nums else ""
+
+
+def _guess_doc_date(name: str, head: str = "") -> str:
+    """推断文档发布日期：正文发布字段 → URL 内嵌日期 → 文件名年份 → 空。
+
+    历史实现只看文件名里的年份，导致 20 份文档的 date 为空
+    （2026-10-27 实测 287 个分块中 177 个没有日期），而其中 22 份其实在头部写明了发布日期。
+    引用政策时缺发布日期，"可溯源"就少了一条关键信息——政策时效性无法判断。
+
+    优先级必须如上：文件名年份最粗，只在正文与 URL 都取不到时兜底。
+    """
+    m = _PUBLISH_DATE.search(head[:2000])
+    if m:
+        return _normalize_date(m.group(1))
+
+    m = _URL_DATE.search(head[:2000])
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+
     for year in ("2027", "2026", "2025", "2024", "2023", "2022", "2021", "2020"):
         if year in name:
             return year
@@ -269,12 +331,29 @@ def ingest_directory(directory: Path, vector_store: PolicyVectorStore | None = N
         vs.clear()
     known = {} if force else vs.source_hashes()
     total, docs, skipped = 0, 0, 0
+    rejected = []
     for f in files:
         digest = hashlib.sha1(f.read_bytes()).hexdigest()[:16]
         if known.get(f.name) == digest:  # 内容未变：跳过，避免每次启动都重算嵌入
             skipped += 1
             continue
-        date = _guess_doc_date(f.name)
+        # 日期推断要看正文头部（发布字段 / URL 内嵌日期），只读前 2000 字符即可
+        head = ""
+        if f.suffix.lower() in {".md", ".txt"}:
+            try:
+                head = f.read_text(encoding="utf-8", errors="replace")[:4000]
+            except OSError:
+                head = ""
+        # 抓取失败留下的错误页绝不可入库：它们会被切成「看起来像条款」的分块，
+        # 检索命中后表现为「有政策依据」，实际全是门户导航文字。
+        # 实测 2026-10：温室气体自愿减排交易管理办法_试行.md 实为 404 壳页，
+        # 其 3 个分块还成了负例集 NEG_N02/NEG_N03 的金标依据。
+        marker = detect_error_page(head)
+        if marker:
+            rejected.append((f.name, marker))
+            logger.warning("跳过错误页 %s（命中「%s」），请重新抓取原文", f.name, marker)
+            continue
+        date = _guess_doc_date(f.name, head)
         chunks = process_document(f, date)
         if not chunks:
             continue
@@ -283,11 +362,16 @@ def ingest_directory(directory: Path, vector_store: PolicyVectorStore | None = N
         vs.add_documents(chunks, f.name, date)
         total += len(chunks)
         docs += 1
-    # 目录中已删除的文档同步移出知识库
-    removed = [src for src in known if src not in {f.name for f in files}]
+    # 目录中已删除的文档、以及本次被判定为错误页的文档，都要移出知识库。
+    # 只按「文件已删除」清理是不够的：错误页文件还在磁盘上，但它的分块
+    # 必须从库里消失，否则上面那道 detect_error_page 只对新文件生效、
+    # 旧库里已有的错误页分块会一直留着（需要 --force 才能清）。
+    rejected_names = {name for name, _ in rejected}
+    removed = [src for src in known if src not in {f.name for f in files} or src in rejected_names]
     for src in removed:
         vs.remove_source(src)
     return {"documents": docs, "chunks": total, "skipped": skipped, "removed": len(removed),
+            "rejected": [{"file": n, "marker": m} for n, m in rejected],
             "kb_documents": len(vs.source_hashes()), "kb_chunks": vs.count()}
 
 

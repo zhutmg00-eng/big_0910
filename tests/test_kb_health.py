@@ -102,3 +102,56 @@ def test_health_lists_only_other_collections_not_self(store_factory):
 
     health = vs.health()
     assert vs.collection_name not in health["other_collections"]
+
+
+class TestHealthDoesNotPoisonChromaClient:
+    """`/api/kb/health` 是只读自检，不允许改变同进程其它客户端的可用性。
+
+    真实故障（2026-10-29，二分 tests/ 才定位）：
+    历史 collection 的向量索引目录可能已被清理，只剩 sqlite 里的元数据行。
+    `health()` 原先对每个历史 collection 调用 `get_collection(name).count()`，
+    这会让进程内的 Chroma Rust 客户端进入坏状态——此后**同进程新建**的任何
+    PolicyVectorStore 首次检索都会抛
+        InternalError: Error creating hnsw segment reader: Nothing found on disk
+    而 count() 仍正常返回。
+
+    表现极具迷惑性：单独跑 `tests/test_rag_benchmark.py` 通过，先跑
+    `tests/test_api.py::...::test_kb_health_endpoint_reports_structured_selfcheck`
+    再跑就失败；两者代码毫无关联。
+
+    现在 health() 只读 sqlite 元数据（`_count_collections_from_sqlite`），
+    不实例化任何 collection。本文件锁住「调用 health 后新客户端仍可检索」。
+    """
+
+    def test_second_store_still_queries_after_health(self) -> None:
+        from src.rag.vector_store import PolicyVectorStore
+
+        first = PolicyVectorStore()
+        if first.count() == 0:
+            pytest.skip("知识库为空，跳过（需先 ingest）")
+
+        health = first.health()
+        assert health["status"] == "ok"
+        assert isinstance(health["other_collections"], dict)
+
+        # 关键断言：health() 之后新建的客户端必须还能检索
+        second = PolicyVectorStore()
+        hits = second.search("碳排放权交易", k=2)
+        assert hits, (
+            "调用 health() 后同进程新建的客户端检索返回空——"
+            "很可能又对历史 collection 做了实例化"
+        )
+
+    def test_health_reports_other_collections_without_instantiating(self) -> None:
+        """历史 collection 的块数应来自 sqlite 计数，而不是逐个 get_collection。"""
+        from src.rag.vector_store import PolicyVectorStore
+
+        store = PolicyVectorStore()
+        if store.count() == 0:
+            pytest.skip("知识库为空，跳过（需先 ingest）")
+        counts = store._count_collections_from_sqlite()
+        assert store.collection_name in counts, "sqlite 计数应包含当前 collection"
+        assert counts[store.collection_name] == store.count(), (
+            f"sqlite 计数 {counts[store.collection_name]} 与 Chroma count() "
+            f"{store.count()} 不一致，说明两边口径已经分叉"
+        )
