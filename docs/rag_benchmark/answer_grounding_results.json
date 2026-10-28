@@ -1,0 +1,380 @@
+{
+  "note": "本文件评的是回答层的**可溯源性**（文件名/数值能否在检索证据中逐字找到），不是「忠实度」——后者需要语义蕴含判断，不在可离线复现范围内。未配置 LLM 时回答由逐字摘录生成，因此指标按构造成立为 100%；它的作用是回归锁 + 可直接用于评测 LLM 生成结果。",
+  "design": {
+    "answer_source": "retrieval_excerpt（未配置 LLM 时的确定性路径）",
+    "evidence_top_k": 5,
+    "dataset": "docs/rag_benchmark/rag_benchmark_gold_dataset.json",
+    "n_questions": 40,
+    "generated_by": "scripts/evaluate_answer_grounding.py"
+  },
+  "summary": {
+    "citation_grounding_rate": 1.0,
+    "number_grounding_rate": 1.0,
+    "citations_total": 75,
+    "citations_grounded": 75,
+    "numbers_total": 237,
+    "numbers_grounded": 237
+  },
+  "per_question": [
+    {
+      "id": "Q01",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 17,
+      "numbers_grounded": 17,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q02",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 16,
+      "numbers_grounded": 16,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q03",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 14,
+      "numbers_grounded": 14,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q04",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 17,
+      "numbers_grounded": 17,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q05",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 9,
+      "numbers_grounded": 9,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q06",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 11,
+      "numbers_grounded": 11,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q07",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 10,
+      "numbers_grounded": 10,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q08",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 13,
+      "numbers_grounded": 13,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q09",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q10",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 8,
+      "numbers_grounded": 8,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q11",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 7,
+      "numbers_grounded": 7,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q12",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q13",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 7,
+      "numbers_grounded": 7,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q14",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 5,
+      "numbers_grounded": 5,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q15",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q16",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 0,
+      "numbers_grounded": 0,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q17",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q18",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 0,
+      "numbers_grounded": 0,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q19",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q20",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 0,
+      "numbers_grounded": 0,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q21",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 2,
+      "numbers_grounded": 2,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q22",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 2,
+      "numbers_grounded": 2,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q23",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 2,
+      "numbers_grounded": 2,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q24",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q25",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 11,
+      "numbers_grounded": 11,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q26",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q27",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 10,
+      "numbers_grounded": 10,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q28",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 6,
+      "numbers_grounded": 6,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q29",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q30",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q31",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 0,
+      "numbers_grounded": 0,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q32",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 0,
+      "numbers_grounded": 0,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q33",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q34",
+      "citations": 1,
+      "citations_grounded": 1,
+      "ungrounded_citations": [],
+      "numbers": 13,
+      "numbers_grounded": 13,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q35",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q36",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 3,
+      "numbers_grounded": 3,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q37",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 10,
+      "numbers_grounded": 10,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q38",
+      "citations": 2,
+      "citations_grounded": 2,
+      "ungrounded_citations": [],
+      "numbers": 10,
+      "numbers_grounded": 10,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q39",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 10,
+      "numbers_grounded": 10,
+      "ungrounded_numbers": []
+    },
+    {
+      "id": "Q40",
+      "citations": 3,
+      "citations_grounded": 3,
+      "ungrounded_citations": [],
+      "numbers": 1,
+      "numbers_grounded": 1,
+      "ungrounded_numbers": []
+    }
+  ]
+}
