@@ -178,6 +178,33 @@ def summarize(records: List[Dict]) -> Dict:
     return out
 
 
+def stratified(records: List[Dict], key: str) -> Dict[str, Dict]:
+    """按题型 / 难度分层给出 MRR 与 Recall@10（含题数）。
+
+    为什么需要分层：总体 MRR 是 40 题的平均，掩盖了两件事——
+    ① 系统在「事实型」问句上明显更好，在「对比型」上更弱；
+    ② 人工标的难度与检索难度并不一致（实测「中」MRR 0.33 低于「难」0.48）。
+    第 ② 条尤其要说：它说明难度标签是按「阅读理解难度」标的，不是按检索难度，
+    所以不能拿「难题也检索到了」当作能力证据。
+    """
+    groups: Dict[str, List[Dict]] = {}
+    for r in records:
+        groups.setdefault(str(r.get(key) or "未标注"), []).append(r)
+
+    out: Dict[str, Dict] = {}
+    for name, rows in sorted(groups.items()):
+        rr = [r["rr"] for r in rows]
+        hits = [1.0 if r["hits_at_k"][10] else 0.0 for r in rows]
+        lo, hi = bootstrap_ci(rr)
+        out[name] = {
+            "n": len(rows),
+            "MRR": round(sum(rr) / len(rr), 4),
+            "MRR_CI95": [round(lo, 4), round(hi, 4)],
+            "Recall@10": round(sum(hits) / len(hits), 4),
+        }
+    return out
+
+
 def evaluate_negative_suite(vs, modes: List[str]) -> Dict[str, Dict]:
     """在 30 题反事实负例集上单独评测「能否召回支撑『不适用』判断的条款」。
 
@@ -241,6 +268,10 @@ def evaluate_retrieval(embedding_ablation: bool = False):
     results = run_modes(vs, dataset, MODES)
     summary = {m: summarize(results[m]) for m in MODES}
     negative = evaluate_negative_suite(vs, MODES)
+    strat = {
+        "by_type": stratified(results["rrf3"], "type"),
+        "by_difficulty": stratified(results["rrf3"], "difficulty"),
+    }
 
     # 显著性：v0.4 默认方案 rrf3 对比其余各组 + 保留旧版 hybrid 对比键
     comparisons = {
@@ -309,6 +340,7 @@ def evaluate_retrieval(embedding_ablation: bool = False):
         "summary_metrics": summary,
         "statistical_significance": sig,
         "negative_suite": negative,
+        "stratified_rrf3": strat,
         "embedding_ablation": embedding_ablation_result,
         "detailed_results": results,
     }
@@ -409,6 +441,45 @@ def write_markdown_report(payload: Dict):
 真正的拒答由生成层依据这些条款完成；条款没召回到时，作答会缺少依据。
 """
 
+    strat = payload.get("stratified_rrf3") or {}
+    strat_md = ""
+    if strat.get("by_type"):
+        type_rows = [
+            f"| {name} | {v['n']} | {v['MRR']:.4f} "
+            f"[{v['MRR_CI95'][0]:.3f}, {v['MRR_CI95'][1]:.3f}] | {v['Recall@10']:.1%} |"
+            for name, v in strat["by_type"].items()
+        ]
+        diff_rows = [
+            f"| {name} | {v['n']} | {v['MRR']:.4f} "
+            f"[{v['MRR_CI95'][0]:.3f}, {v['MRR_CI95'][1]:.3f}] | {v['Recall@10']:.1%} |"
+            for name, v in (strat.get("by_difficulty") or {}).items()
+        ]
+        # 检出「难度标签与检索难度不一致」这一事实，并如实说明它的含义
+        diff = strat.get("by_difficulty") or {}
+        anomaly = ""
+        if "中" in diff and "难" in diff and diff["中"]["MRR"] < diff["难"]["MRR"]:
+            anomaly = (
+                "\n> ⚠️ **难度标签与检索难度不一致**：标为「中」的题 MRR 反而低于标为「难」的题。"
+                "原因是难度按「人工阅读理解难度」标注，而不是按检索器难度标注——"
+                "「中」档里有多道跨文件对比题（如购电口径对比、三地试点对比），"
+                "对检索更难；「难」档里则有若干问句与条款用词高度重合的题，反而容易命中。"
+                "**因此不能拿「难题也能检索到」当作能力证据**，也不能把该列读成难度梯度。\n"
+            )
+        strat_md = f"""
+## 三·三、分层评测（默认方案 rrf3）
+
+总体 MRR 是 40 题的平均，会掩盖题型之间的差异。下表按题库标注的题型与难度分层。
+「对比型」指跨文件/跨年度规则比对，是本题库最贴近真实咨询场景的一类。
+
+| 题型 | 题数 | MRR [95% CI] | Recall@10 |
+|---|:---:|:---:|:---:|
+{chr(10).join(type_rows)}
+
+| 标注难度 | 题数 | MRR [95% CI] | Recall@10 |
+|---|:---:|:---:|:---:|
+{chr(10).join(diff_rows)}
+{anomaly}"""
+
     neg_conclusion = ""
     if neg:
         best_mrr = max(neg, key=lambda m: neg[m]["MRR"])
@@ -447,7 +518,7 @@ def write_markdown_report(payload: Dict):
 | 比较 | W | 原始 p | Holm 校正 p | 结论(α=0.05) |
 |---|:---:|:---:|:---:|:---:|
 {chr(10).join(sig_rows)}
-{abl_md}{neg_md}
+{abl_md}{neg_md}{strat_md}
 ## 四、交叉编码器精排实验（独立运行）
 
 {rerank_md}

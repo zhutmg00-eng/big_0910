@@ -171,3 +171,56 @@ class TestSupersetRelationshipIsDisclosed:
                 raise AssertionError(
                     f"README 把冻结快照读数当作当前读数：{line.strip()[:140]}"
                 )
+
+
+# ---------------------------------------------------------------- 分层评测（I-9）
+
+class TestStratifiedMetrics:
+    """总体 MRR 会掩盖题型与难度之间的差异，分层表必须真的算出来。
+
+    这一节的存在本身就带一个负面结论：人工标的「难度」与检索难度不一致
+    （「中」档 MRR 低于「难」档）。它必须留在报告里——不能因为读起来
+    不顺就删掉，也不能把该列当成难度梯度来宣传。
+    """
+
+    def _strat(self) -> dict:
+        return _results().get("stratified_rrf3") or {}
+
+    def test_has_both_strata(self) -> None:
+        strat = self._strat()
+        assert strat.get("by_type"), "缺少按题型分层"
+        assert strat.get("by_difficulty"), "缺少按难度分层"
+
+    def test_strata_cover_all_questions(self) -> None:
+        """各层题数之和必须等于 40，否则有题被漏算。"""
+        for key in ("by_type", "by_difficulty"):
+            total = sum(v["n"] for v in self._strat().get(key, {}).values())
+            assert total == 40, f"{key} 分层题数合计 {total}，应为 40"
+
+    def test_metric_shape(self) -> None:
+        for key in ("by_type", "by_difficulty"):
+            for name, v in self._strat()[key].items():
+                for field in ("n", "MRR", "MRR_CI95", "Recall@10"):
+                    assert field in v, f"{key}/{name} 缺少 {field}"
+                lo, hi = v["MRR_CI95"]
+                assert lo <= v["MRR"] <= hi, f"{key}/{name} 的 MRR 不在置信区间内"
+
+    def test_report_has_stratified_section(self) -> None:
+        text = REPORT.read_text(encoding="utf-8")
+        assert "## 三·三" in text, "报告缺少分层评测小节"
+        assert "按题库标注的题型与难度分层" in text
+
+    def test_report_discloses_difficulty_label_mismatch(self) -> None:
+        """难度标签与检索难度不一致这个事实必须写出来。"""
+        stratified = self._strat()
+        diff = stratified.get("by_difficulty") or {}
+        if not ({"中", "难"} <= set(diff)):
+            pytest.skip("题库缺少中/难分层，该条不适用")
+        if diff["中"]["MRR"] >= diff["难"]["MRR"]:
+            pytest.skip("当前数据下不存在该反常，守卫无需生效")
+        text = REPORT.read_text(encoding="utf-8")
+        assert "难度标签与检索难度不一致" in text, (
+            "「中」档 MRR 低于「难」档，但报告没有说明原因，"
+            "读者会把难度列当成检索难度的梯度"
+        )
+        assert "不能拿「难题也能检索到」当作能力证据" in text
