@@ -118,10 +118,22 @@ def plot_reduction_comparison(baseline: float, scenario: float) -> go.Figure:
 
 
 def plot_carbon_price_history(df) -> go.Figure:
-    """碳价序列：真实成交点（实心）与插值点（空心浅色）分开绘制。"""
+    """碳价序列：真实成交点（实心）与插值点（空心浅色）分开绘制。
+
+    空表或缺「数据来源」列时给「暂无数据」提示，而不是抛 KeyError——
+    该图在验证页与报告页都会被调用，而人工清空碳价 CSV 是常见操作。
+    """
+    fig = go.Figure()
+    if df is None or getattr(df, "empty", True) or "数据来源" not in getattr(df, "columns", []):
+        _apply_layout(fig, title="全国碳市场收盘价（真实 vs 插值）", height=340)
+        fig.add_annotation(
+            text="暂无碳价数据", x=0.5, y=0.5, xref="paper", yref="paper",
+            showarrow=False, font=dict(color=MUTED),
+        )
+        return fig
+
     real = df[df["数据来源"] == "真实数据"]
     interp = df[df["数据来源"] != "真实数据"]
-    fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df["日期"], y=df["收盘价"], mode="lines", name="趋势线（含插值）",
         line=dict(color=GRAY, width=1, dash="dot"), hoverinfo="skip",
@@ -383,7 +395,11 @@ def plot_tco_cost_breakdown(
 
 
 def plot_uncertainty_histogram(hist: dict, point: float, p5: float, p95: float) -> go.Figure:
-    """蒙特卡洛抽样分布直方图，标注点估计与 90% 区间。"""
+    """蒙特卡洛抽样分布直方图，标注点估计与 90% 区间。
+
+    区间上下界必须**写出数值**：只画一块阴影，读者无法判断区间宽度是
+    ±3% 还是 ±30%，而这正是「能不能对外报一个数」的判断依据。
+    """
     fig = go.Figure(go.Bar(
         x=hist.get("bin_centers", []), y=hist.get("counts", []),
         marker_color=TEAL, opacity=0.85, name="抽样频数",
@@ -392,7 +408,12 @@ def plot_uncertainty_histogram(hist: dict, point: float, p5: float, p95: float) 
     fig.add_vrect(x0=p5, x1=p95, fillcolor=GREEN, opacity=0.08, line_width=0)
     fig.add_vline(x=point, line=dict(color=AMBER, width=2, dash="dash"),
                   annotation_text=f"点估计 {point:,.0f}", annotation_position="top right")
-    _apply_layout(fig, title="排放量概率分布（阴影为 90% 区间）", height=360)
+    for value, label in ((p5, "P5"), (p95, "P95")):
+        fig.add_vline(
+            x=value, line=dict(color=GREEN, width=1, dash="dot"),
+            annotation_text=f"{label} {value:,.0f}", annotation_position="top left",
+        )
+    _apply_layout(fig, title="排放量概率分布（阴影为 90% 区间 P5–P95）", height=360)
     fig.update_xaxes(title="年度直接运营排放 (tCO2e)", gridcolor=GRID)
     fig.update_yaxes(title="频数", gridcolor=GRID)
     fig.update_layout(showlegend=False, bargap=0.05)
