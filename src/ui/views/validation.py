@@ -125,6 +125,9 @@ def render_validation() -> None:
                     hide_index=True, width="stretch",
                 )
 
+        _render_negative_suite(rag)
+        _render_answer_grounding()
+
     _render_carbon_price_quality(derived)
 
     notice(
@@ -132,6 +135,79 @@ def render_validation() -> None:
         "物流运输行业目前未纳入全国碳市场配额管理；新能源车仅按直接排放为零核算。"
         "评测集规模有限（40 题），结论以置信区间解读，后续扩充后复测。",
         amber=True,
+    )
+
+
+def _render_negative_suite(rag: dict) -> None:
+    """反事实负例集（30 题）单独评测：只报「负例依据召回率」，不报拒答率。
+
+    主集 40 题里只有 4 道负例，单题权重 25 个百分点，撑不起结论；30 题集把
+    分辨率降到 3.3 个百分点。检索层没有弃答逻辑（src/rag/ 下无拒答实现），
+    所以这一栏衡量的是「判定不适用所需的条款有没有被捞出来」。
+    """
+    neg = rag.get("negative_suite") or {}
+    if not neg:
+        return
+    labels = rag.get("mode_labels", {m: m for m in neg})
+    n = next(iter(neg.values())).get("n_questions", 0)
+
+    st.markdown("### 反事实负例集（%d 题）" % n)
+    st.caption(
+        "指标为**负例依据召回率**：top-k 是否召回到人工标注的「支撑不适用判断」的条款。"
+        "检索层没有弃答实现，因此不称其为「拒答率」。该集是主集 4 道负例的超集扩充，"
+        "不是独立第三套数据，两处读数不可相加。"
+    )
+    with st.expander("查看各方案读数", expanded=False):
+        rows = []
+        for mode, s in neg.items():
+            ci = s.get("Recall@5_CI95")
+            rows.append({
+                "方案": labels.get(mode, mode),
+                "MRR": f"{s.get('MRR', 0):.3f}",
+                "Recall@5": f"{s.get('Recall@5', 0):.0%}" + (
+                    f" [{ci[0]:.2f}, {ci[1]:.2f}]" if ci else ""
+                ),
+                "Recall@10": f"{s.get('Recall@10', 0):.0%}",
+            })
+        st.dataframe(rows, hide_index=True, width="stretch")
+        st.caption(
+            "如实说明：默认三路 RRF 在该集上按 MRR 并非最优，且所有方案置信区间大幅重叠。"
+            "未据此调参——在同一自建集上调权重再用它报结论属循环论证。"
+        )
+
+
+def _render_answer_grounding() -> None:
+    """回答层可溯源性：回答里的文件名与数值能否在本次证据中逐字找到。
+
+    必须同时说明：不配置 LLM 时回答由逐字摘录生成，满分是按构造成立的，
+    作用是回归锁；它不是「忠实度」（语义蕴含判断），不应被当成模型可信度证据。
+    """
+    data = _load(ROOT / "docs" / "rag_benchmark" / "answer_grounding_results.json")
+    if not data:
+        return
+    s = data.get("summary") or {}
+    if not s:
+        return
+
+    st.markdown("### 回答层可溯源性")
+    c1, c2 = st.columns(2)
+    c1.metric(
+        "引用文件名可溯源",
+        f"{s.get('citation_grounding_rate', 0):.0%}",
+        help=f"{s.get('citations_grounded')}/{s.get('citations_total')} 个被判定的文件名"
+             "能在本次检索证据的来源集合里找到。",
+    )
+    c2.metric(
+        "数值可溯源",
+        f"{s.get('number_grounding_rate', 0):.0%}",
+        help=f"{s.get('numbers_grounded')}/{s.get('numbers_total')} 个带单位的数值"
+             "能在证据原文里逐字找到。",
+    )
+    st.caption(
+        "口径：这是**可溯源性**，不是忠实度。未配置大模型时回答由逐字摘录证据生成，"
+        "因此上述比例按构造成立为满分——它证明的是「系统不会把没有出处的数字写进答案」，"
+        "以及一旦有人把摘录改成转述，该指标就会掉下来。语义层面的忠实度仍需人工或"
+        "二次模型判断，本项目未实现，不作声明。"
     )
 
 
