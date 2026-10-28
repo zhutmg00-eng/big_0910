@@ -130,3 +130,49 @@ class TestGoldChunksDoNotPointAtRemovedFiles:
         for qid in ("NEG_N02", "NEG_N03"):
             notes = by_id[qid].get("notes", "")
             assert "404" in notes, f"{qid} 的 notes 未说明重新锚定的原因"
+
+
+class TestIngestScriptSurfacesRejections:
+    """入库脚本必须把被拒绝的文件打印出来。
+
+    否则运维看到「✅ 本次入库 38 份」会以为语料齐了，实际有两份被守卫
+    挡在门外（2026-10-29 实测：两份 404 错误页被静默跳过，脚本毫无提示）。
+    """
+
+    def test_script_prints_rejected_list(self) -> None:
+        src = (ROOT / "scripts" / "ingest_policy_docs.py").read_text(encoding="utf-8")
+        assert "rejected" in src, "入库脚本没有读取 summary['rejected']"
+        assert "被拒绝入库" in src, "没有面向运维的中文提示"
+        assert "policy_docs_unavailable" in src, "未指向处理说明"
+
+    def test_script_output_contains_rejected_file(self, capsys, tmp_path, monkeypatch) -> None:
+        """真跑一次：把一份错误页放进临时语料目录，脚本必须点名它。"""
+        import importlib.util
+        import sys
+
+        docs = tmp_path / "policy_docs"
+        docs.mkdir()
+        (docs / "正常政策.md").write_text(
+            "# 正常政策\n\n**发布时间**: 2024年3月1日\n\n第一条 正文。\n", encoding="utf-8"
+        )
+        (docs / "坏页面.md").write_text(
+            "# 坏页面\n\n抱歉，您访问的地址有错或页面不存在。\n", encoding="utf-8"
+        )
+
+        spec = importlib.util.spec_from_file_location(
+            "ingest_script", ROOT / "scripts" / "ingest_policy_docs.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["ingest_script"] = mod
+        spec.loader.exec_module(mod)
+
+        monkeypatch.setattr(mod, "POLICY_DOCS_DIR", docs)
+        from src.rag.vector_store import PolicyVectorStore
+
+        store = PolicyVectorStore(persist_dir=str(tmp_path / "kb"), embedding_model="chromadb-default")
+        monkeypatch.setattr(mod, "get_vector_store", lambda: store)
+
+        mod.ingest_all()
+        out = capsys.readouterr().out
+        assert "被拒绝入库" in out
+        assert "坏页面.md" in out
