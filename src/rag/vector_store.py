@@ -217,17 +217,32 @@ class PolicyVectorStore:
         return self.collection.count() if self._chroma_ok else len(self._fallback_docs)
 
     def _corpus(self) -> Dict:
-        """全量语料（id → text/metadata），按文档块数量做简单失效判断。"""
+        """全量语料（id → text/metadata），按文档块数量做简单失效判断。
+
+        **必须按 id 排序**：`collection.get()` 返回的顺序由存储层决定，重建库后
+        可能变化。BM25 的并列分数、RRF 融合的并列名次都依赖插入顺序，于是
+        同一份语料重建两次可能得到略微不同的指标（实测 2026-10-29：
+        负例集 MRR 在重建前后出现 0.2486 / 0.2475 的漂移）。
+        对一个「结果必须可复现」的科研项目，这不可接受——排序后一切并列
+        都有确定的先后。
+        """
         n = self.count()
         if self._corpus_cache is not None and self._corpus_cache["n"] == n:
             return self._corpus_cache
         if self._chroma_ok:
             got = self.collection.get(include=["documents", "metadatas"])
-            ids, docs, metas = got["ids"], got["documents"], got["metadatas"]
+            triples = sorted(
+                zip(got["ids"], got["documents"], got["metadatas"]),
+                key=lambda item: item[0],
+            )
+            ids = [t[0] for t in triples]
+            docs = [t[1] for t in triples]
+            metas = [t[2] for t in triples]
         else:
-            ids = [d["id"] for d in self._fallback_docs]
-            docs = [d["text"] for d in self._fallback_docs]
-            metas = [d.get("metadata", {}) for d in self._fallback_docs]
+            pairs = sorted(self._fallback_docs, key=lambda d: d["id"])
+            ids = [d["id"] for d in pairs]
+            docs = [d["text"] for d in pairs]
+            metas = [d.get("metadata", {}) for d in pairs]
         self._corpus_cache = {
             "n": n,
             "ids": ids,

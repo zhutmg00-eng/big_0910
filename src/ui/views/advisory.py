@@ -53,6 +53,11 @@ def _render_sources(
                 + (f"  \n`{src.get('chunk_id', '')}`" if src.get("chunk_id") else "")
                 + (f" · 命中：{tags}" if tags else "")
                 + rel_text
+                # content_status=excerpt 表示这份文件不是政策原文，而是元信息／
+                # 章节提要／搜索摘要。不标出来，用户会把「引用了《上海市碳排放
+                # 管理办法》」读成引用了官方全文。
+                + ("  \n⚠️ 非政策原文（元信息/提要/摘要），证据强度有限"
+                   if src.get("content_status") == "excerpt" else "")
             )
             if src.get("excerpt"):
                 st.caption(src["excerpt"])

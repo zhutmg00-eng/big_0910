@@ -223,3 +223,93 @@ class TestNegativeGoldChunksMatchAnnotations:
             f"以下题的金标块不含任何标注关键词，说明锚定失败：{offenders}。"
             "请重新锚定到真正支撑该判定的条款，或修正标注关键词。"
         )
+
+
+class TestNonPrimarySourcesAreFlagged:
+    """不是政策原文的文件必须带 `content_status="excerpt"` 并在证据区提示。
+
+    背景（2026-10-29 核查）：语料里有两类"不是原文"的文件与小节条款混在一起，
+    从检索结果看不出证据强度差异：
+
+    - 《上海市碳排放管理办法》：只记录元信息、章节提纲与要点，
+      正文是「完整全文请参见上述URL」；
+    - 《广东省碳排放权交易管理办法》：正文是「百度搜索结果中的部分内容摘要」；
+    - 《碳排放权交易管理办法（试行）编制说明》：只有元信息与提纲。
+
+    它们照常入库（章节结构仍可回答适用范围类问题），但必须标出来——
+    否则「引用了《上海市碳排放管理办法》」会被读成引用了官方全文。
+    """
+
+    def _detect(self, text: str) -> str:
+        import sys
+
+        sys.path.insert(0, str(ROOT))
+        from src.rag import detect_content_status
+
+        return detect_content_status(text)
+
+    def test_detects_excerpt_markers(self) -> None:
+        for marker in (
+            "完整全文请参见上述URL。",
+            "以下为百度搜索结果中的部分内容摘要。",
+            "该文档为PDF格式，无法通过web_fetch提取文本内容。",
+            "此处记录文档元信息。",
+        ):
+            assert self._detect(f"# 某政策\n\n{marker}\n正文") == "excerpt", (
+                f"未识别出非原文标记：{marker}"
+            )
+
+    def test_real_policy_text_is_full(self) -> None:
+        assert self._detect(
+            "# 某政策\n\n**发布时间**: 2024年1月2日\n\n第一条 为规范……\n第二条 本办法适用于……"
+        ) == "full"
+
+    def test_corpus_flags_match_reality(self) -> None:
+        """语料里那三份非原文文件必须被标为 excerpt，且库里已是该状态。"""
+        import sys
+
+        sys.path.insert(0, str(ROOT))
+        from src.rag import detect_content_status
+        from src.rag.vector_store import PolicyVectorStore
+
+        expected_excerpt = {
+            "上海碳排放管理办法.md",
+            "广东碳排放权交易管理办法.md",
+            "碳排放权交易管理办法试行编制说明.md",
+        }
+        for name in expected_excerpt:
+            path = POLICY_DIR / name
+            assert path.exists(), f"{name} 已不在语料目录，需同步更新本测试"
+            assert detect_content_status(path.read_text(encoding="utf-8")) == "excerpt"
+
+        store = PolicyVectorStore()
+        if store.count() == 0:
+            pytest.skip("知识库为空，跳过库内状态校验")
+        flagged = {
+            meta.get("source", "")
+            for _text, meta in store._corpus()["by_id"].values()
+            if meta.get("content_status") == "excerpt"
+        }
+        assert flagged == expected_excerpt, (
+            f"库内 content_status=excerpt 的文件为 {sorted(flagged)}，"
+            f"预期 {sorted(expected_excerpt)}——语料或判定规则已变，需同步"
+        )
+
+    def test_answer_sources_carry_content_status(self) -> None:
+        """回答里的每条证据都要带 content_status 字段，前端才能标出强度。"""
+        import sys
+
+        sys.path.insert(0, str(ROOT))
+        from src.rag import PolicyAdvisor
+        from src.rag.vector_store import PolicyVectorStore
+
+        store = PolicyVectorStore()
+        if store.count() == 0:
+            pytest.skip("知识库为空，跳过")
+
+        result = PolicyAdvisor(vector_store=store).ask("上海碳市场纳管单位如何履约？", {})
+        sources = result["retrieved_sources"]
+        assert sources, "该问题应能检索到证据"
+        for src in sources:
+            assert "content_status" in src, "证据缺少 content_status，前端无法标注证据强度"
+            assert src["content_status"] in {"full", "excerpt"}

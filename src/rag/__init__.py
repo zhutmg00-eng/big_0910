@@ -111,6 +111,10 @@ class PolicyAdvisor:
                 "chunk_id": r.get("id", ""),
                 "excerpt": _excerpt(r.get("text", "")),
                 "retrievers": r.get("retrievers", []),
+                # full = 政策原文；excerpt = 元信息/章节提要/搜索摘要。
+                # 必须透传到前端：否则「引用《上海市碳排放管理办法》」看上去
+                # 与引用官方全文一样硬，而那份文件其实只有章节提纲。
+                "content_status": r.get("metadata", {}).get("content_status", "full"),
             })
 
         return {
@@ -284,6 +288,35 @@ def detect_error_page(text: str) -> str:
     return ""
 
 
+#: 「不是原文」的三类痕迹：正文缺失、只留元信息、来自搜索摘要。
+#: 这类文件可以入库（它们仍有章节结构与要点，能支撑部分判断），
+#: 但**必须在引用时标出来**——否则「可溯源」会被读成「引的是官方原文」。
+_NOT_PRIMARY_MARKERS = (
+    "无法通过web_fetch",
+    "无法正确解析为文本",
+    "完整全文请参见",
+    "此处记录文档元信息",
+    "以下为百度搜索结果",
+    "来自搜索摘要",
+)
+
+
+def detect_content_status(text: str) -> str:
+    """判定文档内容的完整性：``full`` / ``excerpt``。
+
+    ``excerpt`` 表示这份文件不是政策原文，而是元信息、章节提要或搜索摘要。
+    它照常入库（章节结构仍可用于回答适用范围类问题），但检索结果在
+    ``metadata.content_status`` 里带上标记，上层据此提示用户。
+
+    背景（2026-10-29）：语料里有两份这类文件——
+    《上海市碳排放管理办法》只记录了元信息与章节提要与要点；
+    《广东省碳排放权交易管理办法》正文是「百度搜索结果中的部分内容摘要」。
+    它们此前与小节条款混在一起，看不出证据强度差异。
+    """
+    head = text[:6000]
+    return "excerpt" if any(m in head for m in _NOT_PRIMARY_MARKERS) else "full"
+
+
 def _normalize_date(raw: str) -> str:
     """把「2022年4月18日」「2022-4-18」统一成 ISO 的 YYYY-MM-DD。"""
     nums = re.findall(r"\d+", raw)
@@ -354,11 +387,19 @@ def ingest_directory(directory: Path, vector_store: PolicyVectorStore | None = N
             logger.warning("跳过错误页 %s（命中「%s」），请重新抓取原文", f.name, marker)
             continue
         date = _guess_doc_date(f.name, head)
+        status = detect_content_status(head)
+        if status == "excerpt":
+            logger.warning(
+                "%s 不是政策原文（元信息/章节提要/搜索摘要），已标注 content_status=excerpt；"
+                "引用时应提示用户证据强度有限",
+                f.name,
+            )
         chunks = process_document(f, date)
         if not chunks:
             continue
         for c in chunks:
             c.setdefault("metadata", {})["doc_hash"] = digest
+            c["metadata"]["content_status"] = status
         vs.add_documents(chunks, f.name, date)
         total += len(chunks)
         docs += 1
@@ -384,4 +425,6 @@ __all__ = [
     "build_user_prompt",
     "build_retrieval_answer",
     "call_llm",
+    "detect_error_page",
+    "detect_content_status",
 ]

@@ -224,3 +224,48 @@ class TestStratifiedMetrics:
             "读者会把难度列当成检索难度的梯度"
         )
         assert "不能拿「难题也能检索到」当作能力证据" in text
+
+
+# ---------------------------------------------------------------- 复现性（I-13）
+
+class TestBenchmarkDeterminism:
+    """同一份语料必须给出同一个指标——这是科研结论的底线。
+
+    真实缺陷（2026-10-29）：`_corpus()` 直接采用 `collection.get()` 的返回顺序，
+    而该顺序由存储层决定、重建库后可能变化。BM25 的并列分数与 RRF 的并列名次
+    都按插入顺序决定先后，于是同一份语料重建两次会得到不同指标——
+    实测负例集 MRR 出现过 0.2567 / 0.2556 / 0.2475 三种读数。
+
+    修复：`_corpus()` 按 chunk id 排序，所有并列都有确定先后。
+    """
+
+    def test_corpus_ids_are_sorted(self) -> None:
+        from src.rag.vector_store import PolicyVectorStore
+
+        store = PolicyVectorStore()
+        if store.count() == 0:
+            pytest.skip("知识库为空")
+        ids = store._corpus()["ids"]
+        assert ids == sorted(ids), "语料顺序未排序，并列名次会随重建漂移"
+
+    def test_two_stores_agree_on_order(self) -> None:
+        """同进程内两个实例必须看到完全相同的顺序。"""
+        from src.rag.vector_store import PolicyVectorStore
+
+        first, second = PolicyVectorStore(), PolicyVectorStore()
+        if first.count() == 0:
+            pytest.skip("知识库为空")
+        assert first._corpus()["ids"] == second._corpus()["ids"]
+
+    def test_results_record_rerun_is_stable(self) -> None:
+        """结果文件里的读数必须与当前语料一致（重跑后不变）。
+
+        这里不重跑评测（太慢），只校验结果文件自洽：
+        同一份结果里同一模式的 MRR 必须与逐题 rr 的均值吻合。
+        """
+        data = _results()
+        recs = data["detailed_results"]["rrf3"]
+        mean_rr = sum(r["rr"] for r in recs) / len(recs)
+        assert abs(mean_rr - data["summary_metrics"]["rrf3"]["MRR"]) < 1e-3, (
+            "summary 的 MRR 与逐题 rr 均值不吻合，结果文件可能被手工改过"
+        )
