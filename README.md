@@ -276,6 +276,11 @@ CI 已在远端运行：`.github/workflows/ci.yml`（工作流 `Tests`）在每�
    - 活动参数与披露能耗的一致性核验（等效燃料量比值 + 反推百公里油耗，
      `scripts/check_fleet_ledger_consistency.py`）。
    - 实载率与里程二维网格敏感性分析（`scripts/sensitivity_analysis.py`、`docs/sensitivity_report.md`）。
+   - **无台账小样本的误差包络**（`scripts/small_fleet_envelope.py`、`docs/small_fleet_envelope.md`）：
+     4 个合成画像（10–50 辆）枚举里程 ±25%、满载率 ±0.20 的猜测偏差，输出偏差约
+     −26%~+29%，其中里程单独即可造成 ±25%、满载率受 LF 值域约束单独仅 2.6–3.0%；
+     要控在 ±10% 内里程需准到 ±6%~±7%。这是**输入不确定性传播**，不是准确率验证，
+     用于回答「无台账时误差有多大、先补哪个数据」，不可与上面的 4.23% 互换引用。
 2. **政策问答评测与检索对照实验（支撑 RQ2）**：
    - 自建 40 题双碳法规与绿色交通基准题库（含金标答案、官方文件溯源与负例拒答设计）。
    - 双人背靠背独立审校与一致性报告（`docs/rag_benchmark/review/`）。**这条证据要谨慎引用**：
