@@ -164,3 +164,46 @@ def test_removed_modules_stay_removed(module: str) -> None:
     """锁住删除决定：这两个模块曾被误认为在用，实际零引用。"""
     with pytest.raises(ModuleNotFoundError):
         __import__(module)
+
+
+# ---------------------------------------------------------------- CI 单一来源（I-4）
+
+class TestSingleSourceOfWorkflow:
+    """CI 只有一份定义，文档不得把已删除的模板当作现状引用。
+
+    背景（2026-10-27，I-4）：仓库曾有 `.github/workflows/ci.yml`（含字体安装、
+    ruff、政策入库、覆盖率、RAG 基准回归）与 `docs/ci-workflow-template.yml`
+    （仅 install + pytest）并存。两者内容早已分叉，而 README 曾把后者当作
+    「CI 是否启用」的证据，与实际 47 次远端运行记录矛盾。
+    """
+
+    WORKFLOWS = ROOT / ".github" / "workflows"
+    TEMPLATE = ROOT / "docs" / "ci-workflow-template.yml"
+
+    def test_only_one_workflow_exists(self) -> None:
+        files = sorted(p.name for p in self.WORKFLOWS.glob("*.yml"))
+        assert files == ["ci.yml"], f"workflows 目录应只有 ci.yml，实际 {files}"
+
+    def test_template_stays_deleted(self) -> None:
+        assert not self.TEMPLATE.exists(), (
+            "docs/ci-workflow-template.yml 已被删除：它与真实流水线内容分叉，"
+            "留着会被当作「CI 未启用」的证据。若确实需要模板，请先更新本测试的理由。"
+        )
+
+    def test_workflow_covers_the_four_gates(self) -> None:
+        """真实流水线必须覆盖四道闸门，否则「CI 绿」不足以说明质量。"""
+        text = (self.WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
+        for gate in ("ruff", "ingest_policy_docs.py", "pytest", "evaluate_rag_benchmark.py"):
+            assert gate in text, f"CI 缺少 {gate} 这一步"
+
+    def test_docs_mentioning_template_mark_it_removed(self) -> None:
+        """文档里若提到该模板，必须同时说明已删除，不能当现状。"""
+        for rel in ("README.md", "HANDOVER.md"):
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            for line in text.splitlines():
+                if "ci-workflow-template" not in line:
+                    continue
+                window = text[max(0, text.find(line) - 300): text.find(line) + 400]
+                assert any(m in window for m in ("已删除", "不存在")), (
+                    f"{rel} 提到 ci-workflow-template.yml 但未说明已删除"
+                )

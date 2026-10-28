@@ -248,9 +248,13 @@ RAG 验收包含两项硬性相关性断言：
 PDF 测试会检查预算字段、科研免责声明、新能源核算边界、页码和字体兼容单位。
 
 CI 已在远端运行：`.github/workflows/ci.yml`（工作流 `Tests`）在每次 push 到 `main` 时
-执行 ruff、政策入库、全量测试与 RAG 基准回归，运行记录见
-`https://github.com/zhutmg00-eng/big_0910/actions`。`docs/ci-workflow-template.yml`
-是早期保留的简化模板，**不代表 CI 未启用**——判断依据只有远端运行记录。
+依次执行 ruff（src/tests/scripts）、政策入库、全量测试（含覆盖率）与 RAG 基准回归，
+运行记录见 `https://github.com/zhutmg00-eng/big_0910/actions`。
+
+> 仓库里只有这一份 workflow，不存在"模板与真实流水线并存"的情况：早期一份
+> `docs/ci-workflow-template.yml`（只 install + pytest，缺字体、ruff、入库、
+> RAG 回归）曾被当成"CI 未启用"的证据引用，与实际运行状态矛盾，已删除。
+> 判断 CI 是否启用，只看远端运行记录。
 
 ## 实证验证进展（2026-09 更新）
 

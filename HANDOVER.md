@@ -60,9 +60,10 @@
   `python scripts/sync_deck_test_count.py --check` 核对载体是否已同步
 - RAG 脚本对两条代表性查询执行首条命中断言
 - PDF 测试检查内容和页码
-- `docs/ci-workflow-template.yml` 保留 Python 3.11 的 CI 模板；CI 实际已在远端运行
-  （`.github/workflows/ci.yml`，工作流 `Tests`），运行记录见
-  `https://github.com/zhutmg00-eng/big_0910/actions`
+- CI 在远端运行（`.github/workflows/ci.yml`，工作流 `Tests`，Python 3.11）：
+  ruff → 政策入库 → 全量测试（含覆盖率）→ RAG 基准回归，运行记录见
+  `https://github.com/zhutmg00-eng/big_0910/actions`。仓库内只有这一份 workflow，
+  早期那份 `docs/ci-workflow-template.yml` 已删除（内容已分叉且误导）
 
 ## 三、运行方式
 
