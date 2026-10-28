@@ -112,3 +112,62 @@ def test_negative_section_has_ci() -> None:
         pytest.skip("报告尚未包含负例小节")
     body = text.split("## 三·二", 1)[1].split("## 四", 1)[0]
     assert re.search(r"\[0\.\d{3},\s*0\.\d{3}\]", body), "负例表缺少 95% 置信区间"
+
+
+# ---------------------------------------------------------------- 与主集的关系（I-3）
+
+class TestSupersetRelationshipIsDisclosed:
+    """30 题集是主集 4 道负例的超集，不是独立第三套数据。
+
+    这个关系一旦不说清，读者会把「主集 50%、负例集 30%」当成两套互相印证的
+    证据，进而得出「两套数据结论不一致」的错误判断——实际上是同一批题在
+    不同分母下的两个读数。
+    """
+
+    MAIN_DATASET = ROOT / "docs" / "rag_benchmark" / "rag_benchmark_gold_dataset.json"
+    NEG_MD = ROOT / "docs" / "rag_benchmark" / "negative_benchmark_30_questions.md"
+
+    def _overlap(self) -> set[str]:
+        main = json.loads(self.MAIN_DATASET.read_text(encoding="utf-8"))
+        neg = json.loads(NEG_DATASET.read_text(encoding="utf-8"))
+        return {q["id"] for q in main} & {q["id"] for q in neg}
+
+    def test_overlap_actually_exists(self) -> None:
+        """若哪天两份数据不再重叠，下面几条披露要求就该重新评估。"""
+        assert self._overlap() == {"Q04", "Q24", "Q29", "Q30"}
+
+    def test_report_says_superset_not_independent(self) -> None:
+        text = REPORT.read_text(encoding="utf-8")
+        if "## 三·二" not in text:
+            pytest.skip("报告尚未包含负例小节")
+        body = text.split("## 三·二", 1)[1].split("## 四", 1)[0]
+        assert "超集" in body, "报告没有说明 30 题集是主集负例的超集"
+        assert "独立评测" not in body, (
+            "报告仍称其为「独立评测」——其中 4 题与主集同号同题，会误导读者"
+        )
+        assert "不可相加或平均" in body, "缺少「两处读数不可合并」的提示"
+
+    def test_negative_dataset_md_says_superset(self) -> None:
+        text = self.NEG_MD.read_text(encoding="utf-8")
+        assert "超集" in text, "负例集说明文件没有交代它与主集的关系"
+
+    def test_negative_dataset_md_does_not_claim_stale_kb_as_current(self) -> None:
+        """旧库规模可以出现在「构建时」的语境里，但不能当作当前状态陈述。"""
+        text = self.NEG_MD.read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if "37 份" not in line and "268" not in line:
+                continue
+            assert any(m in line for m in ("构建时", "当时", "旧库", "此后")), (
+                f"负例集说明把旧库规模当作当前状态陈述：{line.strip()[:120]}"
+            )
+
+    def test_readme_separates_frozen_snapshot_from_retest(self) -> None:
+        """README 不得把 39/281 冻结快照的 MRR 说成「当前知识库」的读数。"""
+        text = (ROOT / "README.md").read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if "0.492" not in line and "0.478" not in line:
+                continue
+            if "当前知识库上" in line and "0.492" in line:
+                raise AssertionError(
+                    f"README 把冻结快照读数当作当前读数：{line.strip()[:140]}"
+                )
