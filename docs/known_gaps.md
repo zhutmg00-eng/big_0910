@@ -32,7 +32,7 @@
 ## GAP-3 知识库是运行时产物，克隆后为空
 
 - `data/chroma_db/` 被 `.gitignore` 排除，`git clone` 后政策问答返回空。
-- 必须执行 `python scripts/ingest_policy_docs.py --force`（40 份 / 287 块，约 13–22 s，
+- 必须执行 `python scripts/ingest_policy_docs.py --force`（38 份 / 283 块，约 13–22 s，
   首次另需约 90 MB 的 `BAAI/bge-small-zh-v1.5` 模型）。
 - 自检：`GET /api/kb/health`，空库或换嵌入模型导致的「静默空库」会被检出。
 - **状态**：设计如此，README「冷启动」小节已说明。
