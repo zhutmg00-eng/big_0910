@@ -176,3 +176,50 @@ class TestIngestScriptSurfacesRejections:
         out = capsys.readouterr().out
         assert "被拒绝入库" in out
         assert "坏页面.md" in out
+
+
+class TestNegativeGoldChunksMatchAnnotations:
+    """负例金标块必须真的包含该题标注的关键词。
+
+    背景（2026-10-29 核查）：`scripts/build_negative_benchmark_30.py` 的匹配器
+    在关键词全部命中不了时**兜底取文档首块**，于是有些题的金标其实是
+    「这份文档的第一段」，与题意无关。实测 NEG_N18（问"只有加油卡总金额、
+    没有升数，能否按金额折算"）的金标落在《核算指南技术要求更新内容》
+    首块——那份文件通篇是发电设施碳氧化率与购入电力口径修订，
+    一个"计量""发票""燃料消耗量"字样都没有。
+
+    金标错了，该题在负例集上的读数就没有意义：命中它是运气，不命中也不能
+    说明检索差。这里用「金标块必须含至少一个标注关键词」做最小可自动化的判据。
+    """
+
+    def test_every_negative_gold_chunk_contains_annotated_keyword(self) -> None:
+        import importlib.util
+        import sys
+
+        spec = importlib.util.spec_from_file_location(
+            "build_negative_benchmark_30", ROOT / "scripts" / "build_negative_benchmark_30.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["build_negative_benchmark_30"] = mod
+        spec.loader.exec_module(mod)
+
+        sys.path.insert(0, str(ROOT))
+        from src.rag.vector_store import PolicyVectorStore
+
+        corpus = PolicyVectorStore()._corpus()["by_id"]
+        offenders = []
+        for q in json.loads(NEG_DATASET.read_text(encoding="utf-8")):
+            if not q["id"].startswith("NEG_"):
+                continue
+            code = q["id"].removeprefix("NEG_")
+            keywords = mod.EXPANDED_NEGATIVE_METADATA.get(code, {}).get("keywords", [])
+            if not keywords:
+                continue
+            text = " ".join(corpus[cid][0] for cid in q["gold_chunk_ids"] if cid in corpus)
+            if not any(kw in text for kw in keywords):
+                offenders.append(q["id"])
+
+        assert not offenders, (
+            f"以下题的金标块不含任何标注关键词，说明锚定失败：{offenders}。"
+            "请重新锚定到真正支撑该判定的条款，或修正标注关键词。"
+        )

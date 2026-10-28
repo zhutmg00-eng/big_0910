@@ -255,11 +255,11 @@
   "negative_suite": {
     "keyword": {
       "n_questions": 30,
-      "MRR": 0.2798,
+      "MRR": 0.2845,
       "Recall@1": 0.2333,
       "Recall@3": 0.3,
       "Recall@5": 0.3333,
-      "Recall@10": 0.4,
+      "Recall@10": 0.4333,
       "Recall@5_CI95": [
         0.1667,
         0.5
@@ -279,11 +279,11 @@
     },
     "hybrid": {
       "n_questions": 30,
-      "MRR": 0.281,
+      "MRR": 0.2866,
       "Recall@1": 0.2,
       "Recall@3": 0.3,
       "Recall@5": 0.4,
-      "Recall@10": 0.5,
+      "Recall@10": 0.5333,
       "Recall@5_CI95": [
         0.2333,
         0.5667
@@ -315,14 +315,14 @@
     },
     "rrf3": {
       "n_questions": 30,
-      "MRR": 0.2408,
+      "MRR": 0.2486,
       "Recall@1": 0.1667,
       "Recall@3": 0.2667,
-      "Recall@5": 0.3667,
-      "Recall@10": 0.4333,
+      "Recall@5": 0.4333,
+      "Recall@10": 0.4667,
       "Recall@5_CI95": [
-        0.2,
-        0.5333
+        0.2667,
+        0.6
       ]
     }
   },
