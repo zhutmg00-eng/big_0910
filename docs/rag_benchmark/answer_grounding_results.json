@@ -12,8 +12,8 @@
     "number_grounding_rate": 1.0,
     "citations_total": 75,
     "citations_grounded": 75,
-    "numbers_total": 237,
-    "numbers_grounded": 237
+    "numbers_total": 234,
+    "numbers_grounded": 234
   },
   "per_question": [
     {
@@ -228,8 +228,8 @@
       "citations": 2,
       "citations_grounded": 2,
       "ungrounded_citations": [],
-      "numbers": 3,
-      "numbers_grounded": 3,
+      "numbers": 0,
+      "numbers_grounded": 0,
       "ungrounded_numbers": []
     },
     {
