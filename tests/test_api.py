@@ -267,3 +267,96 @@ class TestAbsurdInputsAreRejected:
             },
         )
         assert response.status_code == 422, response.text
+
+
+class TestPathSecurityAndKBIngest:
+    """I-16：路径安全解析与知识库入库接口测试。"""
+
+    def test_safe_resolve_pure_filename_success(self):
+        from src.api.main import safe_resolve_path
+        from src.config import POLICY_DOCS_DIR
+
+        resolved = safe_resolve_path("交通运输碳达峰实施方案.md", POLICY_DOCS_DIR)
+        assert resolved.name == "交通运输碳达峰实施方案.md"
+        assert resolved.is_file()
+
+    def test_safe_resolve_traversal_attack_raises_403(self):
+        from fastapi import HTTPException
+        from src.api.main import safe_resolve_path
+        from src.config import POLICY_DOCS_DIR
+
+        with pytest.raises(HTTPException) as exc_info:
+            safe_resolve_path("../../.env", POLICY_DOCS_DIR)
+        assert exc_info.value.status_code == 403
+
+    def test_api_kb_ingest_relative_filename_200(self):
+        response = client.post(
+            "/api/kb/ingest",
+            params={"file_path": "交通运输碳达峰实施方案.md"},
+        )
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert data["file"] == "交通运输碳达峰实施方案.md"
+        assert "chunks_added" in data
+
+    def test_api_kb_ingest_traversal_rejected_403(self):
+        response = client.post(
+            "/api/kb/ingest",
+            params={"file_path": "../../../.env"},
+        )
+        assert response.status_code == 403, response.text
+
+    def test_api_kb_ingest_nonexistent_file_404(self):
+        response = client.post(
+            "/api/kb/ingest",
+            params={"file_path": "nonexistent_doc_xyz123.md"},
+        )
+        assert response.status_code == 404, response.text
+
+    def test_api_kb_ingest_all_returns_summary(self):
+        response = client.post("/api/kb/ingest-all", params={"force": False})
+        assert response.status_code == 200, response.text
+        data = response.json()
+        for key in ("documents", "chunks", "skipped"):
+            assert key in data, f"缺少汇总字段 {key}"
+
+
+class TestUncertaintyEndpoint:
+    """I-16：POST /api/uncertainty 接口自动化测试。"""
+
+    def test_uncertainty_valid_payload_returns_200_and_intervals(self):
+        payload = {
+            "fleet": [
+                {"vehicle_type": "重型柴油货车", "count": 10, "annual_km": 80000, "load_factor": 0.75},
+                {"vehicle_type": "中型柴油货车", "count": 20, "annual_km": 50000, "load_factor": 0.75},
+            ],
+            "n_samples": 500,
+            "mileage_cv": 0.10,
+            "load_factor_halfwidth": 0.05,
+        }
+        response = client.post("/api/uncertainty", json=payload)
+        assert response.status_code == 200, response.text
+        data = response.json()
+        for key in ("point_estimate_t", "p5_t", "p50_t", "p95_t", "histogram", "variance_contributions"):
+            assert key in data, f"结果缺少 {key}"
+        # 物理区间严格单调
+        assert data["p5_t"] <= data["p50_t"] <= data["p95_t"]
+        assert data["point_estimate_t"] > 0
+        assert isinstance(data["variance_contributions"], dict)
+
+    def test_uncertainty_empty_fleet_rejected_422(self):
+        response = client.post(
+            "/api/uncertainty",
+            json={"fleet": [], "n_samples": 500},
+        )
+        assert response.status_code == 422, response.text
+
+    def test_uncertainty_unknown_vehicle_type_rejected_422(self):
+        response = client.post(
+            "/api/uncertainty",
+            json={
+                "fleet": [{"vehicle_type": "虚构火星飞船", "count": 5, "annual_km": 10000}],
+            },
+        )
+        assert response.status_code == 422, response.text
+

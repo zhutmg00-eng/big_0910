@@ -189,16 +189,32 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 # 安全路径校验
 # ============================================================
 def safe_resolve_path(file_path: str, base_dir: Path) -> Path:
-    """安全解析文件路径，防止路径遍历攻击"""
-    base_dir = base_dir.resolve()
-    requested = Path(file_path).resolve()
+    """安全解析文件路径，防止路径遍历攻击。
+
+    相对路径优先相对于 base_dir 解析（兼容只传纯文件名的场景），
+    若解析后的绝对路径试图逃逸出 base_dir 则 403 拦截。
+    """
+    base = base_dir.resolve()
+    req = Path(file_path)
+    if req.is_absolute():
+        resolved = req.resolve()
+    else:
+        cand_base = (base / req).resolve()
+        cand_cwd = req.resolve()
+        if cand_base.is_relative_to(base) and cand_base.exists():
+            resolved = cand_base
+        elif cand_cwd.is_relative_to(base):
+            resolved = cand_cwd
+        else:
+            resolved = cand_base
+
     # 确保解析后的路径在base_dir内
-    if not requested.is_relative_to(base_dir):
+    if not resolved.is_relative_to(base):
         raise HTTPException(
             status_code=403,
-            detail=f"Access denied: path must be within {base_dir}"
+            detail=f"Access denied: path must be within {base}"
         )
-    return requested
+    return resolved
 
 
 # ============================================================
