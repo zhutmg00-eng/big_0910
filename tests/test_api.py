@@ -270,34 +270,86 @@ class TestAbsurdInputsAreRejected:
 
 
 class TestPathSecurityAndKBIngest:
-    """I-16：路径安全解析与知识库入库接口测试。"""
+    """I-16：路径安全解析与知识库入库接口测试。
+
+    I-17：这些端点会**真的写库**，必须隔离到临时目录。
+    实测（2026-10-31）：只跑 `test_api_kb_ingest_relative_filename_200`,
+    `data/chroma_db/chroma.sqlite3` 的 mtime 立刻变化——测试在改生产知识库。
+    端点内部是函数级 import，所以 patch `src.config.POLICY_DOCS_DIR` 与
+    `src.rag.PolicyAdvisor` / `src.rag.ingest_directory` 即可把它们引到临时库。
+    """
+
+    @pytest.fixture(autouse=True)
+    def _isolate_kb(self, tmp_path, monkeypatch):
+        from src.rag import PolicyAdvisor, ingest_directory
+        from src.rag.vector_store import PolicyVectorStore
+
+        docs = tmp_path / "policy_docs"
+        docs.mkdir()
+        (docs / "测试政策.md").write_text(
+            "# 测试政策\n\n**发布时间**: 2024年5月6日\n\n第一条 本文件仅用于测试入库。\n",
+            encoding="utf-8",
+        )
+        store = PolicyVectorStore(
+            persist_dir=str(tmp_path / "kb"), embedding_model="chromadb-default"
+        )
+        self._temp_store = store
+        self._temp_docs = docs
+
+        monkeypatch.setattr("src.config.POLICY_DOCS_DIR", docs)
+        monkeypatch.setattr(
+            "src.rag.PolicyAdvisor",
+            lambda *a, **k: PolicyAdvisor(vector_store=store),
+        )
+        monkeypatch.setattr(
+            "src.rag.ingest_directory",
+            lambda directory, vector_store=None, force=False: ingest_directory(
+                directory, store, force=force
+            ),
+        )
+
+    def test_fixture_actually_isolates_production_kb(self):
+        """保险丝：跑完入库接口后，生产库的块数不能变。"""
+        from src.config import CHROMA_DB_DIR
+        from src.rag.vector_store import PolicyVectorStore
+
+        production = PolicyVectorStore(persist_dir=str(CHROMA_DB_DIR))
+        before = production.count()
+
+        assert client.post(
+            "/api/kb/ingest", params={"file_path": "测试政策.md"}
+        ).status_code == 200
+
+        after = PolicyVectorStore(persist_dir=str(CHROMA_DB_DIR)).count()
+        assert after == before, (
+            f"入库接口写到了生产知识库（{before} → {after}），测试隔离失效"
+        )
+        assert self._temp_store.count() > 0, "临时库应收到分块"
 
     def test_safe_resolve_pure_filename_success(self):
         from src.api.main import safe_resolve_path
-        from src.config import POLICY_DOCS_DIR
 
-        resolved = safe_resolve_path("交通运输碳达峰实施方案.md", POLICY_DOCS_DIR)
-        assert resolved.name == "交通运输碳达峰实施方案.md"
+        resolved = safe_resolve_path("测试政策.md", self._temp_docs)
+        assert resolved.name == "测试政策.md"
         assert resolved.is_file()
 
     def test_safe_resolve_traversal_attack_raises_403(self):
         from fastapi import HTTPException
         from src.api.main import safe_resolve_path
-        from src.config import POLICY_DOCS_DIR
 
         with pytest.raises(HTTPException) as exc_info:
-            safe_resolve_path("../../.env", POLICY_DOCS_DIR)
+            safe_resolve_path("../../.env", self._temp_docs)
         assert exc_info.value.status_code == 403
 
     def test_api_kb_ingest_relative_filename_200(self):
         response = client.post(
             "/api/kb/ingest",
-            params={"file_path": "交通运输碳达峰实施方案.md"},
+            params={"file_path": "测试政策.md"},
         )
         assert response.status_code == 200, response.text
         data = response.json()
-        assert data["file"] == "交通运输碳达峰实施方案.md"
-        assert "chunks_added" in data
+        assert data["file"] == "测试政策.md"
+        assert data["chunks_added"] > 0
 
     def test_api_kb_ingest_traversal_rejected_403(self):
         response = client.post(
