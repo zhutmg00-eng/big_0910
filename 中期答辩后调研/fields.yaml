@@ -1,0 +1,63 @@
+fields:
+  基本信息:
+    - name: issuing_body
+      description: 发布机构/作者（官方机构、标准组织、企业、研究机构）
+      detail_level: 极简
+    - name: publish_date
+      description: 发布/生效/更新时间（尽量精确到日；区分发布日期与实施日期）
+      detail_level: 简要
+    - name: doc_number
+      description: 文件号/标准号/公告号（如 国办发〔2024〕39号、GB 30510-2024、2025年第47号公告）
+      detail_level: 极简
+    - name: norm_level
+      description: 层级与强制力：国家法律/行政法规/部门规范性文件/强制性国标/推荐性国标/行业标准/国际标准/自愿倡议/市场报告
+      detail_level: 简要
+    - name: version_lineage
+      description: 版本演进与替代关系（上一版→本版→后续，废止关系；如 GB 30510-2018→2024、发改委2015指南→GB/T 32151.27-2024）
+      detail_level: 简要
+    - name: access_type
+      description: 全文可得性：官方免费全文/付费/仅新闻转述/二手转载渠道
+      detail_level: 极简
+  核心内容:
+    - name: key_points
+      description: 要点摘要（与物流碳排放核算/减排决策直接相关的内容）
+      detail_level: 详细
+    - name: quotable_numbers
+      description: 可引用的具体数字/条款，逐条列出并注明出处位置（章节/页码/条文号）
+      detail_level: 详细
+    - name: boundary_scope
+      description: 核算口径覆盖：气体范围（仅CO2还是CO2e含CH4/N2O）、TTW/WTW口径、组织/运输链/产品层级
+      detail_level: 简要
+    - name: target_scale
+      description: 适用对象规模：大型企业/中小企业/单一车队，核算门槛与豁免条款
+      detail_level: 简要
+  对本项目的价值:
+    - name: significance_support
+      description: 意义侧支撑：对回应"实际意义不大"质疑的价值（政策传导链/市场证据/需求刚性）；不适用则写不适用
+      detail_level: 详细
+    - name: accuracy_support
+      description: 准确性侧支撑：对回应"数据准确性"质疑的价值（可替换/可校准/可对标的因子与方法学依据）；不适用则写不适用
+      detail_level: 详细
+    - name: module_mapping
+      description: 工具模块映射：因子库/核算引擎/决策模拟TCO/报表披露/基准对标/政策知识库/评价指标中的哪些
+      detail_level: 简要
+    - name: improvement_action
+      description: 建议的具体改造动作（落到代码或文档层面，如"在emission_factors.csv增加来源等级列""Scope 2模块区分双序列"）
+      detail_level: 详细
+    - name: citation_ready
+      description: 答辩引用句：一句可直接写入PPT的表述，含数字+出处+年份
+      detail_level: 简要
+  来源与可信度:
+    - name: official_url
+      description: 官方一手来源URL（gov.cn/mee.gov.cn/mot.gov.cn/openstd.samr.gov.cn等优先；多个则列多个）
+      detail_level: 极简
+    - name: source_type
+      description: 来源类型：官方/标准/文献/行业报告/新闻转述
+      detail_level: 极简
+    - name: data_quality_tier
+      description: 数据质量层级：primary实测/default缺省值/推算/假设；有无不确定性区间或数据质量评分方法
+      detail_level: 简要
+    - name: needs_verification
+      description: 需原文核对项：哪些数字/条款仅在二手来源见过、需在官方渠道核对原文
+      detail_level: 简要
+uncertain: []

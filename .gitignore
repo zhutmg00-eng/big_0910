@@ -93,3 +93,14 @@ docs/中期答辩材料/
 docs/artifacts/signatures/
 scripts/*paper*.py
 scripts/*academic*.py
+
+# 浏览器自动化会话产物（MCP 抓取日志/页面快照/下载的标准 PDF）
+.playwright-mcp/
+# 外部导入素材（立项报告、汇报模板）与本地交付包（交付走 git tag + release）
+import/
+output/
+# 中期答辩后调研工作区：研究成果（results/、report.md、Obsidian 笔记、推送脚本）入库；
+# 以下两处按仓库惯例不进公开仓库——前者是已废弃且含被禁声明的死代码
+# （迭代队列 I-24；I-1 先例为删除而非归档入库），后者是答辩私用口径材料
+中期答辩后调研/archive_removed_generators/
+中期答辩后调研/obsidian_staging/答辩口径卡*.md
