@@ -233,6 +233,10 @@ app.include_router(fleet_router)
 from src.api.routes_turnover import router as turnover_router  # noqa: E402
 app.include_router(turnover_router)
 
+# 货主报告模式：CDP 范围 3 第 4 类（上游运输及配送）口径的承运商披露汇总
+from src.api.routes_shipper_report import router as shipper_report_router  # noqa: E402
+app.include_router(shipper_report_router)
+
 
 # ========== 数据模型 ==========
 

@@ -79,6 +79,35 @@ DEFAULT_TCO_BENCHMARKS: Dict[str, VehicleTCOBenchmark] = {
 }
 
 
+# 老旧营运货车报废更新补贴分档（元/车）。
+# 交规划发〔2025〕17号（2025-03-18 印发，实施期 2025-01-01~2025-12-31；
+# 2026 年延续为交办运〔2026〕29号实施细则，2026-05-09 印发）。
+# 仅报废=报废国三及以下营运货车；报废并新购=报废旧车同时新购国六或新能源货车。
+SCRAPPAGE_SUBSIDY_SCHEDULE = {
+    "仅报废": {"中型货车": 25000, "重型货车": 45000},
+    "报废并新购国六柴油": {"中型货车": 25000, "重型货车": 65000},
+    "报废并新购新能源": {"中型货车": 35000, "重型货车": 95000},
+}
+# 报废+新购新能源重卡两档合计上限（约 4.5 万 + 9.5 万 = 14 万/辆，答辩材料常用口径）
+SCRAPPAGE_SUBSIDY_COMBINED_CAP = {"报废并新购新能源": {"重型货车": 140000}}
+
+
+def lookup_scrappage_subsidy(vehicle_type: str, mode: str = "报废并新购新能源") -> Optional[float]:
+    """按车型与补贴模式查询报废更新补贴金额（元/车）；查不到返回 None。
+
+    车型匹配规则与 get_tco_benchmark 一致：关键词包含即命中（重型/中型/轻型）。
+    """
+    table = SCRAPPAGE_SUBSIDY_SCHEDULE.get(mode)
+    if not table:
+        return None
+    # 档位键为"重型/中型货车"等，而车型名是"重型柴油货车"——吨位词不一定连续出现，
+    # 因此按前两字（重型/中型/轻型）匹配，与 get_tco_benchmark 的包含规则对齐。
+    for key, amount in table.items():
+        if key[:2] in vehicle_type:
+            return float(amount)
+    return None
+
+
 @dataclass
 class TCOEconomicParameters:
     """宏观经济与通用能源价格参数。"""
@@ -94,6 +123,12 @@ class TCOEconomicParameters:
     # 重卡 45,000 / 中型 22,000 / 轻型 12,000 / 其它 5,000（见 calculate_single_vehicle_tco）。
     # 显式填正数则完全覆盖内置档位——论文表 6 的轻卡 0.97 年即取 13,500，高于轻型默认档 12.5%。
     baas_annual_battery_rental_yuan: float = 0.0
+    # 老旧营运货车报废更新补贴（元/车），抵减初始投资增量 ΔCAPEX。
+    # 政策依据：交规划发〔2025〕17号（2025-03-18，报废国四及以下营运货车并新购）；
+    # 分档金额见 SCRAPPAGE_SUBSIDY_SCHEDULE（分档数经省级实施细则交叉印证，
+    # 国家附件 docx 原文页码待核——needs_verification，见 docs/质疑回应与改造方案.md P1-3）。
+    # 填 0 表示不启用（默认），此时全部 TCO 结论与既有口径完全一致。
+    scrappage_subsidy_yuan_per_vehicle: float = 0.0
 
 
 @dataclass
@@ -116,6 +151,8 @@ class SingleVehicleTCOResult:
     lifespan_co2_reduction_t: float  # 全生命周期总减排量 (tCO2e)
     lifespan_net_savings_yuan: float  # 全生命周期净节省 (NPV折现后净现值收益，元)
     yearly_cumulative_cashflow_yuan: List[float] = field(default_factory=list)  # 0~N年累计现金流
+    # 报废更新补贴口径说明（未启用时为空串）；补贴只抵减 ΔCAPEX，不改变能耗与减排量
+    policy_subsidy_note: str = ""
     # BaaS 宣称的"初始垫资骤降 xx%"来自哪里，必须显式写出来。
     # 详见 baas_capex_note：这个比例是代数恒等式的算术结果，不是敏感性分析的结论，
     # 拿它当卖点时评委一问"充电桩单价取多少"就答不上来。
@@ -248,6 +285,21 @@ def calculate_single_vehicle_tco(
             (spec.ev_vehicle_price_wan - spec.ice_vehicle_price_wan + spec.charger_cost_wan)
             * 10000.0
         )
+    # 1.5 老旧营运货车报废更新补贴（政策参数，默认 0 不启用）：
+    # 补贴直接抵减初始投资增量，不改变能耗节省与减排量；未计入电池衰减、残值等项的口径不变。
+    subsidy_note = ""
+    if params.scrappage_subsidy_yuan_per_vehicle > 0:
+        subsidy = float(params.scrappage_subsidy_yuan_per_vehicle)
+        single_capex_delta -= subsidy
+        subsidy_note = (
+            f"已按老旧营运货车报废更新补贴抵减初始投资 {subsidy:,.0f} 元/车"
+            f"（依据交规划发〔2025〕17号分档，用户显式填入；2026 年延续口径为交办运〔2026〕29号）。"
+            f"补贴后的 ΔCAPEX 未再扣除其他政策项。"
+        )
+    if single_capex_delta < 0:
+        # 补贴超过投资增量时，结果按 0 处理并显式说明，避免出现"负投资"被误读为净收益。
+        subsidy_note += " 补贴金额超过初始投资增量，ΔCAPEX 按 0 计（不产生负投资）。"
+        single_capex_delta = 0.0
     delta_capex_total = single_capex_delta * replace_count
 
     # 2. 燃料与电能单价确定
@@ -358,6 +410,7 @@ def calculate_single_vehicle_tco(
         lifespan_net_savings_yuan=lifespan_net_savings,
         yearly_cumulative_cashflow_yuan=yearly_cashflow,
         baas_capex_note=baas_capex_note,
+        policy_subsidy_note=subsidy_note,
     )
 
 
