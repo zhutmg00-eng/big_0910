@@ -85,5 +85,11 @@ docs/*答辩*.md
 docs/*绝杀*.md
 docs/*顶配*.md
 docs/*待办*.md
+# 上面这几条 `docs/*xxx*.md` 只匹配 docs/ 下的一层文件，**不覆盖子目录**。
+# 实测（2026-10-31）：docs/中期答辩材料/ 里的逐字稿、问答预案、口径卡与禁语
+# 全部未被忽略，一次 `git add -A` 就会把私用答辩材料推上公开仓库。
+# 同理 docs/artifacts/*.png 也只匹配一层，真人签名图在 signatures/ 子目录里漏网。
+docs/中期答辩材料/
+docs/artifacts/signatures/
 scripts/*paper*.py
 scripts/*academic*.py
