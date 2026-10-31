@@ -83,6 +83,12 @@ VEHICLE_ENERGY_SPECS: Dict[str, Dict[str, float]] = {
         "kwh_per_km": 1.50,      # 纯电重卡约为 150 kWh/100km (以电代油对标)
         "rated_payload_t": 25.0,  # 额定载重 25 吨 (三轴/六轴半挂)
     },
+    "重型柴油半挂牵引车(>49t)": {
+        "kwh_per_km": 1.50,      # 纯电重卡约为 150 kWh/100km (以电代油对标)
+        "rated_payload_t": 25.0,  # 额定载重 25 吨 (六轴半挂列车)。
+        # 2026-10-31 补：此前该键缺失，calculate_freight_turnover 对牵引车车队
+        # 静默回退 2 吨载重（get 的 default），碳强度虚高约 12 倍。
+    },
     "LNG重型货车": {
         "kwh_per_km": 1.50,
         "rated_payload_t": 25.0,  # 额定载重 25 吨

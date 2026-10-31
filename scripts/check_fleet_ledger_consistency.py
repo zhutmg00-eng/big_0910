@@ -94,7 +94,10 @@ def main() -> dict:
             per_fuel[fuel] = {
                 "disclosed_qty": disclosed,
                 "model_equivalent_qty": round(model_qty, 1),
-                "ratio_model_over_disclosed": round(model_qty / disclosed, 4),
+                # 模型未设该燃料车型时（如申通案的 LNG）给不出比值，置 None 并注明原因，
+                # 不再产出 inf/崩溃；该燃料仍计入台账基准，方向性影响在各案 notes 中说明。
+                "ratio_model_over_disclosed": round(model_qty / disclosed, 4) if model_qty else None,
+                "ratio_note": None if model_qty else "模型车队未设该燃料车型，反算等效量为0，比值不可定义（该燃料计入台账基准、未计入模型，使本案相对偏差偏低）",
                 "disclosed_qty_implied_total_vkm_km": round(model_vkm * scale, 0) if scale else None,
                 "model_total_vkm_km": model_vkm,
                 "implied_vehicle_fraction": round(scale, 4) if scale else None,
@@ -122,11 +125,15 @@ def report(result: dict) -> None:
     for c in result["cases"]:
         print(f"\n【{c['benchmark_id']}】{c['company_name']}（{c['vehicles_total']:,} 辆）")
         for fuel, m in c["per_fuel"].items():
-            print(f"  · {fuel}：披露 {m['disclosed_qty']:,} | 模型等效 {m['model_equivalent_qty']:,}"
-                  f" | 比值 {m['ratio_model_over_disclosed']:.4f}")
-            print(f"      模型总车公里 {m['model_total_vkm_km']:,} km"
-                  f" → 披露量可支撑 {m['disclosed_qty_implied_total_vkm_km']:,} km"
-                  f"（相当于模型口径的 {m['implied_vehicle_fraction']:.1%}）")
+            if m.get("ratio_model_over_disclosed") is not None:
+                print(f"  · {fuel}：披露 {m['disclosed_qty']:,} | 模型等效 {m['model_equivalent_qty']:,}"
+                      f" | 比值 {m['ratio_model_over_disclosed']:.4f}")
+                print(f"      模型总车公里 {m['model_total_vkm_km']:,} km"
+                      f" → 披露量可支撑 {m['disclosed_qty_implied_total_vkm_km']:,} km"
+                      f"（相当于模型口径的 {m['implied_vehicle_fraction']:.1%}）")
+            else:
+                print(f"  · {fuel}：披露 {m['disclosed_qty']:,} | 模型等效 0"
+                      f" | 比值 不可定义（{m.get('ratio_note')}）")
             for pv in m.get("allocated_per_vehicle", []):
                 tag = (f"{pv['implied_l_per_100km']:.1f} L/100km" if pv["implied_l_per_100km"] is not None
                        else f"{pv['implied_units_per_vehicle_year']:,.0f} kg/车/年")
@@ -137,7 +144,7 @@ def report(result: dict) -> None:
                       f"（{tag}；{ref}）")
     print("\n" + "=" * 92)
     print("判读要点：")
-    print("1. 比值在 0.93~1.12 之间（Case 2/3/4）时，可认为活动参数与披露能耗自洽；")
+    print("1. 各燃料比值接近 1 时，可认为活动参数与披露能耗自洽；逐案数值见上方输出与 docs/fleet_ledger_consistency.json；")
     print("2. 比值明显偏离 1 时（如 Case 1），说明该案例的车型构成/里程假设支撑不起披露能耗，")
     print("   或披露能耗只覆盖了车队的一部分，需回到原始报告核对分车型口径；")
     print("3. 本脚本只做核对，不修改任何输入数据，也不用于反向拟合参数。")

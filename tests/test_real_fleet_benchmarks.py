@@ -145,21 +145,25 @@ def test_real_fleet_calculation_accuracy(benchmark_data):
 
 
 def test_load_factor_adjustment_effect(benchmark_data):
-    """验证冷链城配等低满载率车队受满载率调整系数影响后排放上浮"""
-    cold_chain_b = next(
-        (b for b in benchmark_data["benchmarks"] if "Coldchain" in b["benchmark_id"]),
+    """验证低满载率车队（v1.1.0 起以合成低载画像代替已移出的冷链案例）受满载率调整系数影响后排放上浮"""
+    # v1.1.0 移出了低载冷链案例（GAP-6.3），此处改用基准集内的车型构造低载画像：
+    # 用京东案轻卡组的车型与里程、但把满载率压到 0.60，触发 LF 保守偏置。
+    jd_b = next(
+        (b for b in benchmark_data["benchmarks"] if b["benchmark_id"] == "JD_Logistics_Green_2023"),
         None,
     )
-    assert cold_chain_b is not None
+    assert jd_b is not None
+    low_load_groups = [v for v in jd_b["fleet_input"] if v["vehicle_type"] == "轻型柴油货车"]
+    assert low_load_groups, "京东案应含轻型柴油货车组"
 
     fleet_with_adj = [
         VehicleGroupData(
             vehicle_type=v["vehicle_type"],
             count=v["count"],
             annual_km=v["annual_km"],
-            load_factor=v.get("load_factor", 0.75),
+            load_factor=0.60,  # 强制低载，触发 LF = 1 + 0.15×(0.75−0.60)
         )
-        for v in cold_chain_b["fleet_input"]
+        for v in low_load_groups
     ]
     res_adj = calculate_emission(fleet_with_adj)
 
@@ -171,7 +175,7 @@ def test_load_factor_adjustment_effect(benchmark_data):
             annual_km=v["annual_km"],
             load_factor=0.75,
         )
-        for v in cold_chain_b["fleet_input"]
+        for v in low_load_groups
     ]
     res_no_adj = calculate_emission(fleet_without_adj)
 

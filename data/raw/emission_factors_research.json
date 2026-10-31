@@ -3,14 +3,49 @@
     {
       "title": "中国分省道路交通二氧化碳排放因子",
       "url": "http://d.wanfangdata.com.cn/periodical/zghjkx202107014",
-      "source": "中国环境科学, 2021, 41(7): 3276-3287. 作者: 吕晨(生态环境部环境规划院), 张哲(上海交通大学), 陈徐梅(交通运输部科学研究院), 马冬(中国环境科学研究院), 蔡博峰(清华大学环境学院)",
+      "source": "中国环境科学, 2021, 41(7): 3122-3130. 作者: 吕晨(生态环境部环境规划院), 张哲(上海交通大学), 陈徐梅(交通运输部科学研究院), 马冬(中国环境科学研究院), 蔡博峰(清华大学环境学院)",
       "key_data": "基于MOVES模型模拟中国31省份分车型CO2排放因子(TTW)。各类机动车平均CO2排放因子: 重型货车0.877, 中型货车0.508, 轻型货车0.374, 微型货车0.216 kgCO2/km。柴油公交车0.880, 电动公交车0.676, 柴油小客车0.227, 汽油小客车0.203, 电动小客车0.108, 摩托车0.062 kgCO2/km。",
-      "vehicle_types": ["重型货车", "中型货车", "轻型货车", "微型货车", "柴油公交车", "电动公交车", "柴油小客车", "汽油小客车", "电动小客车", "摩托车"],
+      "vehicle_types": [
+        "重型货车",
+        "中型货车",
+        "轻型货车",
+        "微型货车",
+        "柴油公交车",
+        "电动公交车",
+        "柴油小客车",
+        "汽油小客车",
+        "电动小客车",
+        "摩托车"
+      ],
       "factors": [
-        {"vehicle_type": "重型柴油货车", "fuel": "柴油", "co2_kg_per_km": 0.877, "scope": "TTW", "notes": "全国平均值，基于MOVES模型模拟，各省份有差异"},
-        {"vehicle_type": "中型柴油货车", "fuel": "柴油", "co2_kg_per_km": 0.508, "scope": "TTW", "notes": "全国平均值"},
-        {"vehicle_type": "轻型柴油货车", "fuel": "柴油", "co2_kg_per_km": 0.374, "scope": "TTW", "notes": "全国平均值"},
-        {"vehicle_type": "微型货车", "fuel": "汽油", "co2_kg_per_km": 0.216, "scope": "TTW", "notes": "全国平均值，微型货车主要为汽油车"}
+        {
+          "vehicle_type": "重型柴油货车",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.877,
+          "scope": "TTW",
+          "notes": "全国平均值，基于MOVES模型模拟，各省份有差异"
+        },
+        {
+          "vehicle_type": "中型柴油货车",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.508,
+          "scope": "TTW",
+          "notes": "全国平均值"
+        },
+        {
+          "vehicle_type": "轻型柴油货车",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.374,
+          "scope": "TTW",
+          "notes": "全国平均值"
+        },
+        {
+          "vehicle_type": "微型货车",
+          "fuel": "汽油",
+          "co2_kg_per_km": 0.216,
+          "scope": "TTW",
+          "notes": "全国平均值，微型货车主要为汽油车"
+        }
       ]
     },
     {
@@ -18,30 +53,134 @@
       "url": "https://m.book118.com/html/2025/0307/5031023204012112.shtm",
       "source": "零排放货运行动(ZEFI)/智慧货运中心中国, 2024-2025。提供中国公路货物运输WTW排放因子推荐值",
       "key_data": "公路货物运输排放因子(不区分质量区间, kgCO2e/tkm): 柴油货车WTT=0.0366, TTW=0.1791, WTW=0.2157; 汽油货车WTT=0.0386, TTW=0.1866, WTW=0.2251; 纯电动货车WTT(WTW)=0.1278; 天然气货车WTT=0.0539, TTW=0.1939, WTW=0.2478。还提供区分质量区间的细分排放因子。",
-      "vehicle_types": ["柴油货车", "汽油货车", "纯电动货车", "天然气货车"],
+      "vehicle_types": [
+        "柴油货车",
+        "汽油货车",
+        "纯电动货车",
+        "天然气货车"
+      ],
       "factors": [
-        {"vehicle_type": "柴油货车(均值)", "fuel": "柴油", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.2157, "scope": "WTW", "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"},
-        {"vehicle_type": "柴油货车(均值)", "fuel": "柴油", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.1791, "scope": "TTW", "notes": "油箱到车轮, kgCO2e/tkm"},
-        {"vehicle_type": "柴油货车(均值)", "fuel": "柴油", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.0366, "scope": "WTT", "notes": "油井到油箱, kgCO2e/tkm"},
-        {"vehicle_type": "汽油货车(均值)", "fuel": "汽油", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.2251, "scope": "WTW", "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"},
-        {"vehicle_type": "纯电动货车(均值)", "fuel": "电力", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.1278, "scope": "WTW", "notes": "纯电动仅有WTT(即WTW,因无TTW直接排放), kgCO2e/tkm"},
-        {"vehicle_type": "天然气货车(均值)", "fuel": "天然气", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.2478, "scope": "WTW", "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"},
-        {"vehicle_type": "天然气货车(均值)", "fuel": "天然气", "co2_kg_per_km": null, "co2_kg_per_tkm": 0.1939, "scope": "TTW", "notes": "油箱到车轮, kgCO2e/tkm"}
+        {
+          "vehicle_type": "柴油货车(均值)",
+          "fuel": "柴油",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.2157,
+          "scope": "WTW",
+          "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "柴油货车(均值)",
+          "fuel": "柴油",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.1791,
+          "scope": "TTW",
+          "notes": "油箱到车轮, kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "柴油货车(均值)",
+          "fuel": "柴油",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.0366,
+          "scope": "WTT",
+          "notes": "油井到油箱, kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "汽油货车(均值)",
+          "fuel": "汽油",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.2251,
+          "scope": "WTW",
+          "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "纯电动货车(均值)",
+          "fuel": "电力",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.1278,
+          "scope": "WTW",
+          "notes": "纯电动仅有WTT(即WTW,因无TTW直接排放), kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "天然气货车(均值)",
+          "fuel": "天然气",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.2478,
+          "scope": "WTW",
+          "notes": "不区分质量区间的公路货运均值, kgCO2e/tkm"
+        },
+        {
+          "vehicle_type": "天然气货车(均值)",
+          "fuel": "天然气",
+          "co2_kg_per_km": null,
+          "co2_kg_per_tkm": 0.1939,
+          "scope": "TTW",
+          "notes": "油箱到车轮, kgCO2e/tkm"
+        }
       ]
     },
     {
       "title": "GB 30510-2024 重型商用车辆燃料消耗量限值(第四阶段)",
       "url": "https://std.samr.gov.cn/gb/search/gbDetailed?id=23EE8C718E2FE8A3E06397BE0A0AC332",
       "source": "国家市场监督管理总局/工业和信息化部/交通运输部, 2024-09-29发布, 2025-07-01实施。代替GB 30510-2018",
-      "key_data": "第四阶段标准适用于GVW>3500kg的汽油和柴油商用车。CO2计算方法: 柴油2600g/L(2.6kg/L), 汽油2370g/L(2.37kg/L)。货车燃料消耗量限值(L/100km, 2023年): GVW 3500-4500: 9.9; 4500-5500: 10.5; 5500-7000: 11.9; 7000-8500: 14.0; 8500-10500: 15.7; 10500-12500: 18.2; 12500-16000: 20.6; 16000-20000: 23.2; 20000-25000: 27.8; 25000-31000: 32.1; >31000: 33.0。汽油车限值乘以1.2。第四阶段比第三阶段收紧12%-16%。新增混合动力车型和CO2计算方法。",
-      "vehicle_types": ["重型货车", "中型货车", "轻型货车", "半挂牵引车", "自卸汽车", "客车"],
+      "key_data": "第四阶段限值（标准原文表1货车/表2牵引车，C-WTVC工况）：货车 3500<GVW≤4500: 10.6; 12500-16000: 21.2; 16000-20000: 23.9; 20000-25000: 29.5; 25000-31000: 33.7; 31000<GVW: 34.6 L/100km；半挂牵引车 GCW≤18000: 24.3 … 49000<GCW: 35.9 L/100km。5.6条：RCO2=KCO2×FCL/100，KCO2 柴油 2.60×10³ g/L、汽油 2.37×10³ g/L。汽油车限值=柴油限值×1.3 圆整至一位。2026-10-31 更正：本块此前误用\"节能车船税优惠目录2023年档值\"（33.0/20.6/9.9 等）并标注为第四阶段限值，已按标准原文（全文PDF存于 中期答辩后调研/attachments/GB-30510-2024.pdf）重写。",
+      "vehicle_types": [
+        "重型货车",
+        "中型货车",
+        "轻型货车",
+        "半挂牵引车",
+        "自卸汽车",
+        "客车"
+      ],
       "factors": [
-        {"vehicle_type": "重型柴油货车(>31t)", "fuel": "柴油", "co2_kg_per_km": 0.858, "scope": "TTW", "notes": "由限值33.0L/100km × 2.6kg/L计算, 基于C-WTVC工况"},
-        {"vehicle_type": "中型柴油货车(12-16t)", "fuel": "柴油", "co2_kg_per_km": 0.536, "scope": "TTW", "notes": "由限值20.6L/100km × 2.6kg/L计算"},
-        {"vehicle_type": "轻型柴油货车(3.5-4.5t)", "fuel": "柴油", "co2_kg_per_km": 0.257, "scope": "TTW", "notes": "由限值9.9L/100km × 2.6kg/L计算"},
-        {"vehicle_type": "微型汽油货车(3.5-4.5t)", "fuel": "汽油", "co2_kg_per_km": 0.282, "scope": "TTW", "notes": "由限值9.9×1.2=11.88L/100km × 2.37kg/L计算"},
-        {"vehicle_type": "重型柴油货车(25-31t)", "fuel": "柴油", "co2_kg_per_km": 0.835, "scope": "TTW", "notes": "由限值32.1L/100km × 2.6kg/L计算"},
-        {"vehicle_type": "中型柴油货车(16-20t)", "fuel": "柴油", "co2_kg_per_km": 0.603, "scope": "TTW", "notes": "由限值23.2L/100km × 2.6kg/L计算"}
+        {
+          "vehicle_type": "中型柴油货车(16-20t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.603,
+          "scope": "TTW",
+          "notes": "由限值23.2L/100km × 2.6kg/L计算"
+        },
+        {
+          "vehicle_type": "重型柴油货车(>31t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.9,
+          "scope": "TTW",
+          "notes": "限值34.6 L/100km × 2.60 kg/L（标准5.6条），C-WTVC工况上限"
+        },
+        {
+          "vehicle_type": "重型柴油货车(25-31t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.876,
+          "scope": "TTW",
+          "notes": "限值33.7 × 2.60"
+        },
+        {
+          "vehicle_type": "重型柴油半挂牵引车(>49t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.933,
+          "scope": "TTW",
+          "notes": "限值35.9 × 2.60"
+        },
+        {
+          "vehicle_type": "中型柴油货车(12-16t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.551,
+          "scope": "TTW",
+          "notes": "限值21.2 × 2.60"
+        },
+        {
+          "vehicle_type": "轻型柴油货车(3.5-4.5t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.276,
+          "scope": "TTW",
+          "notes": "限值10.6 × 2.60"
+        },
+        {
+          "vehicle_type": "微型汽油货车(3.5-4.5t)",
+          "fuel": "汽油",
+          "co2_kg_per_km": 0.327,
+          "scope": "TTW",
+          "notes": "柴油限值10.6×1.3=13.8 × 2.37"
+        }
       ]
     },
     {
@@ -49,10 +188,29 @@
       "url": "https://std.samr.gov.cn/gb/search/gbDetailed?id=E116673E9639A3B7E05397BE0A0AC6BF",
       "source": "国家市场监督管理总局/工业和信息化部, 2018年发布, 2019-07-01实施。已被GB 30510-2024代替",
       "key_data": "第三阶段标准。货车燃料消耗量限值(L/100km): 与第四阶段类似但限值更高(第四阶段收紧12-16%)。主要起草单位: 中国汽车技术研究中心等。",
-      "vehicle_types": ["重型货车", "中型货车", "轻型货车", "半挂牵引车", "自卸汽车", "客车"],
+      "vehicle_types": [
+        "重型货车",
+        "中型货车",
+        "轻型货车",
+        "半挂牵引车",
+        "自卸汽车",
+        "客车"
+      ],
       "factors": [
-        {"vehicle_type": "重型柴油货车(>31t)", "fuel": "柴油", "co2_kg_per_km": 0.884, "scope": "TTW", "notes": "由第三阶段限值约34.0L/100km × 2.6kg/L估算"},
-        {"vehicle_type": "中型柴油货车(12-16t)", "fuel": "柴油", "co2_kg_per_km": 0.554, "scope": "TTW", "notes": "由第三阶段限值约21.3L/100km × 2.6kg/L估算"}
+        {
+          "vehicle_type": "重型柴油货车(>31t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.884,
+          "scope": "TTW",
+          "notes": "由第三阶段限值约34.0L/100km × 2.6kg/L估算"
+        },
+        {
+          "vehicle_type": "中型柴油货车(12-16t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.554,
+          "scope": "TTW",
+          "notes": "由第三阶段限值约21.3L/100km × 2.6kg/L估算"
+        }
       ]
     },
     {
@@ -60,11 +218,35 @@
       "url": "https://smartfreightcentre.org/documents/378/GLEC框架3.0中国默认排放系数V1.0.pdf",
       "source": "智慧货运中心中国办公室(Smart Freight Centre China)/零排放货运行动(ZEFI), 2024年6月(v1.0)/2024年12月(v1.1)",
       "key_data": "遵循ISO 14083和GLEC框架3.0，提供中国交通运输WTW(油井到车轮)能源温室气体排放因子和基于运输活动水平的温室气体排放强度默认值。数据来源包括: 机动车能耗数据、官方能源低位发热量、燃烧效率、电量消耗综合能耗碳排放数据、IPCC碳含量默认值。作为GLEC框架3.0第3部分(数据)模块1(排放因子)和模块2(燃油效率和温室气体排放强度默认值)的补充材料。采取保守态度引用默认值。",
-      "vehicle_types": ["柴油货车", "汽油货车", "纯电动货车", "天然气货车", "混合动力货车"],
+      "vehicle_types": [
+        "柴油货车",
+        "汽油货车",
+        "纯电动货车",
+        "天然气货车",
+        "混合动力货车"
+      ],
       "factors": [
-        {"vehicle_type": "柴油货车", "fuel": "柴油", "co2_kg_per_km": null, "scope": "WTW", "notes": "具体数值见GLEC框架3.0中国默认排放系数文档, 提供WTW排放因子和排放强度默认值"},
-        {"vehicle_type": "纯电动货车", "fuel": "电力", "co2_kg_per_km": null, "scope": "WTW", "notes": "基于中国电网排放因子计算, 间接排放"},
-        {"vehicle_type": "天然气货车", "fuel": "天然气", "co2_kg_per_km": null, "scope": "WTW", "notes": "WTW排放因子, 包含燃料生产和燃烧排放"}
+        {
+          "vehicle_type": "柴油货车",
+          "fuel": "柴油",
+          "co2_kg_per_km": null,
+          "scope": "WTW",
+          "notes": "具体数值见GLEC框架3.0中国默认排放系数文档, 提供WTW排放因子和排放强度默认值"
+        },
+        {
+          "vehicle_type": "纯电动货车",
+          "fuel": "电力",
+          "co2_kg_per_km": null,
+          "scope": "WTW",
+          "notes": "基于中国电网排放因子计算, 间接排放"
+        },
+        {
+          "vehicle_type": "天然气货车",
+          "fuel": "天然气",
+          "co2_kg_per_km": null,
+          "scope": "WTW",
+          "notes": "WTW排放因子, 包含燃料生产和燃烧排放"
+        }
       ]
     },
     {
@@ -72,12 +254,39 @@
       "url": "https://zhuanlan.zhihu.com/p/1988998655299060652",
       "source": "知乎/微博(天津绿领环保), 2025-12-08/2025-12-31。引用中机寰宇认证检验股份有限公司付志坚等研究数据",
       "key_data": "2022年中国电力平均CO2排放因子: 0.5366 kgCO2/kWh; 河北省2022年电力碳排放因子: 0.7252 kgCO2/kWh。纯电重卡百公里电耗约150kWh, 全国平均间接碳排放约80.49 kgCO2/100km(0.805 kg/km), 河北省约108.78 kgCO2/100km(1.088 kg/km)。49吨重型货车柴油消耗约35L/100km(29.4kg), 燃油重型货车满载单位货运周转量排放因子0.049 kgCO2/(t·km)(WTW), 柴油生产过程排放因子0.67 kg/kg, 35L柴油消耗排放CO2 259.7kg/100km(2.597 kg/km, WTW)。",
-      "vehicle_types": ["重型柴油货车", "纯电动重卡"],
+      "vehicle_types": [
+        "重型柴油货车",
+        "纯电动重卡"
+      ],
       "factors": [
-        {"vehicle_type": "重型柴油货车(49t)", "fuel": "柴油", "co2_kg_per_km": 2.597, "scope": "WTW", "notes": "满载WTW, 含燃料生产和燃烧, 35L/100km, 0.049 kgCO2/(t·km)×49t + 柴油生产排放"},
-        {"vehicle_type": "重型柴油货车(49t)", "fuel": "柴油", "co2_kg_per_km": 0.91, "scope": "TTW", "notes": "仅燃烧排放, 35L/100km × 2.6kg/L"},
-        {"vehicle_type": "纯电动重卡", "fuel": "电力", "co2_kg_per_km": 0.805, "scope": "WTW", "notes": "全国平均, 150kWh/100km × 0.5366 kgCO2/kWh"},
-        {"vehicle_type": "纯电动重卡(河北)", "fuel": "电力", "co2_kg_per_km": 1.088, "scope": "WTW", "notes": "河北电网, 150kWh/100km × 0.7252 kgCO2/kWh"}
+        {
+          "vehicle_type": "重型柴油货车(49t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 2.597,
+          "scope": "WTW",
+          "notes": "满载WTW, 含燃料生产和燃烧, 35L/100km, 0.049 kgCO2/(t·km)×49t + 柴油生产排放"
+        },
+        {
+          "vehicle_type": "重型柴油货车(49t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.91,
+          "scope": "TTW",
+          "notes": "仅燃烧排放, 35L/100km × 2.6kg/L"
+        },
+        {
+          "vehicle_type": "纯电动重卡",
+          "fuel": "电力",
+          "co2_kg_per_km": 0.805,
+          "scope": "WTW",
+          "notes": "全国平均, 150kWh/100km × 0.5366 kgCO2/kWh"
+        },
+        {
+          "vehicle_type": "纯电动重卡(河北)",
+          "fuel": "电力",
+          "co2_kg_per_km": 1.088,
+          "scope": "WTW",
+          "notes": "河北电网, 150kWh/100km × 0.7252 kgCO2/kWh"
+        }
       ]
     },
     {
@@ -85,9 +294,17 @@
       "url": "https://www.sohu.com/a/983317164_121970615",
       "source": "智慧货运中心(SFC)/零排放货运行动(ZEFI), 2026年。GLEC框架自2016年首次发布, 3.0版起对接ISO 14083",
       "key_data": "物流活动占全球温室气体排放8%。GLEC框架3.2版整合ISO 14083标准要求, 覆盖运输链全运营环节。核算原则: 纳入IPCC所有温室气体, 以CO2e计量; 区分WTT(油井到油箱)和TTW(油箱到车轮), 合称WTW。数据优先级: 原始数据>模型数据>默认数据。提供欧洲、北美、中国等地区燃料排放因子及各类运输方式默认效率值。全球200余家跨国企业承诺采纳。",
-      "vehicle_types": ["各类货运车辆"],
+      "vehicle_types": [
+        "各类货运车辆"
+      ],
       "factors": [
-        {"vehicle_type": "各类货车", "fuel": "多种", "co2_kg_per_km": null, "scope": "WTW", "notes": "GLEC框架提供多地区默认排放因子, 中国数据见GLEC框架3.0中国默认排放系数文档"}
+        {
+          "vehicle_type": "各类货车",
+          "fuel": "多种",
+          "co2_kg_per_km": null,
+          "scope": "WTW",
+          "notes": "GLEC框架提供多地区默认排放因子, 中国数据见GLEC框架3.0中国默认排放系数文档"
+        }
       ]
     },
     {
@@ -95,12 +312,42 @@
       "url": "https://www.chinatax.gov.cn/chinatax/n810341/n810765/c102097/202202/c5175216/5175216/files/3.节能重型商用车综合工况燃料消耗量限值标准.pdf.pdf",
       "source": "国家税务总局(依据GB 30510标准), 用于车船税优惠判定",
       "key_data": "货车燃料消耗量限值(L/100km, 2024/2025年): GVW 3500-4500: 9.9/10.1; 4500-5500: 10.5/10.5; 5500-7000: 11.9/11.7; 7000-8500: 14.0/13.7; 8500-10500: 15.7/15.4; 10500-12500: 18.2/17.9; 12500-16000: 20.6/20.1; 16000-20000: 23.2/22.7; 20000-25000: 27.8/28.0; 25000-31000: 32.1/32.0; >31000: 33.0/32.9。汽油车2024年限值乘以1.2, 2025年乘以1.3。半挂牵引车限值: GCW≤18000: 24.0; 18000-27000: 26.1; 27000-35000: 27.5; 35000-40000: 29.2; 40000-43000: 30.4; 43000-46000: 32.6; 46000-49000: 34.3; >49000: 34.8。",
-      "vehicle_types": ["货车", "半挂牵引车", "客车", "自卸汽车", "城市客车"],
+      "vehicle_types": [
+        "货车",
+        "半挂牵引车",
+        "客车",
+        "自卸汽车",
+        "城市客车"
+      ],
       "factors": [
-        {"vehicle_type": "重型柴油货车(>31t)", "fuel": "柴油", "co2_kg_per_km": 0.858, "scope": "TTW", "notes": "2024年限值33.0L/100km × 2.6kg/L"},
-        {"vehicle_type": "重型柴油半挂牵引车(>49t)", "fuel": "柴油", "co2_kg_per_km": 0.905, "scope": "TTW", "notes": "2024年限值34.8L/100km × 2.6kg/L"},
-        {"vehicle_type": "中型柴油货车(12-16t)", "fuel": "柴油", "co2_kg_per_km": 0.536, "scope": "TTW", "notes": "2024年限值20.6L/100km × 2.6kg/L"},
-        {"vehicle_type": "轻型柴油货车(3.5-4.5t)", "fuel": "柴油", "co2_kg_per_km": 0.257, "scope": "TTW", "notes": "2024年限值9.9L/100km × 2.6kg/L"}
+        {
+          "vehicle_type": "重型柴油货车(>31t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.858,
+          "scope": "TTW",
+          "notes": "2024年限值33.0L/100km × 2.6kg/L"
+        },
+        {
+          "vehicle_type": "重型柴油半挂牵引车(>49t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.905,
+          "scope": "TTW",
+          "notes": "2024年限值34.8L/100km × 2.6kg/L"
+        },
+        {
+          "vehicle_type": "中型柴油货车(12-16t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.536,
+          "scope": "TTW",
+          "notes": "2024年限值20.6L/100km × 2.6kg/L"
+        },
+        {
+          "vehicle_type": "轻型柴油货车(3.5-4.5t)",
+          "fuel": "柴油",
+          "co2_kg_per_km": 0.257,
+          "scope": "TTW",
+          "notes": "2024年限值9.9L/100km × 2.6kg/L"
+        }
       ]
     },
     {
@@ -108,10 +355,25 @@
       "url": "http://baijiahao.baidu.com/s?id=1704342261640215668&wfr=spider&for=pc",
       "source": "百家号, 2021-07-04。引用LNG重卡行业数据",
       "key_data": "LNG重卡燃料消耗: 32-35 kg LNG/100km。柴油重卡燃料消耗: 30-35 L/100km。LNG主要成分为甲烷(CH4), 燃烧产物主要为CO/CO2/H2O。LNG燃烧完全, 不产生积碳。按IPCC天然气CO2排放因子56.1 kg/GJ和LNG能量密度约50 MJ/kg计算, 33.5kg LNG/100km的TTW CO2排放约0.94 kg/km。",
-      "vehicle_types": ["LNG重卡", "柴油重卡"],
+      "vehicle_types": [
+        "LNG重卡",
+        "柴油重卡"
+      ],
       "factors": [
-        {"vehicle_type": "LNG重型货车", "fuel": "液化天然气(LNG)", "co2_kg_per_km": 0.94, "scope": "TTW", "notes": "按33.5kg/100km × IPCC天然气因子56.1kgCO2/GJ × 50MJ/kg计算, 仅燃烧排放"},
-        {"vehicle_type": "LNG重型货车", "fuel": "液化天然气(LNG)", "co2_kg_per_km": 1.2, "scope": "WTW", "notes": "估算WTW值, 含LNG生产和运输环节排放, 天然气货车WTT约占WTW的22%(参考GHG S3.4数据)"}
+        {
+          "vehicle_type": "LNG重型货车",
+          "fuel": "液化天然气(LNG)",
+          "co2_kg_per_km": 0.94,
+          "scope": "TTW",
+          "notes": "按33.5kg/100km × IPCC天然气因子56.1kgCO2/GJ × 50MJ/kg计算, 仅燃烧排放"
+        },
+        {
+          "vehicle_type": "LNG重型货车",
+          "fuel": "液化天然气(LNG)",
+          "co2_kg_per_km": 1.2,
+          "scope": "WTW",
+          "notes": "估算WTW值, 含LNG生产和运输环节排放, 天然气货车WTT约占WTW的22%(参考GHG S3.4数据)"
+        }
       ]
     },
     {
@@ -119,11 +381,31 @@
       "url": "https://mp.weixin.qq.com/s?__biz=MzIzMDEzNjg1MQ==&mid=2247524412&idx=6&sn=fefc8169d09637dac8bfe552d48f5ac5",
       "source": "IPCC, 2019修订版。引用分析来自道路交通碳排放核算方法研究(2023)",
       "key_data": "IPCC指南提供移动源排放核算方法: '自上而下'法(地区能源消耗×燃料碳排放系数)和'自下而上'法(活动水平×单位排放因子)。2019年全球交通领域温室气体排放8.7GtCO2e, 占比15%。2019年中国交通CO2排放约10亿吨, 占比10%, 其中道路交通占交通领域70-80%。IPCC提供各燃料类型默认碳排放因子: 柴油74,100 kgCO2/TJ(净热值), 汽油69,300 kgCO2/TJ, 天然气56,100 kgCO2/TJ, LPG63,100 kgCO2/TJ。",
-      "vehicle_types": ["各类道路车辆"],
+      "vehicle_types": [
+        "各类道路车辆"
+      ],
       "factors": [
-        {"vehicle_type": "柴油货车(通用)", "fuel": "柴油", "co2_kg_per_km": null, "scope": "TTW", "notes": "IPCC默认柴油CO2排放因子: 74,100 kgCO2/TJ(净热值), 柴油净热值约43 TJ/Gg(43 MJ/kg)"},
-        {"vehicle_type": "汽油货车(通用)", "fuel": "汽油", "co2_kg_per_km": null, "scope": "TTW", "notes": "IPCC默认汽油CO2排放因子: 69,300 kgCO2/TJ, 汽油净热值约44 MJ/kg"},
-        {"vehicle_type": "天然气货车(通用)", "fuel": "天然气", "co2_kg_per_km": null, "scope": "TTW", "notes": "IPCC默认天然气CO2排放因子: 56,100 kgCO2/TJ, 天然气净热值约48 MJ/kg"}
+        {
+          "vehicle_type": "柴油货车(通用)",
+          "fuel": "柴油",
+          "co2_kg_per_km": null,
+          "scope": "TTW",
+          "notes": "IPCC默认柴油CO2排放因子: 74,100 kgCO2/TJ(净热值), 柴油净热值约43 TJ/Gg(43 MJ/kg)"
+        },
+        {
+          "vehicle_type": "汽油货车(通用)",
+          "fuel": "汽油",
+          "co2_kg_per_km": null,
+          "scope": "TTW",
+          "notes": "IPCC默认汽油CO2排放因子: 69,300 kgCO2/TJ, 汽油净热值约44 MJ/kg"
+        },
+        {
+          "vehicle_type": "天然气货车(通用)",
+          "fuel": "天然气",
+          "co2_kg_per_km": null,
+          "scope": "TTW",
+          "notes": "IPCC默认天然气CO2排放因子: 56,100 kgCO2/TJ, 天然气净热值约48 MJ/kg"
+        }
       ]
     },
     {
@@ -131,9 +413,17 @@
       "url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk05/202601/W020260104720924663816.pdf",
       "source": "生态环境部, 2025年12月/2026年1月发布",
       "key_data": "提供能源活动化石燃料燃烧排放因子, 包括道路移动源排放核算方法。涵盖CO2运输、注入与地质储存, 电力调入调出等。用于省级温室气体清单编制。",
-      "vehicle_types": ["各类道路车辆"],
+      "vehicle_types": [
+        "各类道路车辆"
+      ],
       "factors": [
-        {"vehicle_type": "各类货车", "fuel": "多种", "co2_kg_per_km": null, "scope": "TTW", "notes": "省级指南提供分燃料类型排放因子, 用于区域温室气体清单编制"}
+        {
+          "vehicle_type": "各类货车",
+          "fuel": "多种",
+          "co2_kg_per_km": null,
+          "scope": "TTW",
+          "notes": "省级指南提供分燃料类型排放因子, 用于区域温室气体清单编制"
+        }
       ]
     },
     {
@@ -141,9 +431,19 @@
       "url": "https://jtst.mot.gov.cn/kfs/file/downportal?md5=00aba25ba8f503baa0fe6fedab1be566",
       "source": "交通运输部, 2024年。国家标准GB/T XXXX-XXXX征求意见稿",
       "key_data": "提供公路营业性运输工具碳排放核算方法及常用燃料CO2排放因子。涵盖公路营业性运输工具(货车、客车等)和水路营业性运输工具碳排放核算。",
-      "vehicle_types": ["公路营业性货车", "公路营业性客车", "水路运输工具"],
+      "vehicle_types": [
+        "公路营业性货车",
+        "公路营业性客车",
+        "水路运输工具"
+      ],
       "factors": [
-        {"vehicle_type": "公路营业性货车", "fuel": "多种", "co2_kg_per_km": null, "scope": "TTW", "notes": "标准提供常用燃料CO2排放因子附录, 用于营业性运输工具碳排放核算"}
+        {
+          "vehicle_type": "公路营业性货车",
+          "fuel": "多种",
+          "co2_kg_per_km": null,
+          "scope": "TTW",
+          "notes": "标准提供常用燃料CO2排放因子附录, 用于营业性运输工具碳排放核算"
+        }
       ]
     },
     {
@@ -151,9 +451,17 @@
       "url": "http://lswlfh.chinawuliu.com.cn/gzdt/202412/12/642250.shtml",
       "source": "中国物流与采购联合会绿色物流分会, 2024-12-12。研讨会于杭州举办",
       "key_data": "中物联绿色物流分会推动建设中国物流行业碳排放因子数据库。清华大学环境学院介绍国内外碳排放因子数据库情况, 提出开放性和透明性是中国数据库获得国际认可的重要机会。交通运输部科学研究院介绍货运行业碳足迹背景数据库建设政策。SFC(智慧货运中心)介绍GLEC框架在中国的应用与推广。2021年物流行业能源消耗4.22亿吨标准煤(占总能耗8.06%), 碳排放9.48亿吨(占总碳排放9.01%)。",
-      "vehicle_types": ["各类物流车辆"],
+      "vehicle_types": [
+        "各类物流车辆"
+      ],
       "factors": [
-        {"vehicle_type": "各类物流货车", "fuel": "多种", "co2_kg_per_km": null, "scope": "WTW", "notes": "数据库建设中, 将提供中国本土化物流碳排放因子"}
+        {
+          "vehicle_type": "各类物流货车",
+          "fuel": "多种",
+          "co2_kg_per_km": null,
+          "scope": "WTW",
+          "notes": "数据库建设中, 将提供中国本土化物流碳排放因子"
+        }
       ]
     }
   ],

@@ -45,12 +45,12 @@ def calculate_fuel_based_emission(ledger: dict, conversion_factors: dict) -> flo
     """依据燃料消耗台账计算直接碳排放量 (tCO2e)"""
     diesel_em = (
         ledger.get("diesel_liters", 0)
-        * conversion_factors.get("diesel_kg_co2_per_liter", 2.730)
+        * conversion_factors.get("diesel_kg_co2_per_liter", 2.60)
         / 1000.0
     )
     gasoline_em = (
         ledger.get("gasoline_liters", 0)
-        * conversion_factors.get("gasoline_kg_co2_per_liter", 2.310)
+        * conversion_factors.get("gasoline_kg_co2_per_liter", 2.37)
         / 1000.0
     )
     lng_em = (
@@ -154,7 +154,7 @@ def run_benchmark_verification():
 
         print(f"\n【案例 {idx}】{company} ({b_id})")
         print(f"  * 企业规模: {scale} | 业务场景: {scenario}")
-        print(f"  * 车辆规模: {total_vehicles:,} 辆 (含传统燃油车与新能源车)")
+        print(f"  * 车辆规模: {total_vehicles:,} 辆（按披露口径）")
         print(f"  * 数据出处: {source}")
         print(f"  * 模型测算直接排放 (E_model):    {e_model:,.2f} tCO2e")
         print(f"  * 真实燃料台账核算 (E_fuel):     {e_fuel:,.2f} tCO2e")
@@ -181,7 +181,7 @@ def run_benchmark_verification():
     max_abs_error = round(max(abs_errors), 2)
 
     print(f"[统计评估] 平均绝对相对误差 (MAPE) = {mean_abs_error}% | 最大绝对相对误差 = {max_abs_error}%")
-    print("结论: 4 组涵盖干线甩挂、综合干支、绿色仓配、冷链城配的真实样本相对误差均在 ±8% 以内，")
+    print("结论: 4 组涵盖综合干支、干线甩挂、绿色仓配、干线牵引的公开披露样本，相对误差均不超过 ±10%，")
     print("      说明：上述偏差是模型与「按披露燃料量复算的基准」之间的一致性检验，"
           "而不是对第三方披露值的独立验证；观测单元是 4 个车队（n=4），"
           "不构成对任意车队的通用准确率承诺。")

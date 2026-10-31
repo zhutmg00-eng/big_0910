@@ -144,15 +144,25 @@ def test_figure_artifacts_have_no_unrendered_placeholders():
 
 
 def test_figure_artifacts_have_no_stale_claims():
-    """早期草稿的 2.88%/5.20%/「高稳定性」不得重新出现在图表产物中。"""
+    """早期草稿的 2.88%/5.20%/「高稳定性」不得重新出现在图表产物中。
+
+    2026-10-31：数值类 stale 改用数字边界匹配——v1.1.0 重算后的图表出现了
+    "42.88%" 这类合法标签，朴素子串 "2.88" 会误伤；数字边界正则只拦独立的
+    2.88/5.20，不影响其它数字中的巧合子串。
+    """
+    numeric_stale = {"2.88", "5.20"}
+    text_stale = {"高稳定性"}
     for rel in (
         "docs/artifacts/fig1_rq1_real_fleet_validation.svg",
         "docs/artifacts/fig1_rq1_real_fleet_validation.html",
         "docs/artifacts/all_charts_dashboard.html",
     ):
         text = _read_defense(rel)
-        for stale in STALE_FIGURE_CLAIMS:
-            assert stale not in text, f"{rel} 仍含早期草稿数值/表述 {stale}"
+        for stale in numeric_stale:
+            pattern = re.compile(rf"(?<![\d.]){re.escape(stale)}(?![\d])")
+            assert not pattern.search(text), f"{rel} 仍含早期草稿数值 {stale}"
+        for stale in text_stale:
+            assert stale not in text, f"{rel} 仍含早期草稿表述 {stale}"
 
 
 def test_dashboard_kb_badge_matches_actual_corpus():

@@ -59,7 +59,7 @@ def test_build_defense_pdfs_generation(tmp_path):
     doc_manual = fitz.open(manual_path)
     assert len(doc_manual) >= 3
     text_manual = "\n".join(page.get_text() for page in doc_manual)
-    assert "4.23%" in text_manual
+    assert "6.77%" in text_manual
     assert "Wilcoxon" in text_manual
 
     doc_guide = fitz.open(guide_path)
