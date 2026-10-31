@@ -2,7 +2,7 @@
 """大创中期答辩科研实证图表与展示产物自动生成脚本
 
 生成成果（保存在 docs/artifacts/）：
-1. fig1_rq1_real_fleet_validation (.html & .svg): 真实车队台账 vs 活动水平估算对比与相对误差分布 (案例等权 MAPE 4.23% / 加权 2.38%)
+1. fig1_rq1_real_fleet_validation (.html & .svg): 真实车队台账 vs 活动水平估算对比与相对误差分布 (案例等权 MAPE 6.77% / 加权 6.77%)
 2. fig2_rq2_rag_benchmark_comparison (.html & .svg): RAG 三组检索对照实验核心指标与 Wilcoxon 显著性检验
 3. fig3_rq3_sensitivity_heatmap (.html & .svg): 满载率与年均里程二维扰动敏感性矩阵热力图
 4. all_charts_dashboard.html: 单页自包含实证展板，评委即开即览
@@ -459,9 +459,9 @@ def build_all_artifacts():
     <div class="card">
       <h2>RQ1: 数据有限条件下活动水平估算法的精度与一致性核验</h2>
       <div>
-        <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 区域冷链 (合计 51,990 辆)</span>
+        <span class="stats-badge">样本集: 顺丰 / 中通 / 京东 / 区域冷链 (合计 59,312 辆)</span>
         <span class="stats-badge">案例等权 MAPE = {MAPE_EQ}% (加权 {MAPE_WT}%)</span>
-        <span class="stats-badge">偏差区间: [+1.66%, +7.27%]</span>
+        <span class="stats-badge">偏差区间: [+1.66%, +9.94%]</span>
       </div>
       <div class="chart-container">
         {generate_svg_rq1(["顺丰速运(干支)", "中通快递(纯干)", "京东物流(城配)", "区域冷链(中重)"], ledgers, estimates, errors)}
@@ -498,7 +498,7 @@ def build_all_artifacts():
         {generate_svg_rq3()}
       </div>
       <div class="findings">
-        <strong>实证发现</strong>：参数扰动表明年均里程是一阶主导因子，但效应<b>强不对称</b>——+20% 使 MAPE 上升 +20.72~+21.63 pp，−20% 仅上升 +5.30~+13.55 pp；实载率引起的 MAPE 变化约 4.59 pp（行内极差 3.67~5.50 pp），不是可跨里程倍数通用的常数。全网格 {SENS_N} 组中 {SENS_OVER10} 组超过 10%，中位数 {_MEDIAN}%。
+        <strong>实证发现</strong>：参数扰动表明年均里程是一阶主导因子，但效应<b>强不对称</b>——+20% 使 MAPE 上升 +21.34~+22.08 pp，−20% 仅上升 +1.25~+7.93 pp；实载率引起的 MAPE 变化约 4.59 pp（行内极差 1.69~4.45 pp），不是可跨里程倍数通用的常数。全网格 {SENS_N} 组中 {SENS_OVER10} 组超过 10%，中位数 {_MEDIAN}%。
       </div>
     </div>
   </div>

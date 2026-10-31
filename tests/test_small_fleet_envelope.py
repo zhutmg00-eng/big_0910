@@ -62,7 +62,7 @@ def test_declares_it_is_not_accuracy_validation() -> None:
 
     report = REPORT.read_text(encoding="utf-8")
     assert "这不是准确率验证" in report, "报告缺少免责声明，会被当成验证结果引用"
-    assert "不能与 4.23%" in report, "报告未说明与有台账 MAPE 4.23% 的区别"
+    assert "不能与 6.77%" in report, "报告未说明与有台账 MAPE 6.77% 的区别"
 
 
 def test_report_does_not_quote_percentiles() -> None:

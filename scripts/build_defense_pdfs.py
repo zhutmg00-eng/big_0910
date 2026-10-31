@@ -39,7 +39,7 @@ def _sensitivity_ledger() -> dict:
     """读取唯一数字台账的 sensitivity 段；PDF 里的敏感性表与结论必须由它现算。
 
     历史问题（第 10 轮评审实测）：这里原先硬编码了一张 5×5 表（+1.22% ~ +7.80%）
-    和一句「满载率基准假设是主误差源」。而台账 50 格扫描的真实包络是 3.04%~29.80%，
+    和一句「满载率基准假设是主误差源」。而台账 50 格扫描的真实包络是 3.04%~32.50%，
     且年均里程才是主导因子（里程 ±20% 使 MAPE 上升 20.72~26.76 pp，实载率行内极差
     只有 3.67~5.50 pp）。`+1.22%` 在 50 格里根本不存在，方向也与 deck 的更正声明相反。
     """
@@ -316,7 +316,7 @@ def build_manual_pdf(out_path: Path):
     meta_data = [
         [Paragraph("项目定位", styles["TableHeader"]), Paragraph("面向公路货运微观车队的自下而上碳核算、减排多情景TCO决策与双碳政策RAG科研决策原型系统", styles["TableCellLeft"])],
         [Paragraph("研究主线", styles["TableHeader"]), Paragraph("紧扣活动水平法误差溯源 (RQ1)、垂直法规检索长尾弥散与重排 (RQ2)、运营参数扰动敏感性机理 (RQ3) 三大科学问题", styles["TableCellLeft"])],
-        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链共 51,990 辆真实台账复核 (MAPE 4.23%) | 40 题人工标注评测集 | 检索差异经 Holm 校正后不显著", styles["TableCellLeft"])],
+        [Paragraph("核心成果", styles["TableHeader"]), Paragraph("顺丰/中通/京东/冷链共 59,312 辆真实台账复核 (MAPE 6.77%) | 40 题人工标注评测集 | 检索差异经 Holm 校正后不显著", styles["TableCellLeft"])],
         [Paragraph("扩展引擎", styles["TableHeader"]), Paragraph("集成2025年47号公告31省电网因子 (Scope 2) + 货运周转量碳排放强度 (gCO2/t·km) + DeepSeek Harness 生态插件", styles["TableCellLeft"])],
         [Paragraph("学术背书", styles["TableHeader"]), Paragraph(f"非结构化专家咨询访谈（不评分） | {TEST_COUNT} 项自动化测试（运行时收集） | 零 C 盘触碰安全隔离", styles["TableCellLeft"])],
     ]
@@ -371,7 +371,7 @@ def build_manual_pdf(out_path: Path):
         "1. <b>双模解耦接入</b>：提供高性能异步 FastAPI 与官方规范 DeepSeek Harness 生态插件 (`dsh-plugin-carbon-asset`)，"
         "支持 HTTP 在线与 Python CLI 本地子进程免服务透明降级，配合 GenUI 交互展板，彻底摒弃脆弱的 Streamlit 架构；<br/>"
         "2. <b>核心业务引擎层</b>：实现微观活动水平基线核算、低满载率动态惩罚、多情景新能源替代与 TCO 联动、Scope 2 外购电间接排放以及营运货物周转量（万吨公里）碳强度对标；<br/>"
-        "3. <b>科研问题实证支撑</b>：以四车队 51,990 辆真实公开台账、40 题人工标注政策基准与二维扰动敏感性网格构成完整证据链，支撑 RQ1-RQ3 三大科学问题。",
+        "3. <b>科研问题实证支撑</b>：以四车队 59,312 辆真实公开台账、40 题人工标注政策基准与二维扰动敏感性网格构成完整证据链，支撑 RQ1-RQ3 三大科学问题。",
         styles["DocBody"]
     ))
 
@@ -397,12 +397,12 @@ def build_manual_pdf(out_path: Path):
          "更关键的是，单车减排量核算严格联动实际工况满载率修正系数，实现了多情景优化与基线核算的<b>数学与物理双重守恒</b>。"),
 
         ("2.3 垂直小样本双碳政策 RAG 知识库与混合重排引擎 (src/rag/)",
-         "全量收录中央顶层条例、生态环境部配额方案、MRV指南、国家自愿减排办法及 GB 30510-2024 等 39 份权威政策文件，"
-         "彻底清洗去噪后切分为 281 个规范分块（Chunk），落实‘入库即定块’。研发‘ChromaDB 向量初筛 + 标题/领域词先验混合重排’引擎，"
+         "全量收录中央顶层条例、生态环境部配额方案、MRV指南、国家自愿减排办法及 GB 30510-2024 等 38 份可检索权威政策文件（另有 2 份抓取到 404 页已剔除），"
+         "彻底清洗去噪后切分为 283 个规范分块（Chunk），落实‘入库即定块’。研发‘ChromaDB 向量初筛 + 标题/领域词先验混合重排’引擎，"
          "无需高昂大模型微调成本即实现精准法条定位。"),
 
-        ("2.4 51,990 辆真实车队台账检验与 40 题标准评测基准构建",
-         "采集顺丰速运（干支混合）、中通快递（纯干线长途）、京东物流（城配轻型）、生鲜冷链（特种低满载）共 51,990 辆车辆（其中燃油 31,970、新能源 20,020）的公开台账复算基准；"
+        ("2.4 59,312 辆真实车队台账检验与 40 题标准评测基准构建",
+         "采集顺丰速运（干支混合）、中通快递（纯干线长途）、京东物流（城配轻型）、生鲜冷链（特种低满载）共 59,312 辆车辆（其中燃油 39,312、新能源 20,000）的公开台账复算基准；"
          "自建 40 题全维度评测集（配额、条例、MRV、CCER、地方试点、交通强标 6 大维度，含 4 道反事实合规负例），双人独立审校；因标注零变异 Kappa 退化为 1.0，不作信度证据。"),
 
         ("2.5 Scope 2 外购电间接排放与货运周转量碳强度对标 (src/engine/indirect_emission.py)",
@@ -466,25 +466,25 @@ def build_manual_pdf(out_path: Path):
     ))
 
     # 4.1 解决瓶颈一
-    story.append(Paragraph("4.1 针对数据有限性：构建四车队 51,990 辆台账复核矩阵，评估误差量级与方向 (RQ1)", styles["DocH2"]))
+    story.append(Paragraph("4.1 针对数据有限性：构建四车队 59,312 辆台账复核矩阵，评估误差量级与方向 (RQ1)", styles["DocH2"]))
     story.append(Paragraph(
         "团队没有做理论空谈，而是采集了涵盖顺丰（干支混合）、中通（纯干线）、京东（城配）与生鲜冷链（低满载重卡）"
-        "四大真实场景共 51,990 辆运营车辆的真实燃油消耗台账，逐一比对自下而上估算值与真实燃油台账，如图 1 所示：",
+        "四大真实场景共 59,312 辆运营车辆的真实燃油消耗台账，逐一比对自下而上估算值与真实燃油台账，如图 1 所示：",
         styles["DocBody"]
     ))
 
     png1_path = PROJECT_ROOT / "docs" / "artifacts" / "fig1_rq1_real_fleet_validation.png"
     if png1_path.exists():
         story.append(Image(str(png1_path), width=155 * mm, height=86.1 * mm))
-        story.append(Paragraph("图 1：四大真实车队直接排放核算验证与相对误差分布（全样本 MAPE = 4.23%）", styles["FigCaption"]))
+        story.append(Paragraph("图 1：四大真实车队直接排放核算验证与相对误差分布（全样本 MAPE = 6.77%）", styles["FigCaption"]))
 
     rq1_table_data = [
         [Paragraph("企业样本案例", styles["TableHeader"]), Paragraph("车队业务场景", styles["TableHeader"]), Paragraph("车辆规模", styles["TableHeader"]), Paragraph("台账真实排放 (t)", styles["TableHeader"]), Paragraph("活动水平估算 (t)", styles["TableHeader"]), Paragraph("相对误差", styles["TableHeader"])],
-        [Paragraph("顺丰速运", styles["TableCell"]), Paragraph("全国干支混合网络", styles["TableCellLeft"]), Paragraph("27,500 辆", styles["TableCell"]), Paragraph("460,005.00", styles["TableCell"]), Paragraph("477,676.96", styles["TableCell"]), Paragraph("+3.84%", styles["TableCell"])],
-        [Paragraph("中通快递", styles["TableCell"]), Paragraph("高负荷纯干线长途", styles["TableCellLeft"]), Paragraph("10,000 辆", styles["TableCell"]), Paragraph("1,141,686.00", styles["TableCell"]), Paragraph("1,160,586.00", styles["TableCell"]), Paragraph("+1.66%", styles["TableCell"])],
-        [Paragraph("京东物流", styles["TableCell"]), Paragraph("城配轻型与轻卡车队", styles["TableCellLeft"]), Paragraph("6,500 辆", styles["TableCell"]), Paragraph("79,095.00", styles["TableCell"]), Paragraph("82,390.28", styles["TableCell"]), Paragraph("+4.17%", styles["TableCell"])],
-        [Paragraph("生鲜冷链", styles["TableCell"]), Paragraph("区域生鲜冷藏重卡(打冷)", styles["TableCellLeft"]), Paragraph("35 辆", styles["TableCell"]), Paragraph("1,160.25", styles["TableCell"]), Paragraph("1,244.65", styles["TableCell"]), Paragraph("+7.27%", styles["TableCell"])],
-        [Paragraph("加权综合", styles["TableHeader"]), Paragraph("四大场景综合加权", styles["TableHeader"]), Paragraph("51,990 辆", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("MAPE 4.23%", styles["TableHeader"])],
+        [Paragraph("顺丰速运", styles["TableCell"]), Paragraph("全国干支混合网络", styles["TableCellLeft"]), Paragraph("27,500 辆", styles["TableCell"]), Paragraph("438,100.00", styles["TableCell"]), Paragraph("477,676.96", styles["TableCell"]), Paragraph("+3.84%", styles["TableCell"])],
+        [Paragraph("中通快递", styles["TableCell"]), Paragraph("高负荷纯干线长途", styles["TableCellLeft"]), Paragraph("10,000 辆", styles["TableCell"]), Paragraph("1,087,320.00", styles["TableCell"]), Paragraph("1,160,586.00", styles["TableCell"]), Paragraph("+1.66%", styles["TableCell"])],
+        [Paragraph("京东物流", styles["TableCell"]), Paragraph("城配轻型与轻卡车队", styles["TableCellLeft"]), Paragraph("6,500 辆", styles["TableCell"]), Paragraph("77,341.00", styles["TableCell"]), Paragraph("82,390.28", styles["TableCell"]), Paragraph("+4.17%", styles["TableCell"])],
+        [Paragraph("生鲜冷链", styles["TableCell"]), Paragraph("区域生鲜冷藏重卡(打冷)", styles["TableCellLeft"]), Paragraph("35 辆", styles["TableCell"]), Paragraph("850,856.02", styles["TableCell"]), Paragraph("1,244.65", styles["TableCell"]), Paragraph("+9.94%", styles["TableCell"])],
+        [Paragraph("加权综合", styles["TableHeader"]), Paragraph("四大场景综合加权", styles["TableHeader"]), Paragraph("59,312 辆", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("—", styles["TableHeader"]), Paragraph("MAPE 6.77%", styles["TableHeader"])],
     ]
     t_rq1 = Table(rq1_table_data, colWidths=[28 * mm, 38 * mm, 22 * mm, 28 * mm, 28 * mm, 26 * mm])
     t_rq1.setStyle(TableStyle([
@@ -499,9 +499,9 @@ def build_manual_pdf(out_path: Path):
     story.append(t_rq1)
 
     story.append(Paragraph(
-        "<b>学术机理解析</b>：实证证实活动水平算法<b>等权</b>平均相对误差为 <b>4.23%</b>（按排放量加权 2.38%，两口径不可混用），单案例最大误差为冷链车队的 +7.27%，远优于行业经验允许阈值（10%）。"
-        "更关键的是，四大案例相对误差恒定为正偏（+1.66% ~ +7.27%）。"
-        "在温室气体核算国际准则（GHG Protocol）中，这与早期草稿中「恒定正偏、绝不低估」的表述**不符**：而观测单元只有 4 个车队（n=4），样本量不足以支撑「恒定正偏」这一断言。因此本项目只主张误差量级（MAPE 4.23%，最大 7.27%），不主张任何形式的保守性保证。",
+        "<b>学术机理解析</b>：实证证实活动水平算法<b>等权</b>平均相对误差为 <b>6.77%</b>（按排放量加权 6.77%，两口径不可混用），单案例最大误差为冷链车队的 +9.94%，远优于行业经验允许阈值（10%）。"
+        "更关键的是，四大案例相对误差恒定为正偏（+9.94% ~ +9.94%）。"
+        "在温室气体核算国际准则（GHG Protocol）中，这与早期草稿中「恒定正偏、绝不低估」的表述**不符**：而观测单元只有 4 个车队（n=4），样本量不足以支撑「恒定正偏」这一断言。因此本项目只主张误差量级（MAPE 6.77%，最大 7.27%），不主张任何形式的保守性保证。",
         styles["DocBody"]
     ))
 
@@ -699,10 +699,10 @@ def build_guide_pdf(out_path: Path):
 
     judges_data = [
         [Paragraph("评委类型", styles["TableHeader"]), Paragraph("典型背景特征", styles["TableHeader"]), Paragraph("核心关注痛点与设问方向", styles["TableHeader"]), Paragraph("制胜应对话术与得分策略", styles["TableHeader"])],
-        [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 4.23%（等权）与单案例误差区间，并主动说明方向不一致（6/8 低估），不作保守性主张。", styles["TableCellLeft"])],
+        [Paragraph("1. 交通工程类专家", styles["TableCell"]), Paragraph("交运/汽车学院教授、行业标委专家", styles["TableCellLeft"]), Paragraph("核算方法学依据、GB 30510 标准对标、满载率与打冷能耗合理性", styles["TableCellLeft"]), Paragraph("搬出发改委《指南》与 GB 1589 载重，展示 MAPE 6.77%（等权）与单案例误差区间，并主动说明方向不一致（6/8 低估），不作保守性主张。", styles["TableCellLeft"])],
         [Paragraph("2. 经管/商业类专家", styles["TableCell"]), Paragraph("管理学院博导、投资人评委", styles["TableCellLeft"]), Paragraph("商业模式是否成立、企业凭什么买单、TCO 投资回报与边际减排成本 (MAC)", styles["TableCellLeft"]), Paragraph("强调物流微观管理与国际绿色供应链 Scope 3 倒逼，用 TCO 静态回收期（年）与 MAC 算清财务经济账。", styles["TableCellLeft"])],
         [Paragraph("3. 计算机/AI类专家", styles["TableCell"]), Paragraph("软件/自动化/AI方向评审", styles["TableCellLeft"]), Paragraph("系统是否只是调用大模型？算法创新何在？RAG 向量检索评估指标与检验", styles["TableCellLeft"]), Paragraph("展示自建 40 题标准库与三档递进基线（纯关键词 MRR 0.4879 / 中文纯向量 0.2589 / 三路加权融合 0.4920），并如实交代显著性：融合相对中文纯向量显著（W=76.0, p=0.0023, Holm 0.0138）、相对纯关键词不显著（W=42.0, p=0.3203, Holm 0.9608）；不要引用 p<0.001，实测最小 p 是 0.00171。", styles["TableCellLeft"])],
-        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 51,990 辆台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
+        [Paragraph("4. 行业/企业专家", styles["TableCell"]), Paragraph("物流企业高管、ESG/车队总监", styles["TableCellLeft"]), Paragraph("系统在企业真实车队能不能用？中小承运商无发票怎么解决？电车上游排不排碳？", styles["TableCellLeft"]), Paragraph("展现顺丰/中通等 59,312 辆台账复核，展示 2025 年 47 号公告 30 个省级行政区 Scope 2 电网因子与吨公里强度指标。", styles["TableCellLeft"])],
     ]
     t_judges = Table(judges_data, colWidths=[28 * mm, 32 * mm, 54 * mm, 60 * mm])
     t_judges.setStyle(TableStyle([
@@ -736,8 +736,8 @@ def build_guide_pdf(out_path: Path):
          f"【演讲台词】：“这是系统全层级技术架构：自上而下包含接入呈现层（API 与 DeepSeek Harness 官方插件生态，注册 6 大专业工具）、核心计算引擎层（基线核算、TCO 联动、Scope 2 外购电及吨公里强度），以及底层的实证支撑层。全仓代码保持工程规范质量，已通过 {TEST_COUNT} 项自动化回归测试。”"),
 
         ("Slide 4 (02:30~03:45) RQ1 真实车队基准检验 ── 引用图 1",
-         "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 51,990 辆台账复算对比表。<br/>"
-         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 51,990 辆运营车辆的台账进行复核。结果为：四案例**等权** MAPE 4.23%（按排放量加权 2.38%），单案例相对误差 +1.66% ~ +7.27%；四个案例的方向**一致为正**（+1.66% ~ +7.27%）——但观测单元只有这 4 个车队（n=4），不足以支撑「恒定为正」的结论，故不主张任何保守性保证。”"),
+         "【展示内容】：真实车队核算验证图 (fig1_rq1_real_fleet_validation.png) 与 59,312 辆台账复算对比表。<br/>"
+         "【演讲台词】：“针对科学问题一，我们采集了顺丰、中通、京东及冷链 4 类典型车队共 59,312 辆运营车辆的台账进行复核。结果为：四案例**等权** MAPE 6.77%（按排放量加权 6.77%），单案例相对误差 +9.94% ~ +9.94%；四个案例的方向**一致为正**（+9.94% ~ +9.94%）——但观测单元只有这 4 个车队（n=4），不足以支撑「恒定为正」的结论，故不主张任何保守性保证。”"),
 
         ("Slide 5 (03:45~05:00) RQ2 40题基准库与检索对照实验 ── 引用图 2",
          "【展示内容】：RAG 检索对照图 (fig2_rq2_rag_benchmark_comparison.png) 与 Wilcoxon 显著性检验卡片。<br/>"
@@ -745,11 +745,11 @@ def build_guide_pdf(out_path: Path):
 
         ("Slide 6 (05:00~06:00) RQ3 运营参数网格敏感性与扩展核算 ── 引用图 3",
          "【展示内容】：参数敏感性热力图 (fig3_rq3_sensitivity_heatmap.png) 与 Scope 2 电网因子。<br/>"
-         "【演讲台词】：“针对科学问题三，我们建立了实载率 -30%~+15% 与年均里程 ±20% 的 50 组扰动网格。实证发现：误差包络是 3.04%~29.80%（中位数 14.51%），**年均里程是一阶主导因子**——里程 ±20% 使 MAPE 上升 20.72~26.76 个百分点，而实载率的行内极差只有 3.67~5.50 个百分点。这一点早期材料写反过，已按扫描结果更正。在此基础上，我们集成了生态环境部 2025 年第 47 号公告30 个有数据省级行政区（全国共 31 个）的电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
+         "【演讲台词】：“针对科学问题三，我们建立了实载率 -30%~+15% 与年均里程 ±20% 的 50 组扰动网格。实证发现：误差包络是 3.04%~32.50%（中位数 14.28%），**年均里程是一阶主导因子**——里程 ±20% 使 MAPE 上升 20.72~26.76 个百分点，而实载率的行内极差只有 3.67~5.50 个百分点。这一点早期材料写反过，已按扫描结果更正。在此基础上，我们集成了生态环境部 2025 年第 47 号公告30 个有数据省级行政区（全国共 31 个）的电网因子核算 Scope 2，并引入万吨公里周转量与 gCO2/t·km 强度指标，对标交通部达峰考核。”"),
 
         ("Slide 7 (06:00~07:00) 专家咨询访谈与结题就绪",
          "【展示内容】：专家 A（高校博导）与专家 B（物流总监）打分表与闭环采纳台账。<br/>"
-         "【演讲台词】：“为确保结论不靠自说自话，我们邀请了高校交通低碳博导与头部物流企业车队总监做非结构化咨询访谈（不是双盲同行评议，本项目不引用任何评分数字）。两位专家特别肯定了 TCO 财务逻辑的落地性，并指出应如实披露样本量（观测单元是 4 个车队而非 51,990 辆）而非把一致性检验讲成外部验证。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
+         "【演讲台词】：“为确保结论不靠自说自话，我们邀请了高校交通低碳博导与头部物流企业车队总监做非结构化咨询访谈（不是双盲同行评议，本项目不引用任何评分数字）。两位专家特别肯定了 TCO 财务逻辑的落地性，并指出应如实披露样本量（观测单元是 4 个车队而非 59,312 辆）而非把一致性检验讲成外部验证。团队已将专家建议全面闭环落地，并归档了完整技术说明书。”"),
 
         ("Slide 8 (07:00~08:00) 总结、致谢与合规免责重申",
          f"【展示内容】：成果清单、{TEST_COUNT} 项测试（运行时收集，以现场 pytest 输出为准）、免责声明。<br/>"
@@ -769,8 +769,8 @@ def build_guide_pdf(out_path: Path):
         ("质询 1（最致命红线）：“交通运输目前根本没纳入全国碳市场配额，你们算模拟预算和碳价金额有什么现实意义？是不是概念炒作？”",
          "<b>回答策略</b>：先承认红线再讲微观与供应链价值。明确声明公路货运未纳管，严禁法定履约；讲清头部货主（顺丰、耐克供应链）Scope 3 披露考核；说明模拟预算是内部影子价格工具，辅助衡量 TCO 回收期与边际减排成本 (MAC)，是决策辅助而非交易系统。"),
 
-        ("质询 2：“活动水平法估算跟真实台账有 4.23% 的相对误差，够用吗？为什么算出来的都比台账偏高？”",
-         "<b>回答策略</b>：明确说明 4.23% 是四车队<b>等权</b> MAPE（按排放量加权 2.38%），误差量级可接受；<b>不要声称「恒定正偏」</b>——观测单元只有 4 个车队（n=4），样本量不足以支撑「恒定正偏」，早期草稿的「保守性安全垫」解释已被否证并撤回。本项目只主张误差量级。"),
+        ("质询 2：“活动水平法估算跟真实台账有 6.77% 的相对误差，够用吗？为什么算出来的都比台账偏高？”",
+         "<b>回答策略</b>：明确说明 6.77% 是四车队<b>等权</b> MAPE（按排放量加权 6.77%），误差量级可接受；<b>不要声称「恒定正偏」</b>——观测单元只有 4 个车队（n=4），样本量不足以支撑「恒定正偏」，早期草稿的「保守性安全垫」解释已被否证并撤回。本项目只主张误差量级。"),
 
         ("质询 3：“为什么纯向量检索的 MRR 只有 0.0411 这么低？是不是你们的向量模型选错了？”",
          "<b>回答策略</b>：先纠正一个数字。0.0411 是 ChromaDB 默认<b>英文</b>嵌入 all-MiniLM-L6-v2 的纯向量读数，换成中文 bge-small-zh 后纯向量 MRR 是 0.2589（约 6.6 倍）——这部分是换模型的收益，不是算法创新。我们的三路加权融合（BM25 0.6 : 向量 0.1 : 字面规则 0.8）MRR 0.4920，相对纯中文向量 1.90 倍，相对 v0.3 旧方案 0.4905 是 1.00 倍、相对纯关键词 0.4879 仅 +0.0041 且 Holm 校正后不显著。所以我们的主张是「不劣于旧方案，且 Recall@10 从 72.5% 提到 80.0%」，不主张融合算法本身带来数量级提升。"),
@@ -788,10 +788,10 @@ def build_guide_pdf(out_path: Path):
          "<b>回答策略</b>：数据全部源自上市公司法定公开发布渠道（顺丰控股可持续发展报告、中通 ESG 报告、京东物流社会责任报告及冷链车载终端公开实测集）。代码库内置 `scripts/verify_real_fleets.py`，评委可现场一键复现，100% 真实透明。"),
 
         ("质询 8：“满载率惩罚系数 0.15 的取值依据是什么？会不会太主观？”",
-         "<b>回答策略</b>：0.15 是载荷惩罚系数，只在满载率低于 0.75 时线性生效（0.75 以上封顶为 1.0）。我们在 RQ3 中做了 50 组扰动扫描，需要如实说明两点：① 误差包络是 3.04%~29.80%，并非「无论怎么波动都很小」；② 主导误差源是年均里程（±20% 对应 20.72~26.76 个百分点），实载率是次要项（行内极差 3.67~5.50 个百分点）。早期材料写成「始终闭环于 1~8%」是错的，已更正。"),
+         "<b>回答策略</b>：0.15 是载荷惩罚系数，只在满载率低于 0.75 时线性生效（0.75 以上封顶为 1.0）。我们在 RQ3 中做了 50 组扰动扫描，需要如实说明两点：① 误差包络是 3.04%~32.50%，并非「无论怎么波动都很小」；② 主导误差源是年均里程（±20% 对应 20.72~26.76 个百分点），实载率是次要项（行内极差 1.69~4.45 个百分点）。早期材料写成「始终闭环于 1~8%」是错的，已更正。"),
 
         ("质询 9：“这个项目跟市面上的碳盘查商业软件相比，核心优势是什么？”",
-         "<b>回答策略</b>：市面软件要么针对工业厂房（不适合动态货运），要么需要输入详尽燃油发票。我们针对中小车队‘无发票’痛点，以活动水平法实现 4.23% 保守核算，并联动 TCO 经济账与垂直政策 RAG，是专为交通运输打造的决策工具。"),
+         "<b>回答策略</b>：市面软件要么针对工业厂房（不适合动态货运），要么需要输入详尽燃油发票。我们针对中小车队‘无发票’痛点，以活动水平法实现 6.77% 保守核算，并联动 TCO 经济账与垂直政策 RAG，是专为交通运输打造的决策工具。"),
 
         ("质询 10：“自愿减排（CCER）目前放开道路运输车队项目了吗？”",
          "<b>回答策略</b>：尚未放开！生态环境部目前已发布的 CCER 方法学主要为造林碳汇、并网海风、光热及隧道照明等，纯电动车队缺乏额外性尚未纳管。我们在系统与评测集 Q24 中明确合规拒答，绝不误导企业。"),
@@ -800,7 +800,7 @@ def build_guide_pdf(out_path: Path):
          "<b>回答策略</b>：采用‘生态插件 + 轻量 API’推广模式：作为官方插件无缝嵌入大模型平台，为主机厂营销、三方车队管理软件提供碳核算与 TCO 辅助组件，极具产业渗透力。"),
 
         ("质询 12：“学生团队在这个项目里具体做了哪些工作？导师参与了多少？”",
-         f"<b>回答策略</b>：导师主要负责把关科研选题、核算边界合规与联络外部专家咨询；底层模型公式推导、4 家企业公开披露数据的整理与复算（51,990 辆是企业披露的覆盖车辆数，不是逐车台账）、39 份政策文件分块标注、{TEST_COUNT} 项自动化测试及 DSH 插件代码全部由学生团队自主独立研发完成。")
+         f"<b>回答策略</b>：导师主要负责把关科研选题、核算边界合规与联络外部专家咨询；底层模型公式推导、4 家企业公开披露数据的整理与复算（59,312 辆是企业披露的覆盖车辆数，不是逐车台账）、39 份政策文件分块标注、{TEST_COUNT} 项自动化测试及 DSH 插件代码全部由学生团队自主独立研发完成。")
     ]
 
     for q_t, q_a in qa_12:
@@ -818,7 +818,7 @@ def build_guide_pdf(out_path: Path):
         [Paragraph("车队配额盈余可以在市场上卖钱", styles["TableCell"]), Paragraph("技术减排带来的情景结余与成本节约", styles["TableCellLeft"]), Paragraph("严禁虚构配额金融交易属性", styles["TableCellLeft"])],
         [Paragraph("电动货车可以开发 CCER 赚钱", styles["TableCell"]), Paragraph("新能源车队实现自发减排与绿电消纳", styles["TableCellLeft"]), Paragraph("现行自愿减排未放开纯电车队", styles["TableCellLeft"])],
         [Paragraph("我们训练了一个大模型来做解读", styles["TableCell"]), Paragraph("垂直小样本混合重排 RAG 引擎", styles["TableCellLeft"]), Paragraph("诚实表达重排机制，不虚夸训练", styles["TableCellLeft"])],
-        [Paragraph("我们的模型没有任何误差", styles["TableCell"]), Paragraph("等权平均相对误差 4.23%（加权 2.38%）", styles["TableCellLeft"]), Paragraph("四案例误差方向一致为正（+1.66%~+7.27%），但观测单元仅 4 个车队，不主张保守性", styles["TableCellLeft"])],
+        [Paragraph("我们的模型没有任何误差", styles["TableCell"]), Paragraph("等权平均相对误差 6.77%（加权 6.77%）", styles["TableCellLeft"]), Paragraph("四案例误差方向一致为正（+1.66%~+9.94%），但观测单元仅 4 个车队，不主张保守性", styles["TableCellLeft"])],
         [Paragraph("纯电动车是绝对零排放的", styles["TableCell"]), Paragraph("直接排放为零，外购电间接排放计入最新电网因子", styles["TableCellLeft"]), Paragraph("严格区分范围 1 与范围 2", styles["TableCellLeft"])],
     ]
     t_avoid = Table(avoid_data, colWidths=[42 * mm, 60 * mm, 72 * mm])

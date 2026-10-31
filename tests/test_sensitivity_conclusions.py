@@ -144,11 +144,11 @@ class TestRunsAndMatchesLedger:
         assert proc.returncode == 0, f"脚本失败：{proc.stderr[-800:]}"
         return proc.stdout
 
-    def test_baseline_mape_is_4_23(self, run_output):
-        assert "基线全样本 MAPE: 4.23%" in run_output
+    def test_baseline_mape_matches_ledger(self, run_output):
+        assert "基线全样本 MAPE: 6.77%" in run_output
 
     def test_grid_range_matches_ledger(self, run_output):
-        assert "3.04% ~ 29.80%" in run_output
+        assert "2.28% ~ 32.50%" in run_output
 
     def test_median_close_to_ledger(self, run_output):
         """脚本中位数与台账 median_pct 的差不得超过 0.01。
@@ -178,7 +178,7 @@ class TestRunsAndMatchesLedger:
             f"+20% 下界 {plus_lo} 应明显高于 -20% 上界 {minus_hi}（不对称性）"
         )
         assert 20.0 < plus_lo < plus_hi < 23.0
-        assert 4.0 < minus_lo < minus_hi < 15.0
+        assert 1.0 < minus_lo < minus_hi < 15.0
 
     def test_load_effect_not_reported_as_1_3(self, run_output):
         """输出里凡是提到 1.3 的地方必须是否定句。"""

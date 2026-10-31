@@ -109,7 +109,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="740" y="235" width="200" height="85" fill="#f8faf9" stroke="{GRID}" rx="6"/>
   <text x="840" y="258" font-size="12" font-weight="bold" fill="{INK}" text-anchor="middle">垂直领域 RAG 检索</text>
-  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">39份政策文件281块入库定块</text>
+  <text x="840" y="278" font-size="11" fill="{MUTED}" text-anchor="middle">38份政策文件283块入库定块</text>
   <text x="840" y="296" font-size="10" fill="{GREEN}" text-anchor="middle">向量初筛 + 领域词重排</text>
 
   <!-- 连线箭头 2 -->
@@ -121,8 +121,8 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
 
   <rect x="60" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="195" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ1: 真实车队基准检验</text>
-  <text x="195" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">顺丰/中通/京东/冷链 51,990 辆台账</text>
-  <text x="195" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">等权 MAPE 4.23% (加权 2.38%)</text>
+  <text x="195" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">顺丰/中通/京东/冷链 59,312 辆台账</text>
+  <text x="195" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">等权 MAPE 6.77% (加权 6.77%)</text>
 
   <rect x="365" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="500" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ2: 40题基准集与检索检验</text>
@@ -133,7 +133,7 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="
   <rect x="670" y="398" width="270" height="72" fill="#ffffff" stroke="{GRID}" rx="6"/>
   <text x="805" y="418" font-size="12" font-weight="bold" fill="{BLUE}" text-anchor="middle">RQ3: 参数扰动敏感性网格</text>
   <text x="805" y="438" font-size="11" fill="{MUTED}" text-anchor="middle">实载率 (-0.3~+0.15) × 里程 (±20%)</text>
-  <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">50组扫描：3.04% ~ 29.80%</text>
+  <text x="805" y="456" font-size="11" font-weight="bold" fill="{GREEN}" text-anchor="middle">50组扫描：3.04% ~ 32.50%</text>
 
   <!-- 底部规范声明 -->
   <text x="500" y="505" font-size="11" fill="{MUTED}" text-anchor="middle">{TEST_LINE} | 严格遵循情景模拟与非纳管边界</text>

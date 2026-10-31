@@ -25,44 +25,44 @@
   <text x="150" y="425" font-size="12" fill="#55645d" text-anchor="end">0%</text>
 
   <!-- MRR (倒数排名) 分组柱 -->
-  <rect x="190" y="264" width="26" height="156" fill="#84938b" rx="2" opacity="0.85"/>
-  <text x="203" y="259" font-size="10" fill="#55645d" text-anchor="middle">48.79%</text>
+  <rect x="190" y="283" width="26" height="137" fill="#84938b" rx="2" opacity="0.85"/>
+  <text x="203" y="278" font-size="10" fill="#55645d" text-anchor="middle">42.88%</text>
 
-  <rect x="217" y="338" width="26" height="82" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="230" y="333" font-size="10" fill="#2f6fa3" text-anchor="middle">25.89%</text>
+  <rect x="217" y="345" width="26" height="75" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="230" y="340" font-size="10" fill="#2f6fa3" text-anchor="middle">23.62%</text>
 
-  <rect x="244" y="263" width="26" height="157" fill="#1e6b4b" rx="2" opacity="0.95"/>
-  <text x="257" y="258" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">49.20%</text>
+  <rect x="244" y="274" width="26" height="146" fill="#1e6b4b" rx="2" opacity="0.95"/>
+  <text x="257" y="269" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">45.73%</text>
 
   <text x="230" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">MRR (倒数排名)</text>
 
   <!-- Recall@3 分组柱 -->
-  <rect x="320" y="252" width="26" height="168" fill="#84938b" rx="2" opacity="0.85"/>
-  <text x="333" y="247" font-size="10" fill="#55645d" text-anchor="middle">52.50%</text>
+  <rect x="320" y="260" width="26" height="160" fill="#84938b" rx="2" opacity="0.85"/>
+  <text x="333" y="255" font-size="10" fill="#55645d" text-anchor="middle">50.00%</text>
 
-  <rect x="347" y="316" width="26" height="104" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="360" y="311" font-size="10" fill="#2f6fa3" text-anchor="middle">32.50%</text>
+  <rect x="347" y="324" width="26" height="96" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="360" y="319" font-size="10" fill="#2f6fa3" text-anchor="middle">30.00%</text>
 
-  <rect x="374" y="244" width="26" height="176" fill="#1e6b4b" rx="2" opacity="0.95"/>
-  <text x="387" y="239" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">55.00%</text>
+  <rect x="374" y="276" width="26" height="144" fill="#1e6b4b" rx="2" opacity="0.95"/>
+  <text x="387" y="271" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">45.00%</text>
 
   <text x="360" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">Recall@3</text>
 
   <!-- Recall@5 分组柱 -->
-  <rect x="450" y="204" width="26" height="216" fill="#84938b" rx="2" opacity="0.85"/>
-  <text x="463" y="199" font-size="10" fill="#55645d" text-anchor="middle">67.50%</text>
+  <rect x="450" y="212" width="26" height="208" fill="#84938b" rx="2" opacity="0.85"/>
+  <text x="463" y="207" font-size="10" fill="#55645d" text-anchor="middle">65.00%</text>
 
-  <rect x="477" y="276" width="26" height="144" fill="#2f6fa3" rx="2" opacity="0.85"/>
-  <text x="490" y="271" font-size="10" fill="#2f6fa3" text-anchor="middle">45.00%</text>
+  <rect x="477" y="284" width="26" height="136" fill="#2f6fa3" rx="2" opacity="0.85"/>
+  <text x="490" y="279" font-size="10" fill="#2f6fa3" text-anchor="middle">42.50%</text>
 
-  <rect x="504" y="220" width="26" height="200" fill="#1e6b4b" rx="2" opacity="0.95"/>
-  <text x="517" y="215" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">62.50%</text>
+  <rect x="504" y="236" width="26" height="184" fill="#1e6b4b" rx="2" opacity="0.95"/>
+  <text x="517" y="231" font-size="11" font-weight="bold" fill="#1e6b4b" text-anchor="middle">57.50%</text>
 
   <text x="490" y="445" font-size="12" font-weight="600" fill="#1a2521" text-anchor="middle">Recall@5</text>
 
   <!-- Recall@10 分组柱 -->
-  <rect x="580" y="196" width="26" height="224" fill="#84938b" rx="2" opacity="0.85"/>
-  <text x="593" y="191" font-size="10" fill="#55645d" text-anchor="middle">70.00%</text>
+  <rect x="580" y="188" width="26" height="232" fill="#84938b" rx="2" opacity="0.85"/>
+  <text x="593" y="183" font-size="10" fill="#55645d" text-anchor="middle">72.50%</text>
 
   <rect x="607" y="236" width="26" height="184" fill="#2f6fa3" rx="2" opacity="0.85"/>
   <text x="620" y="231" font-size="10" fill="#2f6fa3" text-anchor="middle">57.50%</text>
@@ -86,9 +86,9 @@
 
   <!-- 显著性标识卡片 -->
   <rect x="520" y="70" width="320" height="40" fill="#eef7f2" stroke="#1e6b4b" rx="5"/>
-  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon（三路融合 vs 纯关键词）: p = 0.3203，Holm 校正 0.9608（不显著）</text>
+  <text x="535" y="95" font-size="12" font-weight="bold" fill="#1e6b4b">Wilcoxon（三路融合 vs 纯关键词）: p = 0.2868，Holm 校正 0.8605（不显著）</text>
 
   <!-- 底部结论条 -->
   <rect x="40" y="465" width="820" height="25" fill="#f0f5f2" rx="4"/>
-  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：同一语料同一中文嵌入下，纯关键词 MRR 0.4879 / 纯向量 0.2589 / 三路加权融合 0.4920；真实增量在 Recall@10（80.0% vs 70.0%），相对纯关键词的 MRR 差异不显著（Holm 0.961）。</text>
+  <text x="50" y="482" font-size="12" fill="#2d5240">实证发现：同一语料同一中文嵌入下，纯关键词 MRR 0.4288 / 纯向量 0.2362 / 三路加权融合 0.4573；真实增量在 Recall@10（80.0% vs 72.5%），相对纯关键词的 MRR 差异不显著（Holm 0.860）。</text>
 </svg>

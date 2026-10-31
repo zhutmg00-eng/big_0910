@@ -3,14 +3,14 @@
 """
 敏感性分析脚本（v2）—— 答辩防御性证据生成器
 =================================================
-用途：验证"活动水平法对真实车队案例 MAPE≈4.23%"结论对输入参数假设（满载率/年均里程）不敏感。
+用途：验证"活动水平法对真实车队案例 MAPE≈6.77%"结论对输入参数假设（满载率/年均里程）不敏感。
 回应质疑："你们的 d_i（里程）和 l_i（满载率）是假设的，凭什么信 MAPE？"
 
 v2 版本说明（2026-09-06）：
 - v1 曾按 CSV + 自建燃料因子表设计；实跑后发现仓库真实口径为 benchmark_fleets.**json**
   （含 real_energy_ledger 与 metadata.conversion_factors）+ src.engine 的 VehicleGroupData API。
 - v2 改为完全复用 scripts/verify_real_fleets.py 的数据结构与计算口径：
-  E_model 走 src.engine.calculator；E_fuel 按 ledger×conversion_factors；基线应复现 MAPE 4.23%。
+  E_model 走 src.engine.calculator；E_fuel 按 ledger×conversion_factors；基线应复现 MAPE 6.77%。
 - 扫描设计：满载率 l_i -0.30~+0.15（步长 0.05，截断至 [0,1]）；年均里程 ×0.8~×1.2（步长 10%）。
   下探至 -0.30 的原因：按官方吨位实载率口径，干线 0.80-0.88 属乐观上沿（实测 48.7%-71.2%），
   需覆盖 0.45-0.58 的真实区间（2026-09-06 调研结论）。
@@ -66,8 +66,8 @@ def compute_pair(benchmark, conv, l_delta=0.0, km_scale=1.0):
 
     ledger = benchmark["real_energy_ledger"]
     e_fuel = (
-        ledger.get("diesel_liters", 0) * conv.get("diesel_kg_co2_per_liter", 2.730)
-        + ledger.get("gasoline_liters", 0) * conv.get("gasoline_kg_co2_per_liter", 2.310)
+        ledger.get("diesel_liters", 0) * conv.get("diesel_kg_co2_per_liter", 2.60)
+        + ledger.get("gasoline_liters", 0) * conv.get("gasoline_kg_co2_per_liter", 2.37)
         + ledger.get("lng_kg", 0) * conv.get("lng_kg_co2_per_kg", 2.690)
     ) / 1000.0
     return e_model, e_fuel
@@ -86,7 +86,7 @@ def main():
     l_deltas = [-0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.0, 0.05, 0.10, 0.15]
     km_scales = [0.8, 0.9, 1.0, 1.1, 1.2]
 
-    # 基线（l_delta=0, km_scale=1.0）—— 应复现 MAPE 4.23%
+    # 基线（l_delta=0, km_scale=1.0）—— 应复现 MAPE 6.77%
     baseline_errs = []
     for b in benchmarks:
         em, ef = compute_pair(b, conv)
@@ -96,7 +96,7 @@ def main():
     print("=" * 70)
     print("敏感性扫描：满载率 -0.30~+0.15（步长0.05，覆盖官方口径下探区间）× 里程 ±20%")
     print("=" * 70)
-    print(f"基线全样本 MAPE: {baseline_mape:.2f}%  (期望≈4.23%，来自 real_fleet_validation_report)")
+    print(f"基线全样本 MAPE: {baseline_mape:.2f}%  (期望≈6.77%，来自 real_fleet_validation_report)")
     print()
 
     results = []
