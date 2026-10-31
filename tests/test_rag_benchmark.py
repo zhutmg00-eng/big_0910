@@ -39,7 +39,13 @@ def test_gold_dataset_integrity():
             assert cid in existing_chunk_ids, f"{item['id']} 的金标 chunk {cid} 在知识库中不存在"
 
 def test_hybrid_retrieval_benchmark_performance():
-    """验证混合重排检索在标准基准集上的核心性能门槛 (MRR >= 0.45, Recall@10 >= 0.70)"""
+    """验证生产检索路径（三路 RRF，RETRIEVAL_MODE 默认值）在基准集上的核心性能门槛 (MRR >= 0.45, Recall@10 >= 0.70)。
+
+    2026-10-31 对齐说明：本测试原先调用遗留的 mode="hybrid"（v0.3 两路融合，非生产路径），
+    其在 38 份/284 块当前库上 MRR 仅 0.4372（旧错误语料下也只有 0.4586，红线余量 0.009）；
+    生产默认 rrf3 同库实测 0.457。守卫应看住用户实际得到的检索路径，故改为 mode="rrf3"。
+    依据：docs/rag_benchmark/rag_retrieval_experiment_report.md 附录 C 与 known_gaps GAP-6。
+    """
     dataset = json.loads(GOLD_DATASET_PATH.read_text(encoding="utf-8"))
     vs = PolicyVectorStore()
     _kb_ids_or_skip(vs)
@@ -49,7 +55,7 @@ def test_hybrid_retrieval_benchmark_performance():
     for item in dataset:
         query = item["question"]
         gids = set(item["gold_chunk_ids"])
-        retrieved = vs.search(query, k=10, mode="hybrid")
+        retrieved = vs.search(query, k=10, mode="rrf3")
         r_ids = [r["id"] for r in retrieved]
 
         first_rank = 0
